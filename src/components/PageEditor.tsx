@@ -117,7 +117,7 @@ export function PageEditor({ creator, treats }: { creator: Creator; treats: Reco
               <textarea id="bio" className={input} rows={3} maxLength={280} value={f.bio} onChange={(e) => set("bio", e.target.value)} />
               <label htmlFor="avatar" className={label}>Photo</label>
               <input id="avatar" type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => upload("avatar", e.target.files?.[0])} />
-              <p className="mt-1 text-xs text-cocoa-2">PNG, JPEG or WebP, up to 10 MB.</p>
+              <p className="mt-1 text-xs text-cocoa-2">PNG, JPEG or WebP, up to 4 MB.</p>
               <label htmlFor="links" className={label}>Social links <span className="font-normal text-cocoa-2">(one https:// link per line, up to 6)</span></label>
               <textarea id="links" className={input} rows={3} value={f.links} onChange={(e) => set("links", e.target.value)} />
               <label htmlFor="birthday" className={label}>Birthday</label>
@@ -161,7 +161,7 @@ export function PageEditor({ creator, treats }: { creator: Creator; treats: Reco
                 <>
                   <label htmlFor="cover" className={label}>Cover image</label>
                   <input id="cover" type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => upload("cover", e.target.files?.[0])} />
-                  <p className="mt-1 text-xs text-cocoa-2">PNG, JPEG or WebP, up to 5 MB.</p>
+                  <p className="mt-1 text-xs text-cocoa-2">PNG, JPEG or WebP, up to 4 MB.</p>
                 </>
               )}
             </div>

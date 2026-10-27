@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, url: await saveUpload(file, kind) });
   } catch (e) {
     if (e instanceof Unauthorized) return NextResponse.json({ error: e.message }, { status: 401 });
-    if (e instanceof Error && /^(Use a PNG|That image is too big)/.test(e.message)) return NextResponse.json({ error: e.message }, { status: 400 });
+    if (e instanceof Error && /^(Use a PNG|Images must be)/.test(e.message)) return NextResponse.json({ error: e.message }, { status: 400 });
     throw e;
   }
 }

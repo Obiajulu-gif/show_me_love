@@ -1,3 +1,5 @@
+import { rm } from "node:fs/promises";
+import path from "node:path";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { startTestDb } from "@/lib/testing";
 import { createCreator, getCreatorByUser, getCreatorByUsername, updateCreator } from "@/lib/creators";
@@ -36,7 +38,21 @@ test("username change records history", async () => {
   expect(rows.map((r) => r.old_username)).toEqual(["ada_bakes"]);
 });
 
-test("saveUpload rejects gif and oversize cover", async () => {
+test("updateCreator rejects javascript: social URLs", async () => {
+  await expect(updateCreator(ada, { socials: { a: "javascript:alert(1)" } })).rejects.toThrow(/https/);
+});
+
+const png = (n = 16) => { const b = new Uint8Array(n); b.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]); return b; };
+
+test("saveUpload rejects gif, spoofed MIME, and oversize images", async () => {
   await expect(saveUpload(new File([new Uint8Array(10)], "a.gif", { type: "image/gif" }), "avatar")).rejects.toThrow(/PNG, JPEG or WebP/);
-  await expect(saveUpload(new File([new Uint8Array(6 * 1024 * 1024)], "c.png", { type: "image/png" }), "cover")).rejects.toThrow(/5 MB/);
+  await expect(saveUpload(new File(["hello, not an image"], "a.png", { type: "image/png" }), "avatar")).rejects.toThrow(/PNG, JPEG or WebP/);
+  await expect(saveUpload(new File([png(6 * 1024 * 1024)], "c.png", { type: "image/png" }), "cover")).rejects.toThrow("Images must be 4 MB or smaller.");
+  await expect(saveUpload(new File([png(4.1 * 1024 * 1024)], "a.png", { type: "image/png" }), "avatar")).rejects.toThrow("Images must be 4 MB or smaller.");
+});
+
+test("saveUpload accepts a real PNG header and stores it", async () => {
+  const url = await saveUpload(new File([png()], "x.jpg", { type: "image/jpeg" }), "avatar");
+  expect(url).toMatch(/^\/uploads\/avatar-.*\.png$/);
+  await rm(path.join(process.cwd(), "public", url), { force: true });
 });

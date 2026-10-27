@@ -29,7 +29,7 @@ export function CreatorPage({ creator: c, mode, payments }: { creator: PageView;
         {c.bio && <p className="mt-2 whitespace-pre-line text-sm">{c.bio}</p>}
         {c.socials.length > 0 && (
           <p className="mt-2 flex flex-wrap gap-x-3 text-xs text-cocoa-2">
-            {c.socials.map((u) => <a key={u} href={u} rel="noopener noreferrer nofollow" target="_blank" className="underline">{u.replace(/^https:\/\/(www\.)?/, "")}</a>)}
+            {c.socials.filter((u) => /^https:///i.test(u)).map((u) => <a key={u} href={u} rel="noopener noreferrer nofollow" target="_blank" className="underline">{u.replace(/^https:\/\/(www\.)?/, "")}</a>)}
           </p>
         )}
         <div className="mt-4">
