@@ -59,9 +59,8 @@ export function GoalDrawer({ initial, defaultOrganizer, onClose, onSaved }: { in
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setErr("");
-    const { id: _id, currencyLocked: _locked, ...rest } = f;
-    void _id; void _locked;
-    const body = { ...rest, target: Number(target), suggested: Number(suggested) };
+    const { title, story, coverUrl, currency, showProgress, showTarget, organizerName, organizerPhoto, headerMode } = f;
+    const body = { title, story, coverUrl, currency, showProgress, showTarget, organizerName, organizerPhoto, headerMode, target: Number(target), suggested: Number(suggested) };
     try {
       const r = await fetch(initial.id ? `/api/goals/${initial.id}` : "/api/goals", {
         method: initial.id ? "PATCH" : "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body),

@@ -50,6 +50,9 @@ function check(i: GoalInput): GoalInput {
   if (i.story !== undefined && i.story !== null && (typeof i.story !== "string" || i.story.length > 2000)) throw new GoalError("Story can be at most 2000 characters.");
   if (i.currency !== "NGN" && i.currency !== "USD") throw new GoalError("Currency must be NGN or USD.");
   if (i.headerMode !== undefined && !MODES.includes(i.headerMode)) throw new GoalError("Pick a goal header from the list.");
+  for (const k of ["showProgress", "showTarget"] as const) {
+    if (i[k] !== undefined && typeof i[k] !== "boolean") throw new GoalError(`${k === "showProgress" ? "Show progress" : "Show target"} must be on or off.`);
+  }
   for (const k of ["organizerName", "organizerPhoto", "coverUrl"] as const) {
     const v = i[k];
     if (v !== undefined && v !== null && (typeof v !== "string" || v.length > (k === "organizerName" ? 60 : 500))) throw new GoalError(`${k === "organizerName" ? "Organizer name" : "Image link"} is too long.`);
@@ -142,11 +145,15 @@ type Supporter = { name: string; email: string; message?: string; isPublic: bool
 
 /** `amount` is in the goal's currency. USD converts to naira at today's rate, rounded up to a whole naira. */
 export async function startGoalCheckout(goalId: string, amount: number, supporter: Supporter, origin?: string): Promise<{ ref: string; url: string }> {
-  const [r] = UUID.test(goalId) ? await db()`
-    select g.*, c.username from goals g join creators c on c.user_id = g.creator_id where g.id = ${goalId}` : [];
-  if (!r) throw new GoalError("We couldn't find that goal.");
-  const g = toGoal(r);
-  if (g.paused) throw new GoalError("This goal is paused.");
+  // Lock first, atomically: after this statement no currency change can land, and we price from the currency it returns.
+  const [lk] = UUID.test(goalId) ? await db()`update goals set currency_locked = true where id = ${goalId} and not paused returning *` : [];
+  if (!lk) {
+    const [ex] = UUID.test(goalId) ? await db()`select 1 from goals where id = ${goalId}` : [];
+    throw new GoalError(ex ? "This goal is paused." : "We couldn't find that goal.");
+  }
+  const g = toGoal(lk);
+  const [{ username }] = await db()`select username from creators where user_id = ${g.creatorId}`;
+  const r = { username };
 
   if (typeof amount !== "number" || !Number.isFinite(amount)) throw new GoalError("Enter an amount.");
   let amountNgn: number;
@@ -165,7 +172,6 @@ export async function startGoalCheckout(goalId: string, amount: number, supporte
   const out = await startCheckout({
     kind: "goal", goalId, amountNgn, supporter, successPath: `/@${r.username}/goals/${g.slug}`, origin,
   });
-  await db()`update goals set currency_locked = true where id = ${goalId}`;
   return out;
 }
 

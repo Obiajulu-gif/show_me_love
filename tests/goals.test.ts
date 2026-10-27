@@ -1,8 +1,15 @@
 import { afterAll, beforeAll, beforeEach, expect, test, vi } from "vitest";
 
+let sessionUser: { id: string; email: string; role: string } | null = null;
+vi.mock("../src/lib/session", async (orig) => {
+  const m = await orig<typeof import("../src/lib/session")>();
+  return { ...m, requireUser: vi.fn(async () => { if (!sessionUser) throw new m.Unauthorized(); return sessionUser; }) };
+});
 vi.mock("../src/lib/ras", async (orig) => ({ ...(await orig<typeof import("../src/lib/ras")>()), createPaymentLink: vi.fn() }));
 vi.mock("../src/lib/rates", async (orig) => ({ ...(await orig<typeof import("../src/lib/rates")>()), getRate: vi.fn() }));
 
+import { PATCH } from "../src/app/api/goals/[id]/route";
+import { POST as create } from "../src/app/api/goals/route";
 import { CheckoutBusy } from "../src/lib/checkout";
 import { createCreator } from "../src/lib/creators";
 import { db } from "../src/lib/db";
@@ -129,4 +136,41 @@ test("Review Focus 5: pause + rename after checkout starts still credits the cre
   expect(await balance(ada)).toBe("0.950000");
   expect((await goalProgress(g.id)).count).toBe(1);
   expect((await getPublicGoal("ada_new", g.slug))?.paused).toBe(true);
+});
+
+const req = (body: unknown, url = "http://localhost/api/goals/x") =>
+  new Request(url, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+const patch = (id: string, body: unknown) => PATCH(req(body), { params: Promise.resolve({ id }) });
+
+test("PATCH edits fields; paused must be sent alone", async () => {
+  sessionUser = { id: ada, email: "ada@x.com", role: "creator" };
+  const g = await createGoal(ada, base);
+  expect((await patch(g.id, { title: "Mixed edit", paused: true })).status).toBe(400);
+  expect((await t.sql`select title, paused from goals where id = ${g.id}`)[0]).toMatchObject({ title: "Help me buy a camera", paused: false });
+  expect((await patch(g.id, { paused: "yes" })).status).toBe(400);
+  const ok = await patch(g.id, { title: "Edited title", slug: "ignored", raised: 5, count: 9 });
+  expect(ok.status).toBe(200);
+  expect((await t.sql`select title, slug from goals where id = ${g.id}`)[0]).toMatchObject({ title: "Edited title", slug: g.slug });
+  expect((await patch(g.id, { paused: true })).status).toBe(200);
+  expect((await t.sql`select paused from goals where id = ${g.id}`)[0].paused).toBe(true);
+  expect((await patch(g.id, { showProgress: "banana" })).status).toBe(400);
+  expect((await patch(g.id, { headerMode: "banana" })).status).toBe(400);
+});
+
+test("create rejects non-boolean toggles and bad headerMode with 400", async () => {
+  sessionUser = { id: ada, email: "ada@x.com", role: "creator" };
+  const post = (b: object) => create(new Request("http://localhost/api/goals", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...base, ...b }) }));
+  expect((await post({ showProgress: "banana" })).status).toBe(400);
+  expect((await post({ showTarget: 1 })).status).toBe(400);
+  expect((await post({ headerMode: "banana" })).status).toBe(400);
+  expect((await post({})).status).toBe(200);
+  await expect(createGoal(ada, { ...base, showTarget: "x" as never })).rejects.toThrow(/Show target/);
+});
+
+test("currency locks before the checkout runs, even if the checkout then fails", async () => {
+  const g = await createGoal(ada, base);
+  vi.mocked(createPaymentLink).mockRejectedValue(new Error("ras down"));
+  await expect(startGoalCheckout(g.id, 500, who)).rejects.toThrow(CheckoutBusy);
+  expect((await t.sql`select currency_locked from goals where id = ${g.id}`)[0].currency_locked).toBe(true);
+  await expect(updateGoal(ada, g.id, { currency: "USD" })).rejects.toThrow("Currency locks when the first checkout starts.");
 });
