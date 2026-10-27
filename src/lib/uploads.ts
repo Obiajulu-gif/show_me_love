@@ -23,7 +23,7 @@ export async function saveUpload(file: File, kind: "avatar" | "cover"): Promise<
   const name = `${kind}-${randomUUID()}.${ext}`;
   if (process.env.BLOB_READ_WRITE_TOKEN) {
     const { put } = await import("@vercel/blob");
-    return (await put(`uploads/${name}`, bytes, { access: "public", contentType: type })).url;
+    return (await put(`uploads/${name}`, Buffer.from(bytes), { access: "public", contentType: type })).url;
   }
   if (process.env.NODE_ENV === "production") throw new Error("Uploads are not configured: set BLOB_READ_WRITE_TOKEN.");
   const dir = path.join(process.cwd(), "public", "uploads");
