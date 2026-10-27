@@ -30,3 +30,9 @@ export function heatmap(dates: Date[], today: Date): { weeks: HeatCell[][]; mont
   }
   return { weeks, months };
 }
+
+/** Roving-tabindex move over the flat day index (week * 7 + day); `last` is today's index. Stays put when the move leaves the grid. */
+export function nextDay(i: number, key: string, last: number): number {
+  const n = { ArrowLeft: i - 7, ArrowRight: i + 7, ArrowUp: i - 1, ArrowDown: i + 1, Home: 0, End: last }[key];
+  return n === undefined || n < 0 || n > last ? i : n;
+}

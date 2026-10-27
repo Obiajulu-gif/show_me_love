@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { heatmap } from "../src/lib/heatmap";
+import { heatmap, nextDay } from "../src/lib/heatmap";
 
 const today = new Date("2026-10-26T10:00:00Z"); // a Monday
 
@@ -44,4 +44,17 @@ test("cells after today are empty and uncounted", () => {
 test("month labels sit on the first column a month starts", () => {
   const h = heatmap([], today);
   expect(h.months).toEqual([{ label: "Aug", col: 0 }, { label: "Sept", col: 3 }, { label: "Oct", col: 7 }]);
+});
+
+test("nextDay: arrows move by week/day, Home/End jump, edges stay put", () => {
+  const last = 11 * 7; // today is a Monday in the last column
+  expect(nextDay(last, "ArrowRight", last)).toBe(last);
+  expect(nextDay(last, "ArrowDown", last)).toBe(last);
+  expect(nextDay(last, "ArrowLeft", last)).toBe(last - 7);
+  expect(nextDay(last, "ArrowUp", last)).toBe(last - 1);
+  expect(nextDay(0, "ArrowUp", last)).toBe(0);
+  expect(nextDay(0, "ArrowLeft", last)).toBe(0);
+  expect(nextDay(5, "Home", last)).toBe(0);
+  expect(nextDay(5, "End", last)).toBe(last);
+  expect(nextDay(5, "x", last)).toBe(5);
 });
