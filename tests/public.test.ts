@@ -42,3 +42,14 @@ test("wall messages render escaped", () => {
   expect(html).toContain("&lt;img");
   expect(html).not.toContain("<img src=x");
 });
+
+import { toPageView, type PageViewInput } from "@/lib/pageView";
+const base: PageViewInput = { username: "a", displayName: "A", bio: "", photoUrl: null, treatId: "zobo", unitPriceNgn: 500, presets: [1, 3], thankYouText: "", socials: [] };
+const treats = { zobo: { name: "Zobo", image: "/treats/zobo.svg" } };
+
+test("toPageView: catalog treat, custom fallback, defaults", () => {
+  expect(toPageView(base, treats)).toMatchObject({ treatName: "Zobo", treatImage: "/treats/zobo.svg", tagline: "", accent: "honey", header: "default", coverUrl: null });
+  expect(toPageView({ ...base, treatId: "custom", customTreat: { name: "Chapman" } }, treats)).toMatchObject({ treatName: "Chapman", treatImage: "" });
+  expect(toPageView({ ...base, treatId: "custom", customTreat: null }, treats).treatName).toBe("Treat");
+  expect(toPageView({ ...base, presets: [], unitPriceNgn: NaN }, treats)).toMatchObject({ presets: [1], unitPriceNgn: 0 });
+});

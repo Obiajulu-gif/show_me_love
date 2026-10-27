@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { CreatorPage, type PageView } from "./CreatorPage";
+import { CreatorPage } from "./CreatorPage";
+import { toPageView } from "@/lib/pageView";
 import { TreatPicker, type TreatChoice } from "./TreatPicker";
 import { Button, buttonClass } from "./ui/Button";
 import { Tabs } from "./ui/Tabs";
@@ -58,15 +59,12 @@ export function PageEditor({ creator, treats }: { creator: Creator; treats: Reco
   const dirty = JSON.stringify(toPatch(f)) !== saved;
   const idx = TABS.findIndex((t) => t.id === tab);
 
-  const unit = Number(f.price);
-  const presets = f.presets.split(/[\s,]+/).filter(Boolean).map(Number).filter((n) => Number.isInteger(n) && n >= 1 && n <= 50);
-  const t = treats[f.treat.treatId];
-  const view: PageView = {
+  const view = toPageView({
     username: f.username || creator.username, displayName: f.displayName, bio: f.bio, photoUrl: f.photoUrl || null,
-    treatName: f.treat.treatId === "custom" ? f.treat.customTreat?.name || "Treat" : t?.name ?? "Treat", treatImage: f.treat.treatId === "custom" ? "" : t?.image ?? "",
-    unitPriceNgn: Number.isFinite(unit) && unit > 0 ? unit : 0, presets: presets.length ? presets.slice(0, 3) : [1], thankYouText: f.thanks,
-    tagline: f.tagline, accent: f.accent, header: f.header, coverUrl: f.coverUrl || null, socials: lines(f.links),
-  };
+    treatId: f.treat.treatId, customTreat: f.treat.treatId === "custom" ? f.treat.customTreat : null, unitPriceNgn: Number(f.price),
+    presets: f.presets.split(/[\s,]+/).filter(Boolean).map(Number).filter((n) => Number.isInteger(n) && n >= 1 && n <= 50),
+    thankYouText: f.thanks, tagline: f.tagline, accent: f.accent, header: f.header, coverUrl: f.coverUrl || null, socials: lines(f.links),
+  }, treats);
 
   async function upload(kind: "avatar" | "cover", file?: File) {
     if (!file) return;

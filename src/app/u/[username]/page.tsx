@@ -1,11 +1,12 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 
-import { CreatorPage, type PageView } from "@/components/CreatorPage";
+import { CreatorPage } from "@/components/CreatorPage";
 import { Logo } from "@/components/Logo";
 import { buttonClass } from "@/components/ui/Button";
-import { listCatalog, type CatalogItem } from "@/lib/catalog";
+import { listCatalog } from "@/lib/catalog";
 import { getCreatorByUsername } from "@/lib/creators";
+import { toPageView, treatMap } from "@/lib/pageView";
 import { publicWall } from "@/lib/stats";
 import { resolveUsername } from "@/lib/usernames";
 
@@ -18,16 +19,12 @@ export default async function PublicPage({ params }: { params: Promise<{ usernam
   if (r.redirected) permanentRedirect(`/@${r.username}`);
   const c = (await getCreatorByUsername(r.username))!;
 
-  let treat: CatalogItem | undefined;
-  const walk = (items: CatalogItem[]) => items.forEach((t) => { if (t.id === c.treatId) treat = t; walk(t.children); });
-  walk(await listCatalog());
-  const view: PageView = {
+  const view = toPageView({
     username: c.username, displayName: c.displayName ?? c.username, bio: c.bio ?? "", photoUrl: c.photoUrl,
-    treatName: c.customTreat?.name ?? treat?.name ?? "Treat", treatImage: c.customTreat ? "" : treat?.image ?? "",
-    unitPriceNgn: c.unitPriceNgn, presets: c.presets, thankYouText: c.thankYouText ?? "",
-    tagline: c.pageStyle.tagline ?? "", accent: c.pageStyle.accent ?? "honey", header: c.pageStyle.header ?? "default",
-    coverUrl: (c.pageStyle.cover as string | undefined) ?? null, socials: Object.values(c.socials),
-  };
+    treatId: c.treatId, customTreat: c.customTreat, unitPriceNgn: c.unitPriceNgn, presets: c.presets, thankYouText: c.thankYouText ?? "",
+    tagline: c.pageStyle.tagline, accent: c.pageStyle.accent, header: c.pageStyle.header,
+    coverUrl: c.pageStyle.cover as string | undefined, socials: Object.values(c.socials),
+  }, treatMap(await listCatalog()));
 
   return (
     <div className="min-h-screen bg-cream-2 text-cocoa">
