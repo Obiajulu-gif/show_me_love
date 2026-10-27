@@ -37,6 +37,16 @@ test("rename rules: others' names and history blocked, own history reclaimable",
   expect(await resolveUsername("ada_x")).toEqual({ username: "ada", redirected: true });
 });
 
+test("concurrent claims of one name: exactly one wins, loser gets the friendly error", async () => {
+  const [{ id: c }] = await t.sql`insert into users (email) values ('c@x.com') returning id`;
+  const [{ id: d }] = await t.sql`insert into users (email) values ('d@x.com') returning id`;
+  await t.sql`insert into creators (user_id, username) values (${c}, 'cee'), (${d}, 'dee')`;
+  const r = await Promise.allSettled([renameUsername(t.sql, c, "contested"), renameUsername(t.sql, d, "contested")]);
+  expect(r.filter((x) => x.status === "fulfilled")).toHaveLength(1);
+  const lost = r.find((x) => x.status === "rejected") as PromiseRejectedResult;
+  expect(lost.reason.message).toBe("That username is taken.");
+});
+
 test("listCatalog nests children under top-level items", async () => {
   const c = await listCatalog();
   expect(c.length).toBe(10);
