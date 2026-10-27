@@ -108,7 +108,7 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
                 <label className="block text-sm">Amount (USDT)
                   <div className="mt-1 flex gap-2">
                     <input className={input} inputMode="decimal" value={amount} onChange={(e) => { setAmount(e.target.value); setQuote(null); }}
-                      onBlur={() => amount && dest && run(async () => setQuote(await getQuote()))} />
+                      onBlur={() => { if (amount && dest) getQuote().then(setQuote, (e: Error) => setMsg(e.message)); }} />
                     <Button variant="ghost" type="button" onClick={() => { setAmount(available); setQuote(null); }}>Use full balance</Button>
                   </div>
                 </label>

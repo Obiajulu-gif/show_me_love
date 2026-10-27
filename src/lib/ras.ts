@@ -222,7 +222,10 @@ async function publicGet<T>(path: string): Promise<T | null> {
 export async function ngnPerUsd(): Promise<number> {
   const rows = await publicGet<{ symbol: string; rate: number }[]>("/rates");
   const ngn = rows?.find((r) => r.symbol?.toLowerCase() === "ngn")?.rate;
-  if (!(Number(ngn) > 0)) throw new RasError("no NGN rate from Roqqu");
+  if (!(Number(ngn) > 0)) {
+    if (rasMode() === "practice") return 1500; // offline practice runs still need a rate
+    throw new RasError("no NGN rate from Roqqu");
+  }
   return Number(ngn);
 }
 

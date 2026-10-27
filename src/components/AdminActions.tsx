@@ -13,7 +13,7 @@ export function AdminActions({ w }: { w: Row }) {
   async function run(body: Record<string, string>) {
     setBusy(true);
     setMsg("");
-    const r = await fetch(`/api/admin/withdrawals/${w.id}`, { method: "POST", body: JSON.stringify(body) });
+    const r = await fetch(`/api/admin/withdrawals/${w.id}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({}));
     setBusy(false);
     if (r.ok) router.refresh(); else setMsg(j.error ?? "Something went wrong.");
