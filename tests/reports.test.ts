@@ -13,6 +13,7 @@ import { sendMail } from "../src/lib/email";
 import { addEntry, balance } from "../src/lib/ledger";
 import * as ras from "../src/lib/ras";
 import { submitReport } from "../src/lib/reports";
+import { settleSendEvent } from "../src/lib/withdrawals";
 import { startTestDb } from "../src/lib/testing";
 import { WithdrawalError } from "../src/lib/withdrawals";
 
@@ -129,4 +130,52 @@ test("the public reports route refuses cross-site posts and accepts a valid one"
   const mk = (origin?: string) => new Request("http://x/api/reports", { method: "POST", body: JSON.stringify({ username: "ada_bakes", reason: "spam" }), headers: { "content-type": "application/json", ...(origin ? { origin } : {}) } });
   expect((await reportRoute(mk("https://evil.example"))).status).toBe(403);
   expect((await reportRoute(mk())).status).toBe(200);
+});
+
+test("retry after a definite failure debits again: two sends, balance ends at 0", async () => {
+  await paid();
+  vi.mocked(ras.sendCoin).mockRejectedValueOnce(new ras.RasFailure("insufficient merchant balance"));
+  await expect(refundPayment(boss, "p1", { address: BEP, network: "bep20" })).rejects.toThrow("Roqqu refused");
+  await refundPayment(boss, "p1", { address: BEP, network: "bep20" });
+  expect(vi.mocked(ras.sendCoin)).toHaveBeenCalledTimes(2);
+  expect(await balance(ada)).toBe("0.000000");
+  expect((await pay("p1")).status).toBe("refunded");
+});
+
+test("two definite failures in a row leave the balance at 0.95", async () => {
+  await paid();
+  for (let i = 0; i < 2; i++) {
+    vi.mocked(ras.sendCoin).mockRejectedValueOnce(new ras.RasFailure("nope"));
+    await expect(refundPayment(boss, "p1", { address: BEP, network: "bep20" })).rejects.toThrow("Roqqu refused");
+  }
+  expect(await balance(ada)).toBe("0.950000");
+  expect((await pay("p1")).status).toBe("successful");
+});
+
+test("a bounced refund (token_refunded) restores the payment and emails admins; token_sent changes nothing", async () => {
+  await paid();
+  await refundPayment(boss, "p1", { address: BEP, network: "bep20" });
+  const refid = (await pay("p1")).refund_reference;
+  const ev = (type: string, meta: Record<string, unknown>) => ({ event_id: "e", event_type: type, meta_data: meta }) as never;
+  expect(await t.sql.begin((tx) => settleSendEvent(ev("token_sent", { reference: refid }), tx))).toEqual({ handled: true });
+  expect((await pay("p1")).status).toBe("refunded");
+  expect(await t.sql.begin((tx) => settleSendEvent(ev("token_refunded", { refid }), tx))).toEqual({ handled: true });
+  expect((await pay("p1")).status).toBe("successful");
+  expect(await balance(ada)).toBe("0.950000");
+  expect(vi.mocked(sendMail).mock.calls.some((c) => c[0] === "boss@x.com" && String(c[2]).includes("bounced"))).toBe(true);
+  await t.sql.begin((tx) => settleSendEvent(ev("token_refunded", { refid }), tx));
+  expect(await balance(ada)).toBe("0.950000");
+});
+
+test("a failed restore emails admins with the ref and throws a friendly error", async () => {
+  await paid();
+  vi.mocked(ras.sendCoin).mockRejectedValueOnce(new ras.RasFailure("nope"));
+  await t.sql.unsafe("create or replace function block_recredit() returns trigger language plpgsql as 'begin if new.ref like ''recredit:%'' then raise exception ''boom''; end if; return new; end'");
+  await t.sql.unsafe("create trigger block_recredit before insert on ledger_entries for each row execute function block_recredit()");
+  try {
+    await expect(refundPayment(boss, "p1", { address: BEP, network: "bep20" })).rejects.toThrow("Admins have been emailed");
+  } finally {
+    await t.sql.unsafe("drop trigger block_recredit on ledger_entries");
+  }
+  expect(vi.mocked(sendMail).mock.calls.some((c) => c[0] === "boss@x.com" && String(c[2]).includes("p1") && String(c[2]).includes("boom"))).toBe(true);
 });

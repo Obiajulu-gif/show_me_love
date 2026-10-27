@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { notFound } from "next/navigation";
 
 import { db } from "./db";
@@ -5,7 +7,7 @@ import { addEntry } from "./ledger";
 import { fromMicro, toMicro } from "./money";
 import { networkFee, RasConfigError, RasFailure, sendCoin } from "./ras";
 import { requireUser, Unauthorized } from "./session";
-import { BEP20, dispatchUsdt, notifyAdmins, settle, TRC20, WithdrawalError } from "./withdrawals";
+import { BEP20, dispatchUsdt, notifyAdmins, restoreRefund, settle, TRC20, WithdrawalError } from "./withdrawals";
 
 export class Forbidden extends Error {
   constructor() { super("Admins only."); }
@@ -142,15 +144,16 @@ export async function refundPayment(adminId: string, ref: string, to: { address:
   const amountMicro = toMicro(received) - BigInt(Math.round((await networkFee(network)) * 1e6));
   if (amountMicro <= 0n) throw new WithdrawalError("Payment is too small to refund after network fees.");
 
-  const fee = await db().begin(async (tx) => {
+  const attempt = randomUUID();
+  await db().begin(async (tx) => {
     const [u] = await tx`update payments set status = 'refunded', refund_address = ${address}, refund_network = ${network}
       where ref = ${ref} and status = 'successful' returning creator_id`;
     if (!u) throw new WithdrawalError(OK_ONLY);
     const [f] = await tx`select (-amount_usdt)::text as v from ledger_entries where ref = ${`fee:${ref}`}`;
-    const fee = f?.v ?? "0";
-    await addEntry(tx, { creatorId: u.creator_id, kind: "reversal", amountUsdt: `-${received}`, ref: `rev:${ref}` });
-    await addEntry(tx, { creatorId: u.creator_id, kind: "reversal", amountUsdt: fee, ref: `revfee:${ref}` });
-    return fee as string;
+    // Refs are unique per attempt: a retry after a restored failure must debit again.
+    const a = await addEntry(tx, { creatorId: u.creator_id, kind: "reversal", amountUsdt: `-${received}`, ref: `rev:${ref}:${attempt}` });
+    const b = await addEntry(tx, { creatorId: u.creator_id, kind: "reversal", amountUsdt: f?.v ?? "0", ref: `revfee:${ref}:${attempt}` });
+    if (!a || !b) throw new Error("duplicate refund ledger ref");
   });
 
   try {
@@ -159,13 +162,12 @@ export async function refundPayment(adminId: string, ref: string, to: { address:
     return { outcome: "sent" };
   } catch (e) {
     if (e instanceof RasFailure || e instanceof RasConfigError) {
-      await db().begin(async (tx) => {
-        const [u] = await tx`update payments set status = 'successful', refund_address = null, refund_network = null
-          where ref = ${ref} and status = 'refunded' returning creator_id`;
-        if (!u) return;
-        await addEntry(tx, { creatorId: u.creator_id, kind: "credit", amountUsdt: received, ref: `recredit:${ref}` });
-        await addEntry(tx, { creatorId: u.creator_id, kind: "fee", amountUsdt: `-${fee}`, ref: `refee:${ref}` });
-      });
+      try {
+        await db().begin((tx) => restoreRefund(tx, ref));
+      } catch (re) {
+        await notifyAdmins("Refund restore failed", `Refund of payment ${ref} was refused by Roqqu, but restoring the creator's balance failed: ${(re as Error).message}. The payment is still marked refunded and nothing was sent. Fix by hand.`);
+        throw new WithdrawalError("Roqqu refused the refund and the balance could not be restored automatically. Admins have been emailed.");
+      }
       throw new WithdrawalError(`Roqqu refused the refund: ${(e as Error).message}`);
     }
     await notifyAdmins("Refund needs checking", `Refund of payment ${ref} (${fromMicro(amountMicro)} USDT to ${network} ${address}) had an unclear outcome. Verify on-chain / in Roqqu before retrying.`);

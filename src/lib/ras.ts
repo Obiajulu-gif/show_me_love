@@ -114,7 +114,9 @@ export interface Customer {
 export async function networkFee(network: Network): Promise<number> {
   if (rasMode() === "practice") return { bep20: 0.3, trc20: 1 }[network];
   const data = await rasCall<{ fee: number | string }>("POST", "/transaction/network-fee", { network });
-  return Number(data?.fee ?? 0);
+  const fee = Number(data?.fee);
+  if (!Number.isFinite(fee) || fee <= 0) throw new RasError("Roqqu returned no network fee");
+  return fee;
 }
 
 /** POST /wallets/send: queue a send from the merchant balance; returns the refid. */

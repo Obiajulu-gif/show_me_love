@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import type { Sql, TransactionSql } from "postgres";
 
 import { consumeCode } from "./codes";
@@ -223,6 +225,18 @@ async function flagStuck(id: string, text: string) {
   await notifyAdmins("Withdrawal needs reconciliation", text);
 }
 
+/** Undo a refund: payment back to successful, creator re-credited (fresh-attempt refs). False if it was not `refunded`. */
+export async function restoreRefund(tx: Q, ref: string): Promise<boolean> {
+  const [u] = await tx`update payments set status = 'successful', refund_reference = null
+    where ref = ${ref} and status = 'refunded' returning creator_id, received_usdt::text as received`;
+  if (!u) return false;
+  const [f] = await tx`select (-amount_usdt)::text as v from ledger_entries where ref = ${`fee:${ref}`}`;
+  const id = randomUUID();
+  if (!(await addEntry(tx, { creatorId: u.creator_id, kind: "credit", amountUsdt: u.received, ref: `recredit:${ref}:${id}` }))
+    || !(await addEntry(tx, { creatorId: u.creator_id, kind: "fee", amountUsdt: `-${f?.v ?? "0"}`, ref: `refee:${ref}:${id}` }))) throw new Error("duplicate restore ledger ref");
+  return true;
+}
+
 /** RAS `token_sent` -> paid, `token_refunded` -> failed. Runs inside the webhook's open transaction. */
 export async function settleSendEvent(event: RasEvent, tx: TransactionSql): Promise<{ handled: true } | { handled: false; reason: "not_ours" | "unknown_event" }> {
   const sent = event.event_type === "token_sent";
@@ -230,7 +244,15 @@ export async function settleSendEvent(event: RasEvent, tx: TransactionSql): Prom
   const ref = sent ? event.meta_data?.reference : event.meta_data?.refid;
   if (typeof ref !== "string" && typeof ref !== "number") return { handled: false, reason: "not_ours" };
   const [w] = await tx`select id from withdrawals where ras_reference = ${String(ref)} for update`;
-  if (!w) return { handled: false, reason: "not_ours" };
+  if (!w) {
+    // Maybe a supporter refund send (payments.refund_reference).
+    const [p] = await tx`select ref, refund_address from payments where refund_reference = ${String(ref)} for update`;
+    if (!p) return { handled: false, reason: "not_ours" };
+    if (!sent && (await restoreRefund(tx, p.ref))) {
+      await notifyAdmins("Refund bounced", `Refund to ${p.refund_address} bounced; payment ${p.ref} restored and the creator re-credited.`);
+    }
+    return { handled: true };
+  }
   await settle(tx, w.id, sent ? "paid" : "failed");
   return { handled: true };
 }

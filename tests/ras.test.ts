@@ -30,6 +30,16 @@ describe("ras practice mode", () => {
   });
 });
 
+describe("networkFee in test mode", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  const reply = (data: unknown) => vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ status: "success", data }), { status: 200 })));
+  beforeEach(() => { vi.stubEnv("RAS_MODE", "test"); vi.stubEnv("RAS_TEST_KEY", "k"); });
+  it("returns a positive fee", async () => { reply({ fee: "0.5" }); expect(await networkFee("bep20")).toBe(0.5); });
+  it("throws when the fee is missing, zero or not a number", async () => {
+    for (const d of [{}, null, { fee: 0 }, { fee: "abc" }]) { reply(d); await expect(networkFee("bep20")).rejects.toThrow("Roqqu returned no network fee"); }
+  });
+});
+
 describe("webhook crypto", () => {
   const k = "k".repeat(40);
   it("webhook round-trips", () => {
