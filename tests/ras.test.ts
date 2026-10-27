@@ -71,6 +71,12 @@ describe("ras live paths (stubbed fetch)", () => {
     vi.stubEnv("RAS_TEST_KEY", "");
     await expect(requeryTx("bep20", "0x1")).rejects.toThrow();
   });
+  it("requeryTx throws on non-JSON 200 and non-JSON 404", async () => {
+    for (const status of [200, 404, 429]) {
+      vi.stubGlobal("fetch", vi.fn(async () => new Response("<html>", { status })));
+      await expect(requeryTx("bep20", "0x1")).rejects.toThrow("non-JSON");
+    }
+  });
   it("sendStatus maps words safely", async () => {
     for (const [st, want] of [["unsuccessful", "failed"], ["incomplete", "queued"], ["Completed", "completed"], ["failed", "failed"]] as const) {
       reply({ status: "success", data: { status: st } });

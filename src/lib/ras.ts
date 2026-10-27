@@ -79,13 +79,14 @@ export async function rasCall<T>(method: "GET" | "POST" | "DELETE", path: string
   } catch (err) {
     throw new RasError(`Roqqu unreachable: ${err instanceof Error ? err.message : "network error"}`);
   }
-  const json = (await res.json().catch(() => ({ status: "fail", message: `HTTP ${res.status}` }))) as {
-    status?: string;
-    message?: string;
-    data?: T;
-  };
-  if (json.status === "fail" && res.status < 500 && res.status !== 401 && res.status !== 403) throw new RasFailure(json.message || `Roqqu HTTP ${res.status}`);
-  if (!res.ok || json.status !== "success") throw new RasError(json.message || `Roqqu HTTP ${res.status}`);
+  let json: { status?: string; message?: string; data?: T };
+  try {
+    json = await res.json();
+  } catch {
+    throw new RasError(`Roqqu HTTP ${res.status}: non-JSON response`);
+  }
+  if (json?.status === "fail" && res.status < 500 && res.status !== 401 && res.status !== 403) throw new RasFailure(json.message || `Roqqu HTTP ${res.status}`);
+  if (!res.ok || json?.status !== "success") throw new RasError(json?.message || `Roqqu HTTP ${res.status}`);
   return json.data as T;
 }
 
