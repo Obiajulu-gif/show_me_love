@@ -216,11 +216,12 @@ async function publicGet<T>(path: string): Promise<T | null> {
   return data;
 }
 
-/** Live NGN per USD from GET /rates; ROQQU_NGN_PER_USD (default 1360) when unreachable. */
+/** Live NGN per USD from GET /rates; throws RasError when Roqqu gives no rate. */
 export async function ngnPerUsd(): Promise<number> {
   const rows = await publicGet<{ symbol: string; rate: number }[]>("/rates");
   const ngn = rows?.find((r) => r.symbol?.toLowerCase() === "ngn")?.rate;
-  return Number(ngn) > 0 ? Number(ngn) : Number(process.env.ROQQU_NGN_PER_USD || 1360);
+  if (!(Number(ngn) > 0)) throw new RasError("no NGN rate from Roqqu");
+  return Number(ngn);
 }
 
 /** For tests: forget cached market data. */
