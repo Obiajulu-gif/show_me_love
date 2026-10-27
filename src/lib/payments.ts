@@ -1,6 +1,7 @@
 import type { JSONValue, TransactionSql } from "postgres";
 
 import { db } from "./db";
+import { creditGroup } from "./groups";
 import { addEntry } from "./ledger";
 import { feeUsdt, toMicro } from "./money";
 import { settleSendEvent } from "./withdrawals";
@@ -10,9 +11,6 @@ export type Outcome = { handled: true } | { handled: false; reason: "duplicate" 
 
 /** Pending payments older than this are expired (RAS cannot requery a link by reference). */
 const EXPIRY_MIN = 60;
-
-// Task 20 builds the group split.
-async function creditGroup(_tx: TransactionSql, _payment: Record<string, unknown>): Promise<void> { throw new Error("not implemented"); }
 
 /** A positive decimal with at most 6 places, else null. */
 function positiveUsdt(v: unknown): string | null {

@@ -113,6 +113,9 @@ create table if not exists group_splits (
   primary key (group_id, creator_id)
 );
 
+alter table group_payments add column if not exists total numeric;
+alter table group_splits add column if not exists ordinal int not null default 0;
+
 create table if not exists ledger_entries (
   id uuid primary key default gen_random_uuid(),
   creator_id uuid not null references creators(user_id),

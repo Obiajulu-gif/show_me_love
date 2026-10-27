@@ -67,15 +67,23 @@ export async function startCheckout(i: CheckoutInput): Promise<{ ref: string; ur
 
   const base = (i.origin ?? process.env.PUBLIC_APP_URL ?? "").replace(/\/$/, "");
   const tail = goalId ? "&thanks=1" : "";
-  const [first, ...rest] = name.trim().split(/\s+/).filter(Boolean);
+  return attachLink(ref, {
+    amountNgn: n, name, email, base, successPath: `${i.successPath}?ref=${ref}${tail}`,
+    cancelPath: goalId ? i.successPath : i.successPath.replace(/\/thanks$/, ""),
+  });
+}
+
+/** Creates the RAS link for a pending payment and stores it; a failure marks the payment failed. */
+export async function attachLink(ref: string, a: { amountNgn: number; name: string; email: string; base: string; successPath: string; cancelPath: string }): Promise<{ ref: string; url: string }> {
+  const [first, ...rest] = a.name.trim().split(/\s+/).filter(Boolean);
   try {
     const link = await createPaymentLink({
-      amountNgn: String(n), reference: ref,
-      customer: { email: email.trim(), first_name: first ?? "Supporter", last_name: rest.join(" ") || "-" },
-      successUrl: `${base}${i.successPath}?ref=${ref}${tail}`, cancelUrl: `${base}${goalId ? i.successPath : i.successPath.replace(/\/thanks$/, "")}`,
+      amountNgn: String(a.amountNgn), reference: ref,
+      customer: { email: a.email.trim(), first_name: first ?? "Supporter", last_name: rest.join(" ") || "-" },
+      successUrl: `${a.base}${a.successPath}`, cancelUrl: `${a.base}${a.cancelPath}`,
       metadata: { ref },
     });
-    const url = link.payment_link ?? `${i.successPath}?ref=${ref}${tail}&practice=1`;
+    const url = link.payment_link ?? `${a.successPath}&practice=1`;
     await db()`update payments set link_url = ${url} where ref = ${ref}`;
     return { ref, url };
   } catch (e) {

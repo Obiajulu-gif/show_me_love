@@ -138,7 +138,8 @@ export async function refundPayment(adminId: string, ref: string, to: { address:
   if (network !== "bep20" && network !== "trc20") throw new WithdrawalError("Pick a network.");
   if (!(network === "bep20" ? BEP20 : TRC20).test(address)) throw new WithdrawalError("That wallet address doesn't look right for this network.");
 
-  const [p] = await db()`select creator_id, received_usdt::text as received, status from payments where ref = ${ref}`;
+  const [p] = await db()`select creator_id, kind, received_usdt::text as received, status from payments where ref = ${ref}`;
+  if (p?.kind === "group") throw new WithdrawalError("Group payments can't be refunded yet.");
   if (!p || p.status !== "successful" || !p.creator_id || p.received === null) throw new WithdrawalError(OK_ONLY);
   const received: string = p.received;
   const amountMicro = toMicro(received) - BigInt(Math.round((await networkFee(network)) * 1e6));
