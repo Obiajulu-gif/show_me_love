@@ -22,10 +22,11 @@ const faq = [
 ] as const;
 
 const demo = {
-  username: "ada_bakes", displayName: "Ada Bakes", bio: "Baking tutorials every Friday. Fuel me with zobo.",
-  treatName: "Zobo", treatImage: "/treats/zobo.svg", unitPriceNgn: 500, presets: [1, 3, 5], tagline: "A little love. A lot of possibility.",
-  recent: [{ name: "Tunde", count: 3, message: "Your sourdough saved my weekend." }, { name: "Ife", count: 1, message: "Keep going!" }],
+  username: "ada_bakes", displayName: "Ada Bakes", bio: "Baking tutorials every Friday. Fuel me with zobo.", photoUrl: null,
+  treatName: "Zobo", treatImage: "/treats/zobo.svg", unitPriceNgn: 500, presets: [1, 3, 5], thankYouText: "", tagline: "A little love. A lot of possibility.",
+  accent: "honey", header: "default", coverUrl: null, socials: [],
 };
+const demoWall = [{ name: "Tunde", count: 3, message: "Your sourdough saved my weekend." }, { name: "Ife", count: 1, message: "Keep going!" }];
 
 export default function Home() {
   return (
@@ -68,7 +69,7 @@ export default function Home() {
             <h2 className="font-serif text-3xl italic">Your page, ready to share</h2>
             <p className="mt-3 text-cocoa-2">Pick your treat, set a price, and drop one link in your bio. Supporters leave a note with every treat and it lands on your wall of love.</p>
           </div>
-          <div className="mx-auto w-full max-w-sm"><CreatorPage data={demo} /></div>
+          <div className="mx-auto w-full max-w-sm"><CreatorPage creator={demo} mode="preview" payments={demoWall} /></div>
         </section>
 
         <section className="mx-auto max-w-3xl px-5 py-10">
