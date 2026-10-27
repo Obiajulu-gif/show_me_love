@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, expect, test, vi } from "vitest";
 
 import { createCreator } from "../src/lib/creators";
-import { overview, listPayments } from "../src/lib/stats";
+import { overview, listPayments, publicTreatDates } from "../src/lib/stats";
 import { startTestDb } from "../src/lib/testing";
 
 const rate = vi.hoisted(() => ({ fail: false }));
@@ -51,4 +51,20 @@ test("listPayments filters and paginates", async () => {
   expect((await listPayments(ada, "failed")).rows[0].status).toBe("failed");
   expect((await listPayments(ada, "all", 2)).rows).toHaveLength(0);
   expect(await listPayments(ada, "all", 1e15)).toEqual({ rows: [], count: 3 });
+});
+
+test("publicTreatDates: successful public payments of any kind, by completion time, scoped and bounded", async () => {
+  const [{ id: bob }] = await t.sql`insert into users (email) values ('bob@x.com') returning id`;
+  await createCreator(bob, { username: "bob_makes", treatId: "zobo" });
+  const ins = (ref: string, creator: string, kind: string, status: string, pub: boolean, created: string, completed: string | null) =>
+    t.sql`insert into payments (ref, kind, creator_id, supporter_name, amount_ngn, amount_usdt, rate, status, is_public, created_at, completed_at)
+      values (${ref.padEnd(20, "X")}, ${kind}, ${creator}, 'T', 1500, '1.00', 1500, ${status}, ${pub}, ${created}, ${completed})`;
+  await ins("H1", ada, "treat", "successful", true, "2026-10-01T00:00:00Z", "2026-10-02T23:30:00Z");
+  await ins("H2", ada, "goal", "successful", true, "2026-10-03T10:00:00Z", null);
+  await ins("H3", ada, "treat", "successful", false, "2026-10-03T10:00:00Z", "2026-10-03T10:00:00Z");
+  await ins("H4", ada, "treat", "pending", true, "2026-10-03T10:00:00Z", null);
+  await ins("H5", ada, "treat", "successful", true, "2026-01-01T10:00:00Z", "2026-01-01T10:00:00Z");
+  await ins("H6", bob, "treat", "successful", true, "2026-10-03T10:00:00Z", "2026-10-03T10:00:00Z");
+  const d = (await publicTreatDates(ada, new Date("2026-09-01T00:00:00Z"))).filter((x) => x.getUTCFullYear() === 2026 && x.getUTCMonth() === 9 && x.getUTCDate() < 10); // R1 (now) also counts
+  expect(d.map((x) => x.toISOString()).sort()).toEqual(["2026-10-02T23:30:00.000Z", "2026-10-03T10:00:00.000Z"]);
 });

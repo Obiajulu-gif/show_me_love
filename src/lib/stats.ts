@@ -53,3 +53,12 @@ export async function overview(userId: string) {
     recent: (await listPayments(userId, "successful")).rows.slice(0, 5),
   };
 }
+
+/** Completion times of successful, public payments (any kind) since `since`, for the support heatmap. */
+export async function publicTreatDates(creatorId: string, since: Date): Promise<Date[]> {
+  const rows = await db()`
+    select coalesce(completed_at, created_at) as at from payments
+    where creator_id = ${creatorId} and status = 'successful' and is_public
+      and coalesce(completed_at, created_at) >= ${since}`;
+  return rows.map((r) => r.at as Date);
+}

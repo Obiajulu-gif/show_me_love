@@ -2,12 +2,13 @@ import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 
 import { CreatorPage } from "@/components/CreatorPage";
+import { SupportHeatmap } from "@/components/SupportHeatmap";
 import { Logo } from "@/components/Logo";
 import { buttonClass } from "@/components/ui/Button";
 import { listCatalog } from "@/lib/catalog";
 import { getCreatorByUsername } from "@/lib/creators";
 import { toPageView, treatMap } from "@/lib/pageView";
-import { publicWall } from "@/lib/stats";
+import { publicTreatDates, publicWall } from "@/lib/stats";
 import { resolveUsername } from "@/lib/usernames";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,7 @@ export default async function PublicPage({ params }: { params: Promise<{ usernam
       </header>
       <main className="mx-auto max-w-xl px-4 py-8">
         <CreatorPage creator={view} mode="live" payments={await publicWall(c.userId)} />
+        <SupportHeatmap dates={await publicTreatDates(c.userId, new Date(Date.now() - 84 * 864e5))} />
       </main>
       <footer className="pb-8 text-center text-sm text-cocoa-2">
         <p>Small treats, real support.</p>
