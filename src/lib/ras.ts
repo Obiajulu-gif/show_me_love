@@ -24,6 +24,8 @@ export const NETWORKS: { network: Network; token: Coin; label: string }[] = [
 export const BASE_URL = process.env.ROQQU_BASE_URL || "https://service.roqqu.com/v1";
 
 export class RasError extends Error {}
+/** RAS answered with JSON status "fail" (as opposed to config, network, auth or 5xx errors). */
+export class RasFailure extends RasError {}
 
 export function rasMode(): RasMode {
   const forced = (process.env.RAS_MODE ?? "").trim().toLowerCase();
@@ -82,6 +84,7 @@ export async function rasCall<T>(method: "GET" | "POST" | "DELETE", path: string
     message?: string;
     data?: T;
   };
+  if (json.status === "fail" && res.status < 500 && res.status !== 401 && res.status !== 403) throw new RasFailure(json.message || `Roqqu HTTP ${res.status}`);
   if (!res.ok || json.status !== "success") throw new RasError(json.message || `Roqqu HTTP ${res.status}`);
   return json.data as T;
 }
@@ -115,7 +118,8 @@ export async function networkFee(network: Network): Promise<number> {
 export async function sendCoin(args: { token: Coin; network: Network; to: string; amount: string }): Promise<string> {
   if (rasMode() === "practice") return String(BigInt("0x" + randomBytes(8).toString("hex")));
   const data = await rasCall<{ refid: string | number }>("POST", "/wallets/send", args);
-  return String(data?.refid ?? "");
+  if (data?.refid === undefined || data.refid === null || data.refid === "") throw new RasError("RAS send returned no refid");
+  return String(data.refid);
 }
 
 export interface LinkWallet {
@@ -179,8 +183,8 @@ export async function requeryTx(network: Network, txHash: string): Promise<{ con
     await rasCall<unknown>("POST", `/transaction/requery/${network}`, { tx_hash: txHash });
     return { confirmed: true, message: "success" };
   } catch (err) {
-    if (err instanceof RasError && /^Roqqu (unreachable|HTTP|RAS_|Live)/.test(err.message)) throw err;
-    return { confirmed: false, message: err instanceof Error ? err.message : "failed" };
+    if (err instanceof RasFailure) return { confirmed: false, message: err.message };
+    throw err;
   }
 }
 
@@ -189,8 +193,8 @@ export async function sendStatus(refid: string): Promise<"queued" | "completed" 
   if (rasMode() === "practice") return "completed";
   const rec = await rasCall<{ status?: string } | null>("GET", `/transaction/refId/${encodeURIComponent(refid)}`);
   const st = String(rec?.status ?? "").toLowerCase();
-  if (/success|complete/.test(st)) return "completed";
-  if (/fail|reject|cancel/.test(st)) return "failed";
+  if (/\b(fail(ed|ure)?|reject(ed)?|cancel(l?ed)?|unsuccessful)\b/.test(st)) return "failed";
+  if (/\b(success(ful)?|complete(d)?)\b/.test(st)) return "completed";
   return "queued";
 }
 

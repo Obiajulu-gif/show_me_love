@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createPaymentLink, requeryTx, sendStatus, networkFee, sendCoin, rasMode, webhookKey, NETWORKS } from "../src/lib/ras";
 import { decryptWebhook, encryptWebhook } from "../src/lib/webhookCrypto";
 
@@ -39,5 +39,46 @@ describe("webhook crypto", () => {
   });
   it("garbage webhook is null", () => {
     expect(decryptWebhook("zz", "00", k)).toBeNull();
+  });
+});
+
+describe("ras live paths (stubbed fetch)", () => {
+  const reply = (body: unknown, status = 200) =>
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify(body), { status })));
+  beforeEach(() => {
+    vi.stubEnv("RAS_MODE", "test");
+    vi.stubEnv("RAS_TEST_KEY", "k".repeat(40));
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("requeryTx success is confirmed", async () => {
+    reply({ status: "success", data: {} });
+    expect((await requeryTx("bep20", "0x1")).confirmed).toBe(true);
+  });
+  it("requeryTx RAS fail is not confirmed and does not throw", async () => {
+    reply({ status: "fail", message: "transaction not found or still pending" }, 400);
+    expect(await requeryTx("bep20", "0x1")).toEqual({ confirmed: false, message: "transaction not found or still pending" });
+  });
+  it("requeryTx throws on network error, auth, 5xx and missing key", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("down"); }));
+    await expect(requeryTx("bep20", "0x1")).rejects.toThrow();
+    reply({ status: "fail", message: "bad key" }, 401);
+    await expect(requeryTx("bep20", "0x1")).rejects.toThrow();
+    reply({ status: "fail", message: "oops" }, 502);
+    await expect(requeryTx("bep20", "0x1")).rejects.toThrow();
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("<html>", { status: 502 })));
+    await expect(requeryTx("bep20", "0x1")).rejects.toThrow();
+    vi.stubEnv("RAS_TEST_KEY", "");
+    await expect(requeryTx("bep20", "0x1")).rejects.toThrow();
+  });
+  it("sendStatus maps words safely", async () => {
+    for (const [st, want] of [["unsuccessful", "failed"], ["incomplete", "queued"], ["Completed", "completed"], ["failed", "failed"]] as const) {
+      reply({ status: "success", data: { status: st } });
+      expect(await sendStatus("1")).toBe(want);
+    }
+  });
+  it("sendCoin throws on missing refid", async () => {
+    reply({ status: "success", data: {} });
+    await expect(sendCoin({ token: "usdt", network: "bep20", to: "0x" + "a".repeat(40), amount: "5" })).rejects.toThrow("no refid");
   });
 });
