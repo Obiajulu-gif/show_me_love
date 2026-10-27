@@ -69,7 +69,7 @@ export type EditableCreator = {
   username: string; display_name: string; bio: string | null; photo_url: string | null; birthday: string | null;
   birthday_mode: "off" | "show_day" | "celebrate"; socials: Record<string, string>; treat_id: string;
   custom_treat: { name: string; emoji: string } | null; unit_price_ngn: number; presets: number[];
-  thank_you_text: string | null; page_style: Creator["pageStyle"];
+  thank_you_text: string | null; page_style: Creator["pageStyle"]; share_message: string | null;
 };
 
 const int = (n: unknown): n is number => typeof n === "number" && Number.isInteger(n);
@@ -83,6 +83,7 @@ function validate(p: Partial<EditableCreator>) {
   }
   if (p.bio != null && p.bio.length > 280) throw new Error("Bio can be at most 280 characters.");
   if ("display_name" in p && !(typeof p.display_name === "string" && p.display_name.trim().length >= 1 && p.display_name.length <= 50)) throw new Error("Display name must be 1 to 50 characters.");
+  if ("share_message" in p && p.share_message != null && !(typeof p.share_message === "string" && p.share_message.length <= 280)) throw new Error("Share message can be at most 280 characters.");
   if (p.thank_you_text != null && p.thank_you_text.length > 120) throw new Error("Thank-you line can be at most 120 characters.");
   if ("birthday_mode" in p && !["off", "show_day", "celebrate"].includes(p.birthday_mode as string)) throw new Error("Birthday setting must be off, show_day or celebrate.");
   if (p.birthday && !/^\d{4}-\d{2}-\d{2}$/.test(p.birthday)) throw new Error("Birthday must be a valid date.");
@@ -106,7 +107,7 @@ export async function updateCreator(userId: string, patch: Partial<EditableCreat
   return db().begin(async (tx) => {
     if (patch.username !== undefined) await renameUsername(tx, userId, patch.username);
     const cols: Record<string, unknown> = {};
-    for (const k of ["display_name", "bio", "photo_url", "birthday", "birthday_mode", "treat_id", "unit_price_ngn", "thank_you_text"] as const)
+    for (const k of ["display_name", "bio", "photo_url", "birthday", "birthday_mode", "treat_id", "unit_price_ngn", "thank_you_text", "share_message"] as const)
       if (k in patch) cols[k] = patch[k] ?? null;
     if (patch.presets) cols.presets = patch.presets;
     if (patch.socials) cols.socials = tx.json(patch.socials);

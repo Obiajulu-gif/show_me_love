@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { updateCreator, type EditableCreator } from "@/lib/creators";
 import { requireUser, Unauthorized } from "@/lib/session";
 
-const KEYS = ["username", "display_name", "bio", "photo_url", "birthday", "birthday_mode", "socials", "treat_id", "custom_treat", "unit_price_ngn", "presets", "thank_you_text", "page_style"];
+const KEYS = ["username", "display_name", "bio", "photo_url", "birthday", "birthday_mode", "socials", "treat_id", "custom_treat", "unit_price_ngn", "presets", "thank_you_text", "page_style", "share_message"];
 // Validation errors thrown by src/lib/creators.ts and usernames.ts are user-facing; anything else is a real failure.
-const FRIENDLY = /^(Price must|Presets must|Bio can|Display name|Thank-you|Birthday|Add up to|Page style|Pick a treat|Give your|That username|That name|3–24)/;
+const FRIENDLY = /^(Price must|Presets must|Bio can|Display name|Thank-you|Share message|Birthday|Add up to|Page style|Pick a treat|Give your|That username|That name|3–24)/;
 
 export async function PATCH(req: Request) {
   try {

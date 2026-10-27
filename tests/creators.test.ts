@@ -56,3 +56,11 @@ test("saveUpload accepts a real PNG header and stores it", async () => {
   expect(url).toMatch(/^\/uploads\/avatar-.*\.png$/);
   await rm(path.join(process.cwd(), "public", url), { force: true });
 });
+
+test("updateCreator saves and validates shareMessage", async () => {
+  const c = await updateCreator(ada, { share_message: "Treat me!" });
+  expect(c.shareMessage).toBe("Treat me!");
+  await expect(updateCreator(ada, { share_message: "x".repeat(281) })).rejects.toThrow(/Share message/);
+  await expect(updateCreator(ada, { share_message: 5 as never })).rejects.toThrow(/Share message/);
+  expect((await updateCreator(ada, { share_message: null })).shareMessage).toBeNull();
+});
