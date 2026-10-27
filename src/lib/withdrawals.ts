@@ -178,7 +178,7 @@ async function notifyAdmins(subject: string, text: string) {
 }
 
 /** Moves a `processing` withdrawal to paid (marker entry) or failed (hold released). No-op from any other state. */
-async function settle(tx: Q, id: string, to: "paid" | "failed"): Promise<boolean> {
+export async function settle(tx: Q, id: string, to: "paid" | "failed"): Promise<boolean> {
   const [w] = await tx`update withdrawals set status = ${to}, updated_at = now() where id = ${id} and status = 'processing' returning creator_id, amount_usdt`;
   if (!w) return false;
   if (to === "paid") await addEntry(tx, { creatorId: w.creator_id, kind: "payout", amountUsdt: "0", ref: `payout:${id}` });
@@ -187,10 +187,11 @@ async function settle(tx: Q, id: string, to: "paid" | "failed"): Promise<boolean
 }
 
 /** Sends a reviewed (or old-enough) USDT withdrawal. Only moves awaiting_review -> processing, once. */
-export async function dispatchUsdt(id: string): Promise<void> {
+/** Returns false when this call did not claim the withdrawal (already moved on). */
+export async function dispatchUsdt(id: string): Promise<boolean> {
   const [w] = await db()`update withdrawals set status = 'processing', updated_at = now()
     where id = ${id} and status = 'awaiting_review' and method = 'usdt' returning *`;
-  if (!w) return;
+  if (!w) return false;
   const dest = w.destination as { network: Network; address: string };
   let refid: string;
   try {
@@ -205,13 +206,14 @@ export async function dispatchUsdt(id: string): Promise<void> {
       // Unclear (timeout, 5xx, bad body): the send may have gone through. Keep the hold.
       await flagStuck(id, `Withdrawal ${id} may or may not have been sent (${msg}). The hold is kept; reconcile with Roqqu by hand.`);
     }
-    return;
+    return true;
   }
   try {
     await db()`update withdrawals set ras_reference = ${refid} where id = ${id}`;
   } catch {
     await flagStuck(id, `Withdrawal ${id} was sent (RAS refid ${refid}) but saving the reference failed. The hold is kept; set ras_reference by hand.`);
   }
+  return true;
 }
 
 const STUCK = "stuck alerted";
