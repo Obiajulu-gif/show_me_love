@@ -21,7 +21,8 @@ export function toCreator(r: any): Creator {
   };
 }
 
-const TAKEN = "That username is taken.";
+const PICK = "Pick a treat from the list or choose Custom.";
+const TAKEN ="That username is taken.";
 const DEFAULT_STYLE = { accent: "honey", tagline: "A little love. A lot of possibility.", header: "default" };
 
 export async function createCreator(
@@ -34,9 +35,9 @@ export async function createCreator(
       const [have] = await tx`select 1 from creators where user_id = ${userId}`;
       if (have) throw new Error("You already have a page.");
       const ct = input.customTreat;
-      if (ct) {
-        if (!ct.name?.trim() || ct.name.length > 30 || !ct.emoji?.trim() || ct.emoji.length > 8) throw new Error("Give your custom treat a short name and an emoji.");
-      } else if (!(await tx`select 1 from treat_catalog where id = ${input.treatId} and active`).length) throw new Error("Pick a treat.");
+      if (input.treatId === "custom") {
+        if (!ct || !ct.name?.trim() || ct.name.length > 30 || !ct.emoji?.trim() || ct.emoji.length > 8) throw new Error("Give your custom treat a short name and an emoji.");
+      } else if (ct || !(await tx`select 1 from treat_catalog where id = ${input.treatId} and active`).length) throw new Error(PICK);
       await claimUsername(tx, username);
       const [r] = await tx`
         insert into creators (user_id, username, display_name, treat_id, custom_treat, unit_price_ngn, presets, thank_you_text, share_message, page_style)

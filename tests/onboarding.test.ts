@@ -33,3 +33,14 @@ test("taken username throws friendly error; second page for same user throws", a
   await expect(createCreator(ada, { username: "ada_two", treatId: "suya" })).rejects.toThrow("You already have a page.");
   await expect(createCreator(bob, { username: "admin", treatId: "suya" })).rejects.toThrow("reserved");
 });
+
+test("treatId and customTreat must agree; bad combos give friendly errors", async () => {
+  const ct = { name: "Puff puff", emoji: "🍩" };
+  const pick = "Pick a treat from the list or choose Custom.";
+  await expect(createCreator(bob, { username: "bob_ok", treatId: "bogus", customTreat: ct })).rejects.toThrow(pick);
+  await expect(createCreator(bob, { username: "bob_ok", treatId: "zobo", customTreat: ct })).rejects.toThrow(pick);
+  await expect(createCreator(bob, { username: "bob_ok", treatId: "bogus" })).rejects.toThrow(pick);
+  await expect(createCreator(bob, { username: "bob_ok", treatId: "custom" })).rejects.toThrow("Give your custom treat");
+  const [n] = await t.sql`select count(*)::int as n from creators where user_id = ${bob}`;
+  expect(n.n).toBe(0);
+});

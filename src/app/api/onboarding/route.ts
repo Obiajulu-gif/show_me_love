@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { createCreator } from "@/lib/creators";
 import { requireUser, Unauthorized } from "@/lib/session";
 
-const FRIENDLY = /^(That username|You already|3–24|That name|Pick a treat|Give your)/;
+const FRIENDLY = /^(That username|You already|3–24|That name|Pick a treat from|Give your)/;
 
 export async function POST(req: Request) {
   try {
