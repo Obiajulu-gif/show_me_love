@@ -19,7 +19,8 @@ export type PaymentRow = {
 };
 export const FILTERS = ["successful", "pending", "expired", "failed", "refunded", "all"] as const;
 export type PaymentFilter = (typeof FILTERS)[number];
-const PAGE_SIZE = 25;
+export const PAGE_SIZE = 25;
+const MAX_PAGE = 100000;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const toRow = (r: any): PaymentRow => ({
@@ -31,7 +32,7 @@ const toRow = (r: any): PaymentRow => ({
 
 export async function listPayments(userId: string, filter: PaymentFilter, page = 1): Promise<{ rows: PaymentRow[]; count: number }> {
   const f = FILTERS.includes(filter) ? filter : "successful";
-  const p = Number.isInteger(page) && page >= 1 ? page : 1;
+  const p = Number.isInteger(page) && page >= 1 ? Math.min(page, MAX_PAGE) : 1;
   const status = f === "all" ? null : f;
   const [{ n }] = await db()`select count(*)::int as n from payments where creator_id = ${userId} and (${status}::text is null or status = ${status})`;
   const rows = await db()`select * from payments where creator_id = ${userId} and (${status}::text is null or status = ${status})

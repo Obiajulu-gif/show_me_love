@@ -50,4 +50,5 @@ test("listPayments filters and paginates", async () => {
   expect(p.rows[0].viaGroup).toBe(false);
   expect((await listPayments(ada, "failed")).rows[0].status).toBe("failed");
   expect((await listPayments(ada, "all", 2)).rows).toHaveLength(0);
+  expect(await listPayments(ada, "all", 1e15)).toEqual({ rows: [], count: 3 });
 });
