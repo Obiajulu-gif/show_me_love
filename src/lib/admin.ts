@@ -73,7 +73,9 @@ async function resolveStuck(adminId: string, id: string, note: string, to: "paid
   await assertAdmin(adminId);
   const n = need(note, "A note is required (what did you check?).");
   const ok = await db().begin(async (tx) => {
-    if (!(await settle(tx, id, to))) return false;
+    // Only sends the reconciler flagged: a plain in-flight `processing` row may still complete.
+    const [stuck] = await tx`select 1 from withdrawals where id = ${id} and status = 'processing' and admin_note = 'stuck alerted' for update`;
+    if (!stuck || !(await settle(tx, id, to))) return false;
     await tx`update withdrawals set admin_note = ${n} where id = ${id}`;
     return true;
   });

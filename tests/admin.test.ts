@@ -49,8 +49,8 @@ async function held(method: "usdt" | "ngn_bank", status = "awaiting_review", not
   return w.id as string;
 }
 const status = async (id: string) => (await t.sql`select * from withdrawals where id = ${id}`)[0];
-const call = (id: string, body: unknown) =>
-  POST(new Request("http://x", { method: "POST", body: JSON.stringify(body) }), { params: Promise.resolve({ id }) });
+const call = (id: string, body: unknown, headers: Record<string, string> = {}) =>
+  POST(new Request("http://x", { method: "POST", body: JSON.stringify(body), headers: { "content-type": "application/json", ...headers } }), { params: Promise.resolve({ id }) });
 
 test("non-admins are Forbidden, everywhere", async () => {
   sessionUser = { id: ada, email: "ada@x.com", role: "creator" };
@@ -157,4 +157,21 @@ test("searchPayments: exact ref, username or email, case-insensitive, injection-
   expect(await searchPayments("   ")).toHaveLength(0);
   for (let i = 0; i < 60; i++) await t.sql`insert into payments (ref, kind, creator_id, status) values (${"B" + i},'treat',${ada},'pending')`;
   expect(await searchPayments("ada_bakes")).toHaveLength(50);
+});
+
+test("stuck actions refuse a processing row without the stuck marker", async () => {
+  const id = await held("usdt", "processing");
+  await expect(resolveStuckRelease(boss, id, "n")).rejects.toThrow("Not stuck in sending.");
+  await expect(resolveStuckPaid(boss, id, "n")).rejects.toThrow("Not stuck in sending.");
+  expect((await status(id)).status).toBe("processing");
+  expect(await balance(ada)).toBe("6.000000");
+});
+
+test("route CSRF: cross-origin 403, non-JSON 415, same-origin passes", async () => {
+  const id = await held("usdt");
+  expect((await call(id, { action: "reject", note: "x" }, { origin: "https://evil.example" })).status).toBe(403);
+  const noJson = POST(new Request("http://x", { method: "POST", body: "action=reject", headers: { "content-type": "text/plain" } }), { params: Promise.resolve({ id }) });
+  expect((await noJson).status).toBe(415);
+  expect((await status(id)).status).toBe("awaiting_review");
+  expect((await call(id, { action: "reject", note: "x" }, { origin: "http://x" })).status).toBe(200);
 });

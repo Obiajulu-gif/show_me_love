@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 
 import { approveWithdrawal, Forbidden, markNgnPaid, rejectWithdrawal, requireAdmin, resolveStuckPaid, resolveStuckRelease } from "@/lib/admin";
+import { rejectCrossSite } from "@/lib/http";
 import { Unauthorized } from "@/lib/session";
 import { WithdrawalError } from "@/lib/withdrawals";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const blocked = rejectCrossSite(req);
+  if (blocked) return blocked;
   try {
     const admin = await requireAdmin();
     const { id } = await params;
