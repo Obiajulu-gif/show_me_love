@@ -21,30 +21,22 @@ function positiveUsdt(v: unknown): string | null {
   return toMicro(s) > 0n ? s : null;
 }
 
+/** Event record and money movement share one transaction: any failure rolls both back, so a retry is never "duplicate". */
 export async function handleRasEvent(event: RasEvent): Promise<Outcome> {
-  const sql = db();
-  const rec = await sql`
-    insert into webhook_events (event_id, event_type, payload) values (${event.event_id}, ${event.event_type}, ${sql.json(event as unknown as JSONValue)})
-    on conflict (event_id) do nothing returning event_id`;
-  if (!rec.length) return { handled: false, reason: "duplicate" };
-  try {
-    return await process(event);
-  } catch (e) {
-    await sql`delete from webhook_events where event_id = ${event.event_id}`; // let RAS retry
-    throw e;
-  }
-}
-
-async function process(event: RasEvent): Promise<Outcome> {
+  if (typeof event.event_id !== "string" || !event.event_id) return { handled: false, reason: "unknown_event" };
   const type = event.event_type;
-  if (type.startsWith("coin_") || type.startsWith("withdrawal")) return settleSendEvent(event);
-  const done = type === "payment_link_completed" || type === "payment_link_overpaid";
-  if (!done && type !== "payment_link_failed") return { handled: false, reason: "unknown_event" };
-
-  const ref = event.meta_data?.payment_reference;
-  if (typeof ref !== "string") return { handled: false, reason: "not_ours" };
-
   return db().begin(async (tx): Promise<Outcome> => {
+    const rec = await tx`
+      insert into webhook_events (event_id, event_type, payload) values (${event.event_id}, ${type}, ${tx.json(event as unknown as JSONValue)})
+      on conflict (event_id) do nothing returning event_id`;
+    if (!rec.length) return { handled: false, reason: "duplicate" };
+
+    if (type.startsWith("coin_") || type.startsWith("withdrawal")) return settleSendEvent(event);
+    const done = type === "payment_link_completed" || type === "payment_link_overpaid";
+    if (!done && type !== "payment_link_failed") return { handled: false, reason: "unknown_event" };
+
+    const ref = event.meta_data?.payment_reference;
+    if (typeof ref !== "string") return { handled: false, reason: "not_ours" };
     const [p] = await tx`select * from payments where ref = ${ref} for update`;
     if (!p) return { handled: false, reason: "not_ours" };
 

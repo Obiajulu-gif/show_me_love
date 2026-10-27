@@ -4,10 +4,16 @@ import { POST as webhook } from "../src/app/api/ras/webhook/route";
 import { GET as cron } from "../src/app/api/cron/expire/route";
 import { POST as simulate } from "../src/app/api/dev/simulate/route";
 import { createCreator } from "../src/lib/creators";
+import * as ledger from "../src/lib/ledger";
 import { balance, totalReceived } from "../src/lib/ledger";
 import { expireIfStale, expireStale, handleRasEvent } from "../src/lib/payments";
 import { startTestDb } from "../src/lib/testing";
 import { encryptWebhook, type RasEvent } from "../src/lib/webhookCrypto";
+
+vi.mock("../src/lib/ledger", async (orig) => {
+  const m = await orig<typeof import("../src/lib/ledger")>();
+  return { ...m, addEntry: vi.fn(m.addEntry) };
+});
 
 let t: Awaited<ReturnType<typeof startTestDb>>;
 let ada: string;
@@ -136,4 +142,25 @@ test("simulate: practice credits the row, other modes 404", async () => {
   expect((await post()).status).toBe(200);
   expect(await status(ref)).toBe("successful");
   expect(await balance(ada)).toBe("0.950000");
+});
+
+test("event without event_id is ignored, route answers 200", async () => {
+  expect(await handleRasEvent({ ...ev("X"), event_id: undefined as unknown as string })).toEqual({ handled: false, reason: "unknown_event" });
+  vi.stubEnv("RAS_MODE", "test"); vi.stubEnv("RAS_TEST_KEY", "k".repeat(32));
+  const { body, iv } = encryptWebhook({ ...ev("X"), event_id: "" }, "k".repeat(32));
+  const res = await webhook(new Request("http://x/api/ras/webhook", { method: "POST", headers: { "x-api-key": iv }, body: JSON.stringify(body) }));
+  expect(res.status).toBe(200);
+  vi.stubEnv("RAS_MODE", "practice");
+});
+
+test("ledger failure rolls back the event record; retry credits exactly once", async () => {
+  const ref = await pay();
+  const e = ev(ref);
+  vi.mocked(ledger.addEntry).mockRejectedValueOnce(new Error("boom"));
+  await expect(handleRasEvent(e)).rejects.toThrow("boom");
+  expect(await t.sql`select 1 from webhook_events where event_id = ${e.event_id}`).toHaveLength(0);
+  expect(await status(ref)).toBe("pending");
+  expect(await handleRasEvent(e)).toEqual({ handled: true });
+  expect(await balance(ada)).toBe("0.950000");
+  expect(await handleRasEvent(e)).toEqual({ handled: false, reason: "duplicate" });
 });
