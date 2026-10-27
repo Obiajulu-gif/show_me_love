@@ -7,7 +7,7 @@ const fraunces = Fraunces({ subsets: ["latin"], style: ["italic"], variable: "--
 
 export const metadata: Metadata = {
   title: "show-me-love",
-  description: "A little love goes a long way.",
+  description: "Small treats, real support.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

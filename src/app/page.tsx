@@ -26,7 +26,7 @@ const demo = {
   treatName: "Zobo", treatImage: "/treats/zobo.svg", unitPriceNgn: 500, presets: [1, 3, 5], thankYouText: "", tagline: "A little love. A lot of possibility.",
   accent: "honey", header: "default", coverUrl: null, socials: [],
 };
-const demoWall = [{ name: "Tunde", count: 3, message: "Your sourdough saved my weekend." }, { name: "Ife", count: 1, message: "Keep going!" }];
+const demoWall = [{ id: "d1", name: "Tunde", quantity: 3, message: "Your sourdough saved my weekend.", at: new Date(0) }, { id: "d2", name: "Ife", quantity: 1, message: "Keep going!", at: new Date(0) }];
 
 export default function Home() {
   return (
@@ -94,7 +94,7 @@ export default function Home() {
 
       <footer className="border-t border-line py-8 text-center text-sm text-cocoa-2">
         <Logo />
-        <p className="mt-2">A little love goes a long way.</p>
+        <p className="mt-2">Small treats, real support.</p>
       </footer>
     </div>
   );

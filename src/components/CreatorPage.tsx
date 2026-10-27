@@ -6,7 +6,7 @@ export type PageView = {
   unitPriceNgn: number; presets: number[]; thankYouText: string; tagline: string; accent: string; header: string; coverUrl: string | null;
   socials: string[];
 };
-export type WallEntry = { name: string; count: number; message: string };
+export type WallEntry = { id: string; name: string; message: string; quantity: number; at: Date };
 
 const ACCENT: Record<string, string> = { honey: "bg-honey", cocoa: "bg-cocoa", sage: "bg-[#B9D3B0]" };
 
@@ -36,13 +36,14 @@ export function CreatorPage({ creator: c, mode, payments }: { creator: PageView;
           <p className="font-serif italic text-cocoa-2">{c.tagline}</p>
           <BuyCard treatName={c.treatName} treatImage={c.treatImage} unitPriceNgn={c.unitPriceNgn} presets={c.presets} mode={mode} />
         </div>
-        {payments.length > 0 && (
-          <ul className="mt-4 space-y-2 text-sm">
+        <h4 className="mt-6 font-serif text-lg italic">Notes from supporters</h4>
+        {payments.length > 0 ? (
+          <ul className="mt-2 space-y-2 text-sm">
             {payments.map((r) => (
-              <li key={r.name} className="rounded-xl bg-white px-3 py-2"><b>{r.name}</b> sent {r.count} {c.treatName.toLowerCase()}{r.count > 1 ? "s" : ""}. {r.message}</li>
+              <li key={r.id} className="rounded-xl bg-white px-3 py-2"><b>{r.name}</b> sent {r.quantity} {c.treatName.toLowerCase()}{r.quantity > 1 ? "s" : ""}. {r.message}</li>
             ))}
           </ul>
-        )}
+        ) : <p className="mt-2 text-sm text-cocoa-2">No notes yet. Yours could be the first.</p>}
       </div>
     </div>
   );
