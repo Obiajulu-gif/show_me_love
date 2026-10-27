@@ -45,7 +45,7 @@ export async function sendMail(to: string, subject: string, text: string): Promi
   } catch (err) {
     return { sent: false, via: process.env.BREVO_API_KEY ? "brevo" : "zeptomail", error: String(err) };
   }
-  console.info(`[email to ${to}] ${subject}\n${text}`);
+  if (process.env.NODE_ENV !== "production") console.info(`[email to ${to}] ${subject}\n${text}`);
   return { sent: false, via: "none" };
 }
 

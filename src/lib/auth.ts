@@ -6,6 +6,8 @@ export class AuthError extends Error {}
 const normEmail = (e: string) => String(e ?? "").trim().toLowerCase();
 
 export async function signUp(email: string, password: string): Promise<{ id: string }> {
+  if (typeof email !== "string") throw new AuthError("Enter a valid email address.");
+  if (typeof password !== "string") throw new AuthError("Enter a password.");
   const e = normEmail(email);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) throw new AuthError("Enter a valid email address.");
   const problem = passwordProblem(password);

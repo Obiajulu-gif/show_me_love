@@ -48,3 +48,9 @@ test("hit allows limit then blocks", async () => {
   expect(r).toEqual([true, true, true, false]);
   expect(await hit("k2", 3, 60)).toBe(true);
 });
+
+test("signUp rejects non-string email/password with AuthError", async () => {
+  await expect(signUp("n@x.com", 12345678 as unknown as string)).rejects.toThrow(AuthError);
+  await expect(signUp("n@x.com", undefined as unknown as string)).rejects.toThrow(AuthError);
+  await expect(signUp({} as unknown as string, "password1")).rejects.toThrow(AuthError);
+});
