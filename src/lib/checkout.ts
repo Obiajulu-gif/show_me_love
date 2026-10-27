@@ -29,8 +29,14 @@ const MAX_NGN = 10_000_000;
 
 /** Creates a pending payment row at the current rate, then the RAS link. Returns where to send the supporter. */
 export async function startCheckout(i: CheckoutInput): Promise<{ ref: string; url: string }> {
-  if (i.kind !== "treat" || !i.creatorId) throw new CheckoutInvalid("This kind of payment is not available yet.");
-  const [c] = await db()`select unit_price_ngn from creators where user_id = ${i.creatorId}`;
+  let creatorId = i.creatorId;
+  let goalId: string | null = null;
+  if (i.kind === "goal" && i.goalId) {
+    const [g] = await db()`select creator_id from goals where id = ${i.goalId}`;
+    if (!g) throw new CheckoutInvalid("We couldn't find that goal.");
+    creatorId = g.creator_id; goalId = i.goalId;
+  } else if (i.kind !== "treat" || !creatorId) throw new CheckoutInvalid("This kind of payment is not available yet.");
+  const [c] = await db()`select unit_price_ngn from creators where user_id = ${creatorId!}`;
   if (!c) throw new CheckoutInvalid("We couldn't find that page.");
   const unit = Number(c.unit_price_ngn);
 
@@ -41,7 +47,9 @@ export async function startCheckout(i: CheckoutInput): Promise<{ ref: string; ur
 
   const n = Number.isInteger(i.amountNgn) ? i.amountNgn : NaN;
   let quantity = 1;
-  if (i.quantity !== undefined) {
+  if (goalId) {
+    if (i.quantity !== undefined || !(n >= 1 && n <= MAX_NGN)) throw new CheckoutInvalid("Choose a valid amount.");
+  } else if (i.quantity !== undefined) {
     quantity = i.quantity;
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 50) throw new CheckoutInvalid("Pick between 1 and 50.");
     if (n !== unit * quantity) throw new CheckoutInvalid("That amount doesn't match the price. Refresh and try again.");
@@ -54,19 +62,20 @@ export async function startCheckout(i: CheckoutInput): Promise<{ ref: string; ur
   const usdt = ngnToUsdt(n, rate);
   const ref = newRef();
   await db()`
-    insert into payments (ref, kind, creator_id, supporter_name, supporter_email, message, is_public, quantity, amount_ngn, amount_usdt, rate, status)
-    values (${ref}, 'treat', ${i.creatorId}, ${name.trim()}, ${email.trim()}, ${message?.trim() || null}, ${i.supporter.isPublic}, ${quantity}, ${n}, ${usdt}, ${rate}, 'pending')`;
+    insert into payments (ref, kind, creator_id, goal_id, supporter_name, supporter_email, message, is_public, quantity, amount_ngn, amount_usdt, rate, status)
+    values (${ref}, ${i.kind}, ${creatorId!}, ${goalId}, ${name.trim()}, ${email.trim()}, ${message?.trim() || null}, ${i.supporter.isPublic}, ${quantity}, ${n}, ${usdt}, ${rate}, 'pending')`;
 
   const base = (i.origin ?? process.env.PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  const tail = goalId ? "&thanks=1" : "";
   const [first, ...rest] = name.trim().split(/\s+/).filter(Boolean);
   try {
     const link = await createPaymentLink({
       amountNgn: String(n), reference: ref,
       customer: { email: email.trim(), first_name: first ?? "Supporter", last_name: rest.join(" ") || "-" },
-      successUrl: `${base}${i.successPath}?ref=${ref}`, cancelUrl: `${base}${i.successPath.replace(/\/thanks$/, "")}`,
+      successUrl: `${base}${i.successPath}?ref=${ref}${tail}`, cancelUrl: `${base}${goalId ? i.successPath : i.successPath.replace(/\/thanks$/, "")}`,
       metadata: { ref },
     });
-    const url = link.payment_link ?? `${i.successPath}?ref=${ref}&practice=1`;
+    const url = link.payment_link ?? `${i.successPath}?ref=${ref}${tail}&practice=1`;
     await db()`update payments set link_url = ${url} where ref = ${ref}`;
     return { ref, url };
   } catch (e) {
