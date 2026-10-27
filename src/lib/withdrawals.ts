@@ -27,8 +27,8 @@ export interface Withdrawal {
   ras_reference: string | null; created_at: Date; updated_at: Date;
 }
 
-const BEP20 = /^0x[0-9a-fA-F]{40}$/;
-const TRC20 = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
+export const BEP20 = /^0x[0-9a-fA-F]{40}$/;
+export const TRC20 = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
 const num = (v: string | undefined, d: number) => (Number.isFinite(Number(v)) && v !== undefined && v !== "" ? Number(v) : d);
 const dailyCapMicro = () => toMicro(String(num(process.env.DAILY_WITHDRAW_USD, 500)));
 
@@ -171,7 +171,7 @@ export async function requestWithdrawal(userId: string, i: { method: Method; amo
   return out;
 }
 
-async function notifyAdmins(subject: string, text: string) {
+export async function notifyAdmins(subject: string, text: string) {
   for (const to of (process.env.ADMIN_EMAILS ?? "").split(",").map((s) => s.trim()).filter(Boolean)) {
     try { await sendMail(to, subject, text); } catch { /* never break the flow over an email */ }
   }

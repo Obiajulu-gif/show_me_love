@@ -2,8 +2,10 @@ import { notFound } from "next/navigation";
 
 import { db } from "./db";
 import { addEntry } from "./ledger";
+import { fromMicro, toMicro } from "./money";
+import { networkFee, RasConfigError, RasFailure, sendCoin } from "./ras";
 import { requireUser, Unauthorized } from "./session";
-import { dispatchUsdt, settle, WithdrawalError } from "./withdrawals";
+import { BEP20, dispatchUsdt, notifyAdmins, settle, TRC20, WithdrawalError } from "./withdrawals";
 
 export class Forbidden extends Error {
   constructor() { super("Admins only."); }
@@ -104,9 +106,69 @@ export async function searchPayments(q: string) {
   const s = (q ?? "").trim();
   if (!s) return [];
   return await db()`
-    select p.ref, p.kind, p.status, p.supporter_name, p.supporter_email, p.amount_ngn, p.amount_usdt, p.received_usdt,
+    select p.ref, p.kind, p.status, p.supporter_name, p.supporter_email, p.amount_ngn, p.amount_usdt, p.received_usdt, p.refund_address,
            p.created_at, c.username::text as username
     from payments p left join creators c on c.user_id = p.creator_id
     where p.ref = ${s} or c.username = ${s} or lower(p.supporter_email) = lower(${s})
     order by p.created_at desc limit 50`;
+}
+
+export async function resolveReport(adminId: string, id: string): Promise<void> {
+  await assertAdmin(adminId);
+  const r = await db()`update reports set resolved_at = now() where id = ${id} and resolved_at is null returning id`;
+  if (!r.length) throw new WithdrawalError("Report not found or already resolved.");
+}
+
+export async function listOpenReports() {
+  return await db()`select id, username, reason, details, reporter_email, created_at from reports where resolved_at is null order by created_at desc limit 200`;
+}
+
+const OK_ONLY = "Only successful payments can be refunded.";
+
+/**
+ * Refunds a successful payment as a NEW USDT send to the supporter (Roqqu's refund endpoint only reverses sends).
+ * Ledger reversal is committed first; a definite RAS failure restores it, an unclear one leaves it and alerts admins.
+ */
+export async function refundPayment(adminId: string, ref: string, to: { address: string; network: string }): Promise<{ outcome: "sent" | "unclear" }> {
+  await assertAdmin(adminId);
+  const network = to.network;
+  const address = String(to.address ?? "").trim();
+  if (network !== "bep20" && network !== "trc20") throw new WithdrawalError("Pick a network.");
+  if (!(network === "bep20" ? BEP20 : TRC20).test(address)) throw new WithdrawalError("That wallet address doesn't look right for this network.");
+
+  const [p] = await db()`select creator_id, received_usdt::text as received, status from payments where ref = ${ref}`;
+  if (!p || p.status !== "successful" || !p.creator_id || p.received === null) throw new WithdrawalError(OK_ONLY);
+  const received: string = p.received;
+  const amountMicro = toMicro(received) - BigInt(Math.round((await networkFee(network)) * 1e6));
+  if (amountMicro <= 0n) throw new WithdrawalError("Payment is too small to refund after network fees.");
+
+  const fee = await db().begin(async (tx) => {
+    const [u] = await tx`update payments set status = 'refunded', refund_address = ${address}, refund_network = ${network}
+      where ref = ${ref} and status = 'successful' returning creator_id`;
+    if (!u) throw new WithdrawalError(OK_ONLY);
+    const [f] = await tx`select (-amount_usdt)::text as v from ledger_entries where ref = ${`fee:${ref}`}`;
+    const fee = f?.v ?? "0";
+    await addEntry(tx, { creatorId: u.creator_id, kind: "reversal", amountUsdt: `-${received}`, ref: `rev:${ref}` });
+    await addEntry(tx, { creatorId: u.creator_id, kind: "reversal", amountUsdt: fee, ref: `revfee:${ref}` });
+    return fee as string;
+  });
+
+  try {
+    const refid = await sendCoin({ token: "usdt", network, to: address, amount: fromMicro(amountMicro) });
+    await db()`update payments set refund_reference = ${refid} where ref = ${ref}`;
+    return { outcome: "sent" };
+  } catch (e) {
+    if (e instanceof RasFailure || e instanceof RasConfigError) {
+      await db().begin(async (tx) => {
+        const [u] = await tx`update payments set status = 'successful', refund_address = null, refund_network = null
+          where ref = ${ref} and status = 'refunded' returning creator_id`;
+        if (!u) return;
+        await addEntry(tx, { creatorId: u.creator_id, kind: "credit", amountUsdt: received, ref: `recredit:${ref}` });
+        await addEntry(tx, { creatorId: u.creator_id, kind: "fee", amountUsdt: `-${fee}`, ref: `refee:${ref}` });
+      });
+      throw new WithdrawalError(`Roqqu refused the refund: ${(e as Error).message}`);
+    }
+    await notifyAdmins("Refund needs checking", `Refund of payment ${ref} (${fromMicro(amountMicro)} USDT to ${network} ${address}) had an unclear outcome. Verify on-chain / in Roqqu before retrying.`);
+    return { outcome: "unclear" };
+  }
 }

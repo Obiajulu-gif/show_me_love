@@ -101,6 +101,9 @@ create table if not exists payments (
   created_at timestamptz not null default now(),
   completed_at timestamptz
 );
+alter table payments add column if not exists refund_address text;
+alter table payments add column if not exists refund_network text;
+alter table payments add column if not exists refund_reference text;
 create index if not exists payments_creator_idx on payments(creator_id, status, created_at desc);
 
 create table if not exists group_splits (

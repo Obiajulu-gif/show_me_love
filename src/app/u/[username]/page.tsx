@@ -1,3 +1,4 @@
+import { ReportDialog } from "@/components/ReportDialog";
 import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 
@@ -42,7 +43,7 @@ export default async function PublicPage({ params }: { params: Promise<{ usernam
         <p className="mt-1 space-x-4">
           <Link href="/legal/terms" className="underline">Terms</Link>
           <Link href="/legal/privacy" className="underline">Privacy</Link>
-          <a href={`mailto:support@show-me-love.app?subject=Report%20@${c.username}`} className="underline">Report page</a>
+          <ReportDialog username={c.username} />
         </p>
       </footer>
     </div>
