@@ -126,7 +126,7 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
                   {!sent ? (
                     <Button disabled={busy || !dest || !amount} onClick={() => run(async () => {
                       setQuote(await getQuote());
-                      const r = await call("/api/withdrawals/code", "POST");
+                      const r = await call("/api/withdrawals/code", "POST", { method });
                       if (r.devCode) setCode(r.devCode);
                       setSent(true);
                     })}>Send code</Button>

@@ -1,4 +1,5 @@
 import { createHash, randomBytes, randomInt } from "node:crypto";
+import type { Sql, TransactionSql } from "postgres";
 import { db } from "./db";
 
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
@@ -13,8 +14,8 @@ export async function issueCode(userId: string, purpose: "login" | "withdrawal",
 }
 
 /** Single use. userId null = look up by code alone (magic links). Returns the owner id. */
-export async function consumeCode(userId: string | null, purpose: "login" | "withdrawal", code: string): Promise<string | null> {
-  const [row] = await db()`
+export async function consumeCode(userId: string | null, purpose: "login" | "withdrawal", code: string, q: Sql | TransactionSql = db()): Promise<string | null> {
+  const [row] = await q`
     update one_time_codes set used_at = now()
     where code_hash = ${sha(String(code))} and purpose = ${purpose} and used_at is null and expires_at > now()
       and (${userId}::uuid is null or user_id = ${userId}::uuid)

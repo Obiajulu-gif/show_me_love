@@ -5,13 +5,18 @@ import { createCreator } from "../src/lib/creators";
 import { issueCode } from "../src/lib/codes";
 import { addEntry, balance } from "../src/lib/ledger";
 import { handleRasEvent } from "../src/lib/payments";
+import { sendMail } from "../src/lib/email";
 import * as ras from "../src/lib/ras";
 import { startTestDb } from "../src/lib/testing";
 import { dispatchUsdt, pollProcessing, quoteWithdrawal, requestWithdrawal, setDestination } from "../src/lib/withdrawals";
 
 vi.mock("../src/lib/ras", async (orig) => {
   const m = await orig<typeof import("../src/lib/ras")>();
-  return { ...m, sendCoin: vi.fn(m.sendCoin) };
+  return { ...m, sendCoin: vi.fn(m.sendCoin), networkFee: vi.fn(m.networkFee) };
+});
+vi.mock("../src/lib/email", async (orig) => {
+  const m = await orig<typeof import("../src/lib/email")>();
+  return { ...m, sendMail: vi.fn(m.sendMail) };
 });
 vi.mock("../src/lib/rates", async (orig) => {
   const m = await orig<typeof import("../src/lib/rates")>();
@@ -38,6 +43,7 @@ beforeEach(async () => {
   await setDestination(ada, { kind: "usdt", network: "bep20", address: BEP });
   await addEntry(t.sql, { creatorId: ada, kind: "credit", amountUsdt: "10", ref: `c:${Math.random()}` });
   vi.mocked(ras.sendCoin).mockClear();
+  vi.mocked(sendMail).mockClear();
 });
 const ask = async (amount: string, method: "usdt" | "ngn_bank" = "usdt") =>
   requestWithdrawal(ada, { method, amountUsdt: amount, code: await issueCode(ada, "withdrawal", 10) });
@@ -107,14 +113,93 @@ test("the creator row is locked before the balance is read", async () => {
   expect(lock).toBeLessThan(src.indexOf("balance(userId, tx)"));
 });
 
-test("sendCoin failing marks failed, restores balance, emails admins", async () => {
+const release = async () => (await t.sql`select count(*)::int as n from ledger_entries where kind = 'release'`)[0].n;
+const wstatus = async () => (await t.sql`select status, admin_note from withdrawals`)[0];
+
+test("a definite RAS rejection (RasFailure) fails the withdrawal and releases the hold", async () => {
   vi.stubEnv("ADMIN_EMAILS", "boss@x.com");
-  vi.mocked(ras.sendCoin).mockRejectedValueOnce(new ras.RasError("boom"));
+  vi.mocked(ras.sendCoin).mockRejectedValueOnce(new ras.RasFailure("insufficient merchant balance"));
   const w = await ask("4");
   expect(w.status).toBe("failed");
   expect(await balance(ada)).toBe("10.000000");
   expect((await t.sql`select ref from ledger_entries where kind = 'release'`)[0].ref).toBe(`release:${w.id}`);
+  expect(vi.mocked(sendMail).mock.calls.some((c) => c[0] === "boss@x.com")).toBe(true);
   vi.unstubAllEnvs(); vi.stubEnv("RAS_MODE", "practice");
+});
+
+test("a config error thrown before any network call also releases", async () => {
+  vi.mocked(ras.sendCoin).mockRejectedValueOnce(new ras.RasConfigError("RAS_LIVE_KEY is not set"));
+  expect((await ask("4")).status).toBe("failed");
+  expect(await balance(ada)).toBe("10.000000");
+});
+
+test("an unclear failure (unreachable / 5xx) keeps the hold, stays processing, alerts admins", async () => {
+  vi.stubEnv("ADMIN_EMAILS", "boss@x.com");
+  vi.mocked(ras.sendCoin).mockRejectedValueOnce(new ras.RasError("Roqqu unreachable: timeout"));
+  const w = await ask("4");
+  expect(w.status).toBe("processing");
+  expect(await release()).toBe(0);
+  expect(await balance(ada)).toBe("6.000000");
+  expect((await wstatus()).admin_note).toBe("stuck alerted");
+  expect(vi.mocked(sendMail).mock.calls.some((c) => c[0] === "boss@x.com")).toBe(true);
+  vi.unstubAllEnvs(); vi.stubEnv("RAS_MODE", "practice");
+});
+
+test("send succeeded but saving the reference throws: hold is NOT released", async () => {
+  await t.sql`create or replace function block_ref() returns trigger as $$ begin
+    if new.ras_reference is not null then raise exception 'save failed'; end if; return new; end $$ language plpgsql`;
+  await t.sql`create trigger block_ref before update on withdrawals for each row execute function block_ref()`;
+  try {
+    const w = await ask("4");
+    expect(w.status).toBe("processing");
+    expect(ras.sendCoin).toHaveBeenCalledTimes(1);
+    expect(await release()).toBe(0);
+    expect(await balance(ada)).toBe("6.000000");
+  } finally { await t.sql`drop trigger block_ref on withdrawals`; }
+});
+
+test("pollProcessing alerts admins once about a processing row with no reference for over 10 minutes", async () => {
+  vi.stubEnv("ADMIN_EMAILS", "boss@x.com");
+  await t.sql`update users set created_at = now() - interval '1 hour' where id = ${ada}`;
+  const w = await ask("4");
+  await t.sql`update withdrawals set status = 'processing', updated_at = now() - interval '5 minutes' where id = ${w.id}`;
+  await pollProcessing();
+  expect(sendMail).not.toHaveBeenCalled();
+  await t.sql`update withdrawals set updated_at = now() - interval '11 minutes'`;
+  await pollProcessing();
+  expect(sendMail).toHaveBeenCalledTimes(1);
+  await pollProcessing();
+  expect(sendMail).toHaveBeenCalledTimes(1);
+  expect((await wstatus()).admin_note).toBe("stuck alerted");
+  vi.unstubAllEnvs(); vi.stubEnv("RAS_MODE", "practice");
+});
+
+test("a refused withdrawal does not burn the code", async () => {
+  const code = await issueCode(ada, "withdrawal", 10);
+  await expect(requestWithdrawal(ada, { method: "usdt", amountUsdt: "11", code })).rejects.toThrow("Insufficient balance.");
+  expect((await requestWithdrawal(ada, { method: "usdt", amountUsdt: "5", code })).status).toBe("processing");
+});
+
+test("setDestination emails the owner the masked new destination", async () => {
+  await setDestination(ada, { kind: "usdt", network: "trc20", address: "TABCDEFGHJKLMNPQRSTUVWXYZabcdefghi" });
+  const c = vi.mocked(sendMail).mock.calls.at(-1)!;
+  expect(c[0]).toBe("ada@x.com");
+  expect(c[2]).toContain("TRC20 TABCDE…fghi");
+  expect(c[2]).not.toContain("TABCDEFGHJKLMNPQRSTUVWXYZabcdefghi");
+  await bank();
+  expect(vi.mocked(sendMail).mock.calls.at(-1)![2]).toContain("GTBank ••6789");
+  vi.mocked(sendMail).mockRejectedValueOnce(new Error("smtp down"));
+  await setDestination(ada, { kind: "usdt", network: "bep20", address: BEP }); // must not throw
+});
+
+test("fee is refused when the network changes between quote and lock", async () => {
+  vi.mocked(ras.networkFee).mockImplementationOnce(async () => {
+    await setDestination(ada, { kind: "usdt", network: "trc20", address: "T" + "A".repeat(33) });
+    return 0.3;
+  });
+  await expect(ask("4")).rejects.toThrow("Your payout destination changed. Check the amount and try again.");
+  expect(await balance(ada)).toBe("10.000000");
+  expect((await t.sql`select count(*)::int as n from withdrawals`)[0].n).toBe(0);
 });
 
 test("daily cap: 501 is refused, the limit counts today's earlier withdrawals", async () => {

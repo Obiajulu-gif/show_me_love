@@ -5,7 +5,7 @@ import { db } from "./db";
 import { sendMail } from "./email";
 import { addEntry, balance } from "./ledger";
 import { fromMicro, toMicro } from "./money";
-import { networkFee, RasError, sendCoin, sendStatus, type Network } from "./ras";
+import { networkFee, RasConfigError, RasFailure, sendCoin, sendStatus, type Network } from "./ras";
 import { hit } from "./ratelimit";
 import { getRate, RateUnavailable } from "./rates";
 import type { RasEvent } from "./webhookCrypto";
@@ -37,7 +37,9 @@ export async function setDestination(userId: string, d: Destination): Promise<vo
     const address = String(d.address ?? "").trim();
     const ok = d.network === "bep20" ? BEP20.test(address) : d.network === "trc20" ? TRC20.test(address) : false;
     if (!ok) fail("That wallet address doesn't look right for this network.");
+    const before = await getDestinations(userId);
     await db()`update creators set payout_address = ${address}, payout_network = ${d.network} where user_id = ${userId}`;
+    if (before.usdt?.address !== address || before.usdt?.network !== d.network) await tellOwner(userId, maskUsdt({ network: d.network, address }));
     return;
   }
   const bankName = String(d.bankName ?? "").trim();
@@ -46,7 +48,29 @@ export async function setDestination(userId: string, d: Destination): Promise<vo
   if (!/^\d{10}$/.test(accountNumber)) fail("Account number must be exactly 10 digits.");
   if (bankName.length < 2 || bankName.length > 80) fail("Bank name must be 2–80 characters.");
   if (accountName.length < 2 || accountName.length > 80) fail("Account name must be 2–80 characters.");
+  const before = await getDestinations(userId);
   await db()`update creators set bank = ${db().json({ bankName, accountNumber, accountName })} where user_id = ${userId}`;
+  if (before.bank?.accountNumber !== accountNumber || before.bank?.bankName !== bankName) await tellOwner(userId, maskBank({ bankName, accountNumber }));
+}
+
+const maskUsdt = (u: { network: string; address: string }) => `${u.network.toUpperCase()} ${u.address.slice(0, 6)}…${u.address.slice(-4)}`;
+const maskBank = (b: { bankName: string; accountNumber: string }) => `${b.bankName} ••${b.accountNumber.slice(-4)}`;
+
+async function tellOwner(userId: string, masked: string) {
+  try {
+    const [u] = await db()`select email from users where id = ${userId}`;
+    if (u) await sendMail(u.email, "Your payout destination was changed", `Your payout destination was changed to ${masked}. If this wasn't you, contact support.`);
+  } catch { /* an email failure must not break the save */ }
+}
+
+/** Masked destination(s) for the withdrawal-code email: the chosen method's, or every one that is set. */
+export async function maskedDestinations(userId: string, method?: string): Promise<string> {
+  const d = await getDestinations(userId);
+  const parts = [
+    method !== "ngn_bank" && d.usdt ? maskUsdt(d.usdt) : "",
+    method !== "usdt" && d.bank ? maskBank(d.bank) : "",
+  ].filter(Boolean);
+  return parts.join(" and ") || "no destination";
 }
 
 export async function getDestinations(userId: string) {
@@ -106,9 +130,10 @@ export async function requestWithdrawal(userId: string, i: { method: Method; amo
   const amount = parseAmount(i.amountUsdt);
   const q = await quoteFor(userId, i.method, amount);
   if (!(await hit(`wcode:${userId}`, 5, 900))) fail("Too many attempts. Try again in 15 minutes.");
-  if (!(await consumeCode(userId, "withdrawal", String(i.code ?? "")))) fail("That code is wrong or expired.");
 
   const w = await db().begin(async (tx): Promise<Withdrawal & { review: boolean }> => {
+    // First statement: a refused withdrawal rolls the code back, so it is not burned.
+    if (!(await consumeCode(userId, "withdrawal", String(i.code ?? ""), tx))) fail("That code is wrong or expired.");
     // The row lock serialises concurrent requests for one creator: the second sees the first's hold.
     const [c] = await tx`select payout_address, payout_network, bank from creators where user_id = ${userId} for update`;
     if (!c) fail("Add a payout destination first.");
@@ -116,6 +141,8 @@ export async function requestWithdrawal(userId: string, i: { method: Method; amo
       ? c.payout_address ? { kind: "usdt", network: c.payout_network, address: c.payout_address } : null
       : c.bank ? { kind: "bank", ...c.bank } : null;
     if (!destination) fail("Add a payout destination first.");
+    // The fee was quoted from the destination read before the lock; it only depends on the network.
+    if (i.method === "usdt" && c.payout_network !== q.dest.usdt?.network) fail("Your payout destination changed. Check the amount and try again.");
 
     if (toMicro(await balance(userId, tx)) < amount) fail("Insufficient balance.");
     const [{ used }] = await tx`
@@ -164,14 +191,34 @@ export async function dispatchUsdt(id: string): Promise<void> {
   const [w] = await db()`update withdrawals set status = 'processing', updated_at = now()
     where id = ${id} and status = 'awaiting_review' and method = 'usdt' returning *`;
   if (!w) return;
+  const dest = w.destination as { network: Network; address: string };
+  let refid: string;
   try {
-    const dest = w.destination as { network: Network; address: string };
-    const refid = await sendCoin({ token: "usdt", network: dest.network, to: dest.address, amount: fromMicro(toMicro(w.amount_usdt) - toMicro(w.fee_usdt)) });
-    await db()`update withdrawals set ras_reference = ${refid} where id = ${id}`;
+    refid = await sendCoin({ token: "usdt", network: dest.network, to: dest.address, amount: fromMicro(toMicro(w.amount_usdt) - toMicro(w.fee_usdt)) });
   } catch (e) {
-    await db().begin((tx) => settle(tx, id, "failed"));
-    await notifyAdmins("Withdrawal send failed", `Withdrawal ${id} failed to send and was returned to the creator's balance.\n${e instanceof RasError ? e.message : String(e)}`);
+    const msg = e instanceof Error ? e.message : String(e);
+    if (e instanceof RasFailure || e instanceof RasConfigError) {
+      // Definite: RAS refused it, or nothing was ever sent. Safe to give the money back.
+      await db().begin((tx) => settle(tx, id, "failed"));
+      await notifyAdmins("Withdrawal send failed", `Withdrawal ${id} was not sent and was returned to the creator's balance.\n${msg}`);
+    } else {
+      // Unclear (timeout, 5xx, bad body): the send may have gone through. Keep the hold.
+      await flagStuck(id, `Withdrawal ${id} may or may not have been sent (${msg}). The hold is kept; reconcile with Roqqu by hand.`);
+    }
+    return;
   }
+  try {
+    await db()`update withdrawals set ras_reference = ${refid} where id = ${id}`;
+  } catch {
+    await flagStuck(id, `Withdrawal ${id} was sent (RAS refid ${refid}) but saving the reference failed. The hold is kept; set ras_reference by hand.`);
+  }
+}
+
+const STUCK = "stuck alerted";
+/** Emails admins once per withdrawal (admin_note marks it) about a send that needs manual reconciliation. */
+async function flagStuck(id: string, text: string) {
+  try { await db()`update withdrawals set admin_note = ${STUCK} where id = ${id}`; } catch { /* still alert */ }
+  await notifyAdmins("Withdrawal needs reconciliation", text);
 }
 
 /** RAS `token_sent` -> paid, `token_refunded` -> failed. Runs inside the webhook's open transaction. */
@@ -188,6 +235,10 @@ export async function settleSendEvent(event: RasEvent, tx: TransactionSql): Prom
 
 /** Backstop for missed webhooks: asks RAS about sends that have been processing for over 2 minutes. */
 export async function pollProcessing(): Promise<number> {
+  const stuck = await db()`update withdrawals set admin_note = ${STUCK}
+    where status = 'processing' and ras_reference is null and updated_at < now() - interval '10 minutes'
+      and admin_note is distinct from ${STUCK} returning id`;
+  for (const r of stuck) await notifyAdmins("Withdrawal needs reconciliation", `Withdrawal ${r.id} has been processing for over 10 minutes with no RAS reference. Reconcile it by hand.`);
   const rows = await db()`select id, ras_reference from withdrawals
     where status = 'processing' and ras_reference is not null and updated_at < now() - interval '2 minutes'`;
   let n = 0;

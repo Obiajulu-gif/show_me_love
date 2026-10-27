@@ -24,6 +24,8 @@ export const NETWORKS: { network: Network; token: Coin; label: string }[] = [
 export const BASE_URL = process.env.ROQQU_BASE_URL || "https://service.roqqu.com/v1";
 
 export class RasError extends Error {}
+/** Missing key / live not allowed: thrown before any network call, so nothing was sent. */
+export class RasConfigError extends RasError {}
 /** RAS answered with JSON status "fail" (as opposed to config, network, auth or 5xx errors). */
 export class RasFailure extends RasError {}
 
@@ -38,12 +40,12 @@ export function rasMode(): RasMode {
 function keyHeaders(): Record<string, string> {
   const mode = rasMode();
   if (mode === "test") {
-    if (!process.env.RAS_TEST_KEY) throw new RasError("RAS_TEST_KEY is not set");
+    if (!process.env.RAS_TEST_KEY) throw new RasConfigError("RAS_TEST_KEY is not set");
     return { "x-staging-api-key": process.env.RAS_TEST_KEY };
   }
-  if (!process.env.RAS_LIVE_KEY) throw new RasError("RAS_LIVE_KEY is not set");
+  if (!process.env.RAS_LIVE_KEY) throw new RasConfigError("RAS_LIVE_KEY is not set");
   if (process.env.ALLOW_PRODUCTION_EXECUTION !== "true") {
-    throw new RasError("Live mode moves real crypto: set ALLOW_PRODUCTION_EXECUTION=true to allow it.");
+    throw new RasConfigError("Live mode moves real crypto: set ALLOW_PRODUCTION_EXECUTION=true to allow it.");
   }
   return { "x-api-key": process.env.RAS_LIVE_KEY };
 }
