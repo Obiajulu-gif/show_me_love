@@ -34,7 +34,7 @@ export function CreatorPage({ creator: c, mode, payments }: { creator: PageView;
         )}
         <div className="mt-4">
           <p className="font-serif italic text-cocoa-2">{c.tagline}</p>
-          <BuyCard treatName={c.treatName} treatImage={c.treatImage} unitPriceNgn={c.unitPriceNgn} presets={c.presets} mode={mode} />
+          <BuyCard treatName={c.treatName} treatImage={c.treatImage} unitPriceNgn={c.unitPriceNgn} presets={c.presets} mode={mode} username={c.username} />
         </div>
         <h4 className="mt-6 font-serif text-lg italic">Notes from supporters</h4>
         {payments.length > 0 ? (
