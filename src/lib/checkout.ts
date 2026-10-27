@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 
 import { db } from "./db";
 import { ngnToUsdt } from "./money";
+import { expireIfStale } from "./payments";
 import { createPaymentLink } from "./ras";
 import { getRate } from "./rates";
 
@@ -75,6 +76,7 @@ export async function startCheckout(i: CheckoutInput): Promise<{ ref: string; ur
 }
 
 export async function paymentStatus(ref: string): Promise<{ status: string; amountNgn: number; creatorUsername: string | null } | null> {
+  await expireIfStale(ref);
   const [r] = await db()`
     select p.status, p.amount_ngn, c.username from payments p left join creators c on c.user_id = p.creator_id where p.ref = ${ref}`;
   return r ? { status: r.status, amountNgn: Number(r.amount_ngn), creatorUsername: r.username ?? null } : null;
