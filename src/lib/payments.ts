@@ -3,6 +3,7 @@ import type { JSONValue, TransactionSql } from "postgres";
 import { db } from "./db";
 import { addEntry } from "./ledger";
 import { feeUsdt, toMicro } from "./money";
+import { settleSendEvent } from "./withdrawals";
 import type { RasEvent } from "./webhookCrypto";
 
 export type Outcome = { handled: true } | { handled: false; reason: "duplicate" | "not_ours" | "bad_amount" | "unknown_event" };
@@ -10,9 +11,8 @@ export type Outcome = { handled: true } | { handled: false; reason: "duplicate" 
 /** Pending payments older than this are expired (RAS cannot requery a link by reference). */
 const EXPIRY_MIN = 60;
 
-// Task 20 builds the group split; Task 13 builds send settlement.
+// Task 20 builds the group split.
 async function creditGroup(_tx: TransactionSql, _payment: Record<string, unknown>): Promise<void> { throw new Error("not implemented"); }
-async function settleSendEvent(_event: RasEvent): Promise<Outcome> { return { handled: false, reason: "unknown_event" }; }
 
 /** A positive decimal with at most 6 places, else null. */
 function positiveUsdt(v: unknown): string | null {
@@ -31,7 +31,7 @@ export async function handleRasEvent(event: RasEvent): Promise<Outcome> {
       on conflict (event_id) do nothing returning event_id`;
     if (!rec.length) return { handled: false, reason: "duplicate" };
 
-    if (type.startsWith("coin_") || type.startsWith("withdrawal")) return settleSendEvent(event);
+    if (type === "token_sent" || type === "token_refunded") return settleSendEvent(event, tx);
     const done = type === "payment_link_completed" || type === "payment_link_overpaid";
     if (!done && type !== "payment_link_failed") return { handled: false, reason: "unknown_event" };
 
