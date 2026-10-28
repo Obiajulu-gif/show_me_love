@@ -41,8 +41,8 @@ export default async function PublicPage({ params }: { params: Promise<{ usernam
       <footer className="pb-8 text-center text-sm text-cocoa-2">
         <p>Small treats, real support.</p>
         <p className="mt-1 space-x-4">
-          <Link href="/legal/terms" className="underline">Terms</Link>
-          <Link href="/legal/privacy" className="underline">Privacy</Link>
+          <Link href="/legal#terms" className="underline">Terms</Link>
+          <Link href="/legal#privacy" className="underline">Privacy</Link>
           <ReportDialog username={c.username} />
         </p>
       </footer>

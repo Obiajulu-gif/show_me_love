@@ -3,6 +3,7 @@ import { BookOpen, Check, Code2, Copy, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
+import { IntegrationGuide } from "./IntegrationGuide";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 import { Tabs } from "./ui/Tabs";
@@ -210,7 +211,7 @@ export function DevelopersManager({ apps, origin, guide }: { apps: AppRow[]; ori
       )}
       {guide && (
         <Overlay title="Integration guide" side onClose={() => router.push("/dashboard/developers")}>
-          <p className="text-sm text-cocoa-2">The integration guide is coming soon.</p>
+          <IntegrationGuide />
         </Overlay>
       )}
     </div>
