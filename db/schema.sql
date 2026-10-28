@@ -218,7 +218,7 @@ create table if not exists webhook_events (
 
 -- Treat catalog seed. Generic names only, no trademarks.
 insert into treat_catalog (id, name, aliases, emoji, image, category, parent_id, sort_order) values
-  ('malt',      'Malt',         '{"malt drink"}',      '🍺', '/treats/malt.svg',      'alcohol', null, 1),
+  ('malt',      'Malt',         '{"malt drink"}',      '🥤', '/treats/malt.svg',      'drink'  , null, 1),
   ('zobo',      'Zobo',         '{"hibiscus","sobo"}', '🌺', '/treats/zobo.svg',      'drink',   null, 2),
   ('suya',      'Suya',         '{"kebab","skewer"}',  '🍢', '/treats/suya.svg',      'food',    null, 3),
   ('jollof',    'Jollof',       '{"rice","jollof rice"}', '🍛', '/treats/jollof.svg', 'food',    null, 4),
@@ -231,9 +231,13 @@ insert into treat_catalog (id, name, aliases, emoji, image, category, parent_id,
 on conflict (id) do nothing;
 
 insert into treat_catalog (id, name, aliases, emoji, image, category, parent_id, sort_order) values
-  ('malt-classic',  'Classic Malt',  '{}', '🍺', '/treats/malt-classic.svg',  'alcohol', 'malt',   1),
-  ('malt-dark',     'Dark Malt',     '{}', '🍺', '/treats/malt-dark.svg',     'alcohol', 'malt',   2),
-  ('malt-gold',     'Gold Malt',     '{}', '🍺', '/treats/malt-gold.svg',     'alcohol', 'malt',   3),
+  ('malt-classic',  'Classic Malt',  '{}', '🥤', '/treats/malt-classic.svg',  'drink'  , 'malt',   1),
+  ('malt-dark',     'Dark Malt',     '{}', '🥤', '/treats/malt-dark.svg',     'drink'  , 'malt',   2),
+  ('malt-gold',     'Gold Malt',     '{}', '🥤', '/treats/malt-gold.svg',     'drink'  , 'malt',   3),
   ('trophy-gold',   'Gold Trophy',   '{}', '🏆', '/treats/trophy-gold.svg',   'alcohol', 'trophy', 1),
   ('trophy-silver', 'Silver Trophy', '{}', '🏆', '/treats/trophy-silver.svg', 'alcohol', 'trophy', 2)
 on conflict (id) do nothing;
+
+-- Malt is non-alcoholic: fix databases seeded before this correction.
+update treat_catalog set category = 'drink', emoji = '🥤'
+  where id in ('malt', 'malt-classic', 'malt-dark', 'malt-gold') and category = 'alcohol';
