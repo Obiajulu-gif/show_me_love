@@ -9,7 +9,8 @@ import { getCreatorByUser } from "@/lib/creators";
 import { currentUserId } from "@/lib/session";
 import { overview } from "@/lib/stats";
 
-export default async function Overview() {
+export default async function Overview({ searchParams }: { searchParams: Promise<{ welcome?: string }> }) {
+  const welcome = (await searchParams).welcome === "1";
   const uid = await currentUserId();
   if (!uid) redirect("/login");
   const c = await getCreatorByUser(uid);
@@ -31,6 +32,12 @@ export default async function Overview() {
   ];
   return (
     <div className="space-y-6">
+      {welcome && (
+        <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-accent/50 bg-accent/10 px-5 py-4 motion-safe:animate-dialog-in">
+          <p><span className="font-semibold">Your page is live.</span> <span className="text-muted">Share <span className="data text-fg">show-me-love/@{c.username}</span> to start receiving treats.</span></p>
+          <Link href="/dashboard/share" className={buttonClass("primary", "py-1.5")}>Share it</Link>
+        </div>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-3xl font-semibold tracking-tight">Hi {c.displayName || c.username}, here&apos;s how your page is doing.</h1>
         <div className="flex gap-2">

@@ -1,4 +1,4 @@
-import { Banknote, Coins, Sprout } from "lucide-react";
+import { Banknote, Code2, Coins, Goal, Sprout, Users } from "lucide-react";
 import Link from "next/link";
 
 import { ClaimCard } from "@/components/ClaimCard";
@@ -6,12 +6,20 @@ import { CreatorPage } from "@/components/CreatorPage";
 import { LiveLedger } from "@/components/LiveLedger";
 import { Logo } from "@/components/Logo";
 import { buttonClass } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
+
+const steps = [
+  { title: "Pick a treat", body: "Zobo, suya, jollof or your own. Set a price in naira that feels right." },
+  { title: "Share one link", body: "Put show-me-love/@you in your bio, your stream or your website." },
+  { title: "Get paid in USDT", body: "Supporters pay through Roqqu. What arrives lands in your balance, ready to withdraw." },
+];
 
 const features = [
-  { Icon: Sprout, title: "Treats people know", body: "Zobo, suya, jollof, malt. Supporters pick a treat they recognise, priced in naira, instead of a vague tip." },
-  { Icon: Coins, title: "Paid in USDT", body: "Each treat is a Roqqu payment link. Supporters pay in USDT on BEP20 or TRC20 and you are credited what arrives." },
-  { Icon: Banknote, title: "Withdraw your way", body: "Take your balance as USDT to your own wallet, or cash out to a Nigerian bank account." },
+  { Icon: Sprout, title: "Treats people know", body: "Supporters pick something they recognise instead of a vague tip." },
+  { Icon: Coins, title: "Settled in USDT", body: "Paid on BEP20 or TRC20 through Roqqu, credited at what actually arrives." },
+  { Icon: Banknote, title: "Withdraw your way", body: "To your own USDT wallet, or to a Nigerian bank account." },
+  { Icon: Goal, title: "Goals", body: "Raise towards something specific and show supporters the progress." },
+  { Icon: Users, title: "Group support", body: "One payment split across up to ten creators at once." },
+  { Icon: Code2, title: "Developer API", body: "Let your own app show your support link and earnings, with your permission." },
 ];
 
 const faq = [
@@ -19,7 +27,7 @@ const faq = [
   ["What does it cost?", "A small platform fee is taken from each treat, and bank withdrawals carry a flat payout fee. Both show before you confirm anything."],
   ["How do I get my money?", "Withdraw as USDT to a BEP20 or TRC20 wallet, or to a Nigerian bank account. New accounts get a short review window on the first withdrawals."],
   ["Can I raise money for something specific?", "Yes. Set a goal with a target and a story, and supporters can see progress. You can also accept support as a group."],
-  ["Can I connect it to my own app?", "Yes. The developer Connect API lets your app read supporters and treats with your permission."],
+  ["Can I connect it to my own app?", "Yes. The developer Connect API lets your app read your support link and earnings with your permission."],
 ] as const;
 
 const demo = {
@@ -29,70 +37,116 @@ const demo = {
 };
 const demoWall = [{ id: "d1", name: "Tunde", quantity: 3, message: "Your sourdough saved my weekend.", at: new Date(0) }, { id: "d2", name: "Ife", quantity: 1, message: "Keep going!", at: new Date(0) }];
 
+const section = "mx-auto max-w-6xl px-5";
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-canvas text-fg">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <Logo />
-        <nav className="flex items-center gap-3 text-sm">
-          <Link href="/login" className="hover:underline">Log in</Link>
-          <Link href="/signup" className={buttonClass("primary", "py-1.5")}>Sign up</Link>
-        </nav>
+      <header className="sticky top-0 z-30 border-b border-line/60 bg-canvas/80 backdrop-blur">
+        <div className={`${section} flex items-center justify-between py-3`}>
+          <Logo />
+          <nav className="flex items-center gap-5 text-sm">
+            <a href="#how" className="hidden text-muted hover:text-fg sm:inline">How it works</a>
+            <Link href="/docs" className="hidden text-muted hover:text-fg sm:inline">Developers</Link>
+            <a href="#faq" className="hidden text-muted hover:text-fg sm:inline">Questions</a>
+            <Link href="/login" className="hover:text-accent">Log in</Link>
+            <Link href="/signup" className={buttonClass("primary", "py-1.5")}>Sign up</Link>
+          </nav>
+        </div>
       </header>
 
       <main>
-        <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-10 lg:grid-cols-2">
+        <section className={`${section} grid items-center gap-12 pb-16 pt-12 lg:grid-cols-[1.1fr_1fr] lg:pt-20`}>
           <div>
-            <h1 className="font-display text-5xl font-semibold tracking-tight leading-tight sm:text-6xl">
+            <h1 className="font-display text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
               Make it easy for your people<br /><span className="text-muted">to show you love.</span>
             </h1>
-            <p className="mt-5 max-w-md text-lg text-muted">One link. Local treats like zobo and suya. Paid in USDT, withdrawn to your wallet or bank.</p>
-            <div className="mt-8 max-w-md"><LiveLedger /></div>
+            <p className="mt-6 max-w-lg text-lg text-muted">One link. Local treats like zobo and suya. Paid in USDT, withdrawn to your wallet or bank.</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/signup" className={buttonClass("primary", "px-6 py-3 text-base")}>Create my page</Link>
+              <a href="#demo" className={buttonClass("ghost", "px-6 py-3 text-base")}>See a creator page</a>
+            </div>
+            <ul className="mt-8 flex flex-wrap gap-2 text-sm text-muted">
+              {["Free to start", "USDT on BEP20 or TRC20", "Withdraw to bank or wallet"].map((t) => (
+                <li key={t} className="rounded-full border border-line px-3 py-1">{t}</li>
+              ))}
+            </ul>
+          </div>
+          <LiveLedger />
+        </section>
+
+        <section id="how" className="border-y border-line/60 bg-surface/40">
+          <div className={`${section} py-16`}>
+            <h2 className="font-display text-3xl font-semibold tracking-tight">Live in three steps</h2>
+            <ol className="mt-8 grid gap-6 md:grid-cols-3">
+              {steps.map((s, i) => (
+                <li key={s.title} className="relative rounded-2xl border border-line bg-canvas/60 p-6">
+                  <span className="data flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-accent">{i + 1}</span>
+                  <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
+                  <p className="mt-1 text-muted">{s.body}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <section className={`${section} grid items-center gap-12 py-20 lg:grid-cols-2`}>
+          <div>
+            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Start in under a minute</h2>
+            <p className="mt-3 max-w-md text-muted">Choose the treat people will send you and claim your link. You can change both later.</p>
           </div>
           <div className="lg:justify-self-end"><ClaimCard /></div>
         </section>
 
-        <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 md:grid-cols-3">
-          {features.map(({ Icon, title, body }) => (
-            <Card key={title}>
-              <Icon className="text-accent" />
-              <h3 className="mt-3 font-semibold">{title}</h3>
-              <p className="mt-1 text-sm text-muted">{body}</p>
-            </Card>
-          ))}
-        </section>
-
-        <section className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-10 md:grid-cols-2">
+        <section id="demo" className={`${section} grid items-center gap-12 py-16 lg:grid-cols-2`}>
+          <div className="mx-auto w-full max-w-sm lg:order-2"><CreatorPage creator={demo} mode="preview" payments={demoWall} /></div>
           <div>
-            <h2 className="font-display text-3xl font-semibold tracking-tight">Your page, ready to share</h2>
-            <p className="mt-3 text-muted">Pick your treat, set a price, and drop one link in your bio. Supporters leave a note with every treat and it shows up in your notes from supporters.</p>
+            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">A page your supporters understand</h2>
+            <p className="mt-3 max-w-md text-muted">Your treat, your price and notes from the people who back you. Every treat comes with a note, and the public ones show on your page.</p>
           </div>
-          <div className="mx-auto w-full max-w-sm"><CreatorPage creator={demo} mode="preview" payments={demoWall} /></div>
         </section>
 
-        <section className="mx-auto max-w-3xl px-5 py-10">
+        <section className="border-y border-line/60 bg-surface/40">
+          <div className={`${section} py-16`}>
+            <h2 className="font-display text-3xl font-semibold tracking-tight">Everything a creator needs</h2>
+            <ul className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+              {features.map(({ Icon, title, body }) => (
+                <li key={title} className="flex gap-4">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-line bg-canvas text-accent"><Icon size={20} aria-hidden /></span>
+                  <div><h3 className="font-semibold">{title}</h3><p className="mt-1 text-sm text-muted">{body}</p></div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section id="faq" className={`${section} grid gap-10 py-20 lg:grid-cols-[1fr_2fr]`}>
           <h2 className="font-display text-3xl font-semibold tracking-tight">Questions</h2>
-          <div className="mt-4 space-y-2">
+          <div className="space-y-2">
             {faq.map(([q, a]) => (
-              <details key={q} className="rounded-[18px] border border-line bg-surface px-5 py-3">
-                <summary className="cursor-pointer font-semibold">{q}</summary>
+              <details key={q} className="group rounded-2xl border border-line bg-surface/60 px-5 py-4">
+                <summary className="flex cursor-pointer list-none items-center justify-between font-semibold">
+                  {q}<span className="text-muted transition-transform duration-200 group-open:rotate-45" aria-hidden>+</span>
+                </summary>
                 <p className="mt-2 text-sm text-muted">{a}</p>
               </details>
             ))}
           </div>
         </section>
 
-        <section className="mx-auto max-w-6xl px-5 py-10">
-          <div className="rounded-2xl border border-accent/40 bg-surface px-6 py-12 text-center shadow-lift">
-            <h2 className="font-display text-3xl font-semibold tracking-tight">Your people are already cheering. Give them a way to say it.</h2>
-            <Link href="/signup" className={buttonClass("primary", "mt-6")}>Create my page</Link>
+        <section className={`${section} pb-20`}>
+          <div className="rounded-3xl border border-accent/40 bg-surface px-6 py-14 text-center shadow-lift">
+            <h2 className="mx-auto max-w-2xl font-display text-3xl font-semibold tracking-tight sm:text-4xl">Your people are already cheering. Give them a way to say it.</h2>
+            <Link href="/signup" className={buttonClass("primary", "mt-8 px-6 py-3 text-base")}>Create my page</Link>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-line py-8 text-center text-sm text-muted">
-        <Logo />
-        <p className="mt-2">Small treats, real support.</p>
+      <footer className="border-t border-line">
+        <div className={`${section} flex flex-col items-center justify-between gap-4 py-8 text-sm text-muted sm:flex-row`}>
+          <div className="flex items-center gap-3"><Logo /><span>Small treats, real support.</span></div>
+          <nav className="flex gap-5"><Link href="/docs" className="hover:text-fg">Developers</Link><Link href="/legal#terms" className="hover:text-fg">Terms</Link><Link href="/legal#privacy" className="hover:text-fg">Privacy</Link></nav>
+        </div>
       </footer>
     </div>
   );
