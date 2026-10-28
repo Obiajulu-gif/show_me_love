@@ -1,4 +1,4 @@
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 import { jwtVerify, SignJWT } from "jose";
 
@@ -143,6 +143,8 @@ export function redirectAllowed(app: Pick<App, "redirectUris">, uri: string): bo
 export class Forbidden extends ConnectError {}
 
 const AUD = "sml-connect";
+/** Derived so a session cookie can never verify as a Connect request, nor the reverse. */
+export const connectKey = () => new Uint8Array(createHmac("sha256", secret()).update("show-me-love/connect").digest());
 const CODE_TTL_MIN = 10;
 export const BAD_CODE = "Code is invalid or expired.";
 export const BAD_REQUEST = "This authorization link is invalid or has expired.";
@@ -159,7 +161,7 @@ export async function createSession(app: App, input: { userRef: string; redirect
   if (typeof state !== "string" || state.length > 256) throw new ConnectError("state can be at most 256 characters.");
   if (!redirectAllowed(app, redirectUri)) throw new ConnectError("That redirect_uri isn't registered for this app.");
   const jwt = await new SignJWT({ appId: app.id, userRef, redirectUri, state })
-    .setProtectedHeader({ alg: "HS256" }).setAudience(AUD).setIssuedAt().setExpirationTime("10m").sign(secret());
+    .setProtectedHeader({ alg: "HS256" }).setAudience(AUD).setIssuedAt().setExpirationTime("10m").sign(connectKey());
   return `${baseUrl()}/connect/authorize?req=${encodeURIComponent(jwt)}`;
 }
 
@@ -167,7 +169,7 @@ export async function createSession(app: App, input: { userRef: string; redirect
 export async function loadRequest(req: unknown): Promise<{ app: App; req: ConnectReq }> {
   if (typeof req !== "string" || req.length > 4000) throw new ConnectError(BAD_REQUEST);
   let p;
-  try { p = (await jwtVerify(req, secret(), { algorithms: ["HS256"], audience: AUD })).payload; } catch { throw new ConnectError(BAD_REQUEST); }
+  try { p = (await jwtVerify(req, connectKey(), { algorithms: ["HS256"], audience: AUD })).payload; } catch { throw new ConnectError(BAD_REQUEST); }
   const { appId, userRef, redirectUri, state } = p as Record<string, unknown>;
   if (typeof appId !== "string" || !UUID.test(appId) || typeof userRef !== "string" || typeof redirectUri !== "string" || typeof state !== "string") throw new ConnectError(BAD_REQUEST);
   const [a] = await db()`select * from apps where id = ${appId}`;
@@ -202,18 +204,22 @@ export async function deny(reqJwt: string): Promise<string> {
 
 export async function exchangeCode(app: App, code: string): Promise<{ connected: true }> {
   if (typeof code !== "string" || code.length < 1 || code.length > 200) throw new ConnectError(BAD_CODE);
-  const sql = db();
-  // One conditional update makes the code single-use even under concurrent exchanges.
-  const [row] = await sql`
-    update auth_codes set used_at = now()
-    where code_hash = ${sha256(code)} and app_id = ${app.id} and used_at is null and expires_at > now()
-    returning user_id, user_ref, earnings_shared`;
-  if (!row) throw new ConnectError(BAD_CODE);
-  await sql`
-    insert into connections (app_id, user_ref, user_id, earnings_shared)
-    values (${app.id}, ${row.user_ref}, ${row.user_id}, ${row.earnings_shared})
-    on conflict (app_id, user_ref) do update
-      set user_id = excluded.user_id, earnings_shared = excluded.earnings_shared, revoked_at = null`;
+  // One transaction: a failed upsert rolls back the code's used_at, so the code isn't burned.
+  const ok = await db().begin(async (tx) => {
+    // The conditional update makes the code single-use even under concurrent exchanges.
+    const [row] = await tx`
+      update auth_codes set used_at = now()
+      where code_hash = ${sha256(code)} and app_id = ${app.id} and used_at is null and expires_at > now()
+      returning user_id, user_ref, earnings_shared`;
+    if (!row) return false;
+    await tx`
+      insert into connections (app_id, user_ref, user_id, earnings_shared)
+      values (${app.id}, ${row.user_ref}, ${row.user_id}, ${row.earnings_shared})
+      on conflict (app_id, user_ref) do update
+        set user_id = excluded.user_id, earnings_shared = excluded.earnings_shared, revoked_at = null`;
+    return true;
+  });
+  if (!ok) throw new ConnectError(BAD_CODE);
   return { connected: true };
 }
 
@@ -238,12 +244,21 @@ export async function getEarnings(app: App, userRef: string): Promise<{ total_re
 
 export async function disconnect(app: App, userRef: string): Promise<void> {
   if (typeof userRef !== "string" || !userRef || userRef.length > 128) return;
-  await db()`update connections set revoked_at = now() where app_id = ${app.id} and user_ref = ${userRef} and revoked_at is null`;
+  await db().begin(async (tx) => {
+    // Also burn this user's unused codes for the app, so an earlier approval can't reconnect after a disconnect.
+    await tx`
+      update auth_codes set used_at = now()
+      where app_id = ${app.id} and user_ref = ${userRef} and used_at is null`;
+    await tx`update connections set revoked_at = now() where app_id = ${app.id} and user_ref = ${userRef} and revoked_at is null`;
+  });
 }
 
 export async function revokeByCreator(userId: string, appId: string): Promise<void> {
   if (!UUID.test(appId)) return;
-  await db()`update connections set revoked_at = now() where user_id = ${userId} and app_id = ${appId} and revoked_at is null`;
+  await db().begin(async (tx) => {
+    await tx`update auth_codes set used_at = now() where app_id = ${appId} and user_id = ${userId} and used_at is null`;
+    await tx`update connections set revoked_at = now() where user_id = ${userId} and app_id = ${appId} and revoked_at is null`;
+  });
 }
 
 export type ConnectedApp = { appId: string; name: string; mode: AppMode; connectedAt: Date; earningsShared: boolean };

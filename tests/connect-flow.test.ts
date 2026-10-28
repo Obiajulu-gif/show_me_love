@@ -104,7 +104,8 @@ test("an unregistered redirect, bad user_ref or long state is refused", async ()
 
 test("a forged, wrong-audience or expired request token is refused; a removed redirect is re-checked at approval", async () => {
   const { SignJWT } = await import("jose");
-  const { secret } = await import("../src/lib/session");
+  const { connectKey } = await import("../src/lib/connect");
+  const secret = connectKey;
   const claims = { appId: sandbox.id, userRef: "u1", redirectUri: CB, state: "s" };
   const noAud = await new SignJWT(claims).setProtectedHeader({ alg: "HS256" }).setExpirationTime("10m").sign(secret());
   const expired = await new SignJWT(claims).setProtectedHeader({ alg: "HS256" }).setAudience("sml-connect").setExpirationTime(Math.floor(Date.now() / 1000) - 5).sign(secret());
@@ -131,7 +132,9 @@ test("revokeByCreator hides the connection; reconnecting clears the revocation",
   expect((await getConnection(sandbox, "u1"))?.earnings_shared).toBe(true);
   await disconnect(sandbox, "u1");
   expect(await getConnection(sandbox, "u1")).toBeNull();
+  await exchangeCode(sandbox, (await connect(sandbox, false)).code);
   await revokeByCreator(bola, sandbox.id); // another user's call changes nothing for ada
+  expect(await getConnection(sandbox, "u1")).not.toBeNull();
 });
 
 test("sandbox earnings are the fixed fake; live earnings are real", async () => {
@@ -247,4 +250,39 @@ test("magic-link verify honours a safe next and ignores an unsafe one", async ()
   expect(ok.origin + ok.pathname + ok.search).toBe("https://sml.test/connect/authorize?req=abc");
   const evil = await go("https://evil.example/connect/authorize");
   expect(evil.origin + evil.pathname).toBe("https://sml.test/dashboard");
+});
+
+test("session cookies and Connect requests are not interchangeable", async () => {
+  const { signSession, verifySession } = await import("../src/lib/session");
+  await expect(approve(ada, await signSession(ada), { earnings: false })).rejects.toThrow();
+  const url = await createSession(sandbox, { userRef: "u1", redirectUri: CB, state: "s" });
+  expect(await verifySession(reqOf(url))).toBeNull();
+});
+
+test("revoking or disconnecting kills unused codes issued earlier", async () => {
+  const first = await connect(sandbox);
+  await revokeByCreator(ada, sandbox.id);
+  await expect(exchangeCode(sandbox, first.code)).rejects.toThrow("Code is invalid or expired.");
+  expect(await getConnection(sandbox, "u1")).toBeNull();
+  const second = await connect(sandbox);
+  await disconnect(sandbox, "u1");
+  await expect(exchangeCode(sandbox, second.code)).rejects.toThrow("Code is invalid or expired.");
+  expect(await getConnection(sandbox, "u1")).toBeNull();
+});
+
+test("a failed connection upsert does not burn the code", async () => {
+  const { code } = await connect(sandbox);
+  await t.sql`create function boom() returns trigger language plpgsql as $$ begin raise exception 'boom'; end $$`;
+  await t.sql`create trigger boom before insert on connections for each row execute function boom()`;
+  await expect(exchangeCode(sandbox, code)).rejects.toThrow();
+  await t.sql`drop trigger boom on connections`;
+  expect(await exchangeCode(sandbox, code)).toEqual({ connected: true });
+});
+
+test("the authorize page is served with anti-framing headers", async () => {
+  const cfg = (await import("../next.config")).default;
+  const rules = await cfg.headers!();
+  const h = rules.find((r) => r.source === "/connect/authorize")!.headers;
+  expect(h).toContainEqual({ key: "Content-Security-Policy", value: "frame-ancestors 'none'" });
+  expect(h).toContainEqual({ key: "X-Frame-Options", value: "DENY" });
 });
