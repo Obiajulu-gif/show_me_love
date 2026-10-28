@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { grantAdminIfListed } from "@/lib/auth";
 import { consumeCode } from "@/lib/codes";
 import { db } from "@/lib/db";
 import { safeNext } from "@/lib/safeNext";
@@ -9,6 +10,7 @@ export async function GET(req: Request) {
   const q = new URL(req.url).searchParams;
   const userId = await consumeCode(null, "login", q.get("code") ?? "");
   if (!userId) return NextResponse.redirect(new URL("/login?error=link", base));
+  await grantAdminIfListed(userId);
   await setSessionCookie(userId);
   const [c] = await db()`select 1 from creators where user_id = ${userId}`;
   return NextResponse.redirect(new URL(safeNext(q.get("next")) ?? (c ? "/dashboard" : "/onboarding"), base));

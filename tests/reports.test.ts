@@ -167,6 +167,19 @@ test("a bounced refund (token_refunded) restores the payment and emails admins; 
   expect(await balance(ada)).toBe("0.950000");
 });
 
+test("refund sent but refund_reference save fails: admins get the refid", async () => {
+  await paid();
+  await t.sql.unsafe("create or replace function block_rr() returns trigger language plpgsql as 'begin if new.refund_reference is not null then raise exception ''save failed''; end if; return new; end'");
+  await t.sql.unsafe("create trigger block_rr before update on payments for each row execute function block_rr()");
+  try {
+    expect(await refundPayment(boss, "p1", { address: BEP, network: "bep20" })).toEqual({ outcome: "unclear" });
+    const refid = await vi.mocked(ras.sendCoin).mock.results[0].value;
+    const c = vi.mocked(sendMail).mock.calls.at(-1)!;
+    expect(c[0]).toBe("boss@x.com");
+    expect(c[2]).toContain(String(refid)); expect(c[2]).toContain("p1");
+  } finally { await t.sql.unsafe("drop trigger block_rr on payments"); }
+});
+
 test("a failed restore emails admins with the ref and throws a friendly error", async () => {
   await paid();
   vi.mocked(ras.sendCoin).mockRejectedValueOnce(new ras.RasFailure("nope"));

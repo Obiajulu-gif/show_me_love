@@ -218,7 +218,7 @@ export async function dispatchUsdt(id: string): Promise<boolean> {
   return true;
 }
 
-const STUCK = "stuck alerted";
+export const STUCK = "stuck alerted";
 /** Emails admins once per withdrawal (admin_note marks it) about a send that needs manual reconciliation. */
 async function flagStuck(id: string, text: string) {
   try { await db()`update withdrawals set admin_note = ${STUCK} where id = ${id}`; } catch { /* still alert */ }
@@ -253,7 +253,9 @@ export async function settleSendEvent(event: RasEvent, tx: TransactionSql): Prom
     }
     return { handled: true };
   }
-  await settle(tx, w.id, sent ? "paid" : "failed");
+  if (!(await settle(tx, w.id, sent ? "paid" : "failed")) && !sent) {
+    await notifyAdmins("Withdrawal refund arrived after settlement", `RAS reported token_refunded (refid ${String(ref)}) for withdrawal ${w.id}, which is no longer processing. The balance was not changed; reconcile by hand.`);
+  }
   return { handled: true };
 }
 

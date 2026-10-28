@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { rejectCrossOrigin } from "@/lib/http";
 import { requireUser, Unauthorized } from "@/lib/session";
 import { saveUpload } from "@/lib/uploads";
 
 export async function POST(req: Request) {
+  const blocked = rejectCrossOrigin(req);
+  if (blocked) return blocked;
   try {
     await requireUser();
     const form = await req.formData().catch(() => null);

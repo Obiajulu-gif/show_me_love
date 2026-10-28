@@ -4,7 +4,8 @@
 // The server must run with RAS_MODE=practice and ADMIN_EMAILS including smoke+admin@show-me-love.test.
 import { chromium, expect as pwExpect } from "@playwright/test";
 
-const expect = pwExpect.configure({ timeout: 20_000 });
+const TMO = Number(process.env.SMOKE_TIMEOUT_MS) || 20_000; // raise on slow machines: dev routes compile on first hit
+const expect = pwExpect.configure({ timeout: TMO });
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 const CRON_SECRET = process.env.CRON_SECRET;
 const ADMIN_EMAIL = "smoke+admin@show-me-love.test";
@@ -34,7 +35,7 @@ let page;
 try {
   const ctx = await browser.newContext({ baseURL: BASE });
   page = await ctx.newPage();
-  page.setDefaultTimeout(20_000);
+  page.setDefaultTimeout(TMO);
 
   t("claim username on landing page");
   await page.goto("/");
@@ -103,16 +104,15 @@ try {
   t("admin approves in /admin/withdrawals");
   const actx = await browser.newContext({ baseURL: BASE });
   const apage = await actx.newPage();
-  apage.setDefaultTimeout(20_000);
+  apage.setDefaultTimeout(TMO);
   apage.on("dialog", (d) => d.accept());
   const json = { "content-type": "application/json" };
-  let r = await actx.request.post("/api/auth/signup", { headers: json, data: { email: ADMIN_EMAIL, password: PASSWORD } });
-  if (!r.ok()) { // admin already exists from an earlier run: its password is not known, so use the magic-link dev route instead
-    r = await actx.request.post("/api/auth/magic", { headers: json, data: { email: ADMIN_EMAIL } });
-    const { devLink } = await r.json();
-    if (!devLink) throw new Error("Admin exists and no dev sign-in link was offered.");
-    await apage.goto(devLink);
-  }
+  // Admin is granted only by a magic-link login (proves the inbox). Sign up if new (may already exist), then sign in by link.
+  await actx.request.post("/api/auth/signup", { headers: json, data: { email: ADMIN_EMAIL, password: PASSWORD } });
+  const r = await actx.request.post("/api/auth/magic", { headers: json, data: { email: ADMIN_EMAIL } });
+  const { devLink } = await r.json();
+  if (!devLink) throw new Error("No dev sign-in link was offered for the admin.");
+  await apage.goto(devLink);
   await apage.goto("/admin/withdrawals");
   const row = apage.locator("tr", { hasText: `@${username}` });
   await expect(row).toBeVisible();
@@ -136,7 +136,7 @@ try {
   const makeCreator = async (name) => {
     const c = await browser.newContext({ baseURL: BASE });
     const p = await c.newPage();
-    p.setDefaultTimeout(20_000);
+    p.setDefaultTimeout(TMO);
     const r = await c.request.post("/api/auth/signup", { headers: json, data: { email: `${name}@show-me-love.test`, password: PASSWORD } });
     if (!r.ok()) throw new Error(`signup ${name} failed: ${r.status()}`);
     await p.goto("/onboarding");

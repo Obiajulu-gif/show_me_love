@@ -35,6 +35,7 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
   const [sent, setSent] = useState(false);
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState("");
+  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
 
   const run = async (f: () => Promise<void>) => {
@@ -48,6 +49,7 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
 
   return (
     <>
+      {notice && <p role="status" className="mb-3 rounded-xl border border-line bg-white p-3 text-sm">{notice}</p>}
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <div className="flex items-center justify-between text-sm text-cocoa-2">Available
@@ -132,7 +134,11 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
                     })}>Send code</Button>
                   ) : (
                     <Button disabled={busy || code.length !== 6} onClick={() => run(async () => {
-                      await call("/api/withdrawals", "POST", { method, amount, code });
+                      const j = await call("/api/withdrawals", "POST", { method, amount, code });
+                      const w = j.withdrawal ?? {};
+                      setNotice(w.status === "failed" ? "Payout failed: nothing was sent and the money is back in your balance."
+                        : w.stuck ? "Sent, but the outcome is unclear. Admins have been told and will check it."
+                        : "");
                       close(); router.refresh();
                     })}>Withdraw</Button>
                   )}

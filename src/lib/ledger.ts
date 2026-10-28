@@ -26,9 +26,10 @@ export async function balance(creatorId: string, tx: Q = db()): Promise<string> 
   return r.v;
 }
 
+/** Money received net of refunds: credits (pay:, recredit:) plus the received-amount reversals (rev:, not the revfee: ones). */
 export async function totalReceived(creatorId: string): Promise<string> {
   const [r] = await db()`
     select coalesce(sum(amount_usdt), 0)::numeric(20,6)::text as v
-    from ledger_entries where creator_id = ${creatorId} and kind = 'credit'`;
+    from ledger_entries where creator_id = ${creatorId} and (kind = 'credit' or (kind = 'reversal' and ref like 'rev:%'))`;
   return r.v;
 }

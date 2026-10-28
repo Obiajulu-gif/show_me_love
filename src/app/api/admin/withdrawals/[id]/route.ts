@@ -14,7 +14,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const b = await req.json().catch(() => null);
     const note = String(b?.note ?? "");
     switch (b?.action) {
-      case "approve": await approveWithdrawal(admin.id, id); break;
+      case "approve": return NextResponse.json({ ok: true, ...(await approveWithdrawal(admin.id, id)) });
       case "paid": await markNgnPaid(admin.id, id, String(b.bankReference ?? "")); break;
       case "reject": await rejectWithdrawal(admin.id, id, note); break;
       case "stuck_paid": await resolveStuckPaid(admin.id, id, note); break;

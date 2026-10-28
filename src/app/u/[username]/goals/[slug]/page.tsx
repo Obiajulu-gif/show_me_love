@@ -9,7 +9,7 @@ import { buttonClass } from "@/components/ui/Button";
 import { getCreatorByUsername } from "@/lib/creators";
 import { formatMoney } from "@/lib/goalFormat";
 import { getPublicGoal, goalContributors, goalPaymentStatus, goalProgress } from "@/lib/goals";
-import { rasMode } from "@/lib/ras";
+import { practiceEnabled } from "@/lib/ras";
 import { resolveUsername } from "@/lib/usernames";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +48,7 @@ export default async function GoalPage({ params, searchParams }: { params: Promi
       )}
       <main className="mx-auto max-w-xl space-y-5 px-4 py-8">
         {showThanks && (
-          <ThanksStatus ref_={sp.ref!} username={c.username} initial={thanks.status} amountNgn={thanks.amountNgn} canSimulate={rasMode() === "practice"} />
+          <ThanksStatus ref_={sp.ref!} username={c.username} initial={thanks.status} amountNgn={thanks.amountNgn} canSimulate={practiceEnabled()} />
         )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {goal.coverUrl && <img src={goal.coverUrl} alt="" className="h-56 w-full rounded-[18px] object-cover" />}

@@ -3,6 +3,9 @@ import { startTestDb } from "@/lib/testing";
 import { AuthError, signIn, signUp } from "@/lib/auth";
 import { consumeCode, issueCode } from "@/lib/codes";
 import { hit } from "@/lib/ratelimit";
+import { GET as magicVerify } from "../src/app/api/auth/magic/verify/route";
+
+vi.mock("../src/lib/session", async (orig) => ({ ...(await orig<typeof import("../src/lib/session")>()), setSessionCookie: vi.fn() }));
 
 let t: Awaited<ReturnType<typeof startTestDb>>;
 beforeAll(async () => {
@@ -20,10 +23,16 @@ test("signUp then signIn; wrong password and duplicate email give user-facing er
   await expect(signUp("a@x.com", "password1")).rejects.toThrow(new AuthError("That email already has an account."));
 });
 
-test("ADMIN_EMAILS get role admin", async () => {
+test("signup never grants admin; only a magic-link login proves the inbox", async () => {
   const { id } = await signUp("boss@x.com", "password1");
+  expect((await t.sql`select role from users where id = ${id}`)[0].role).toBe("creator");
+  await signIn("boss@x.com", "password1");
+  expect((await t.sql`select role from users where id = ${id}`)[0].role).toBe("creator");
+  const res = await magicVerify(new Request(`http://localhost/api/auth/magic/verify?code=${await issueCode(id, "login", 15)}`));
+  expect(res.status).toBe(307);
   expect((await t.sql`select role from users where id = ${id}`)[0].role).toBe("admin");
   const o = await signUp("plain@x.com", "password1");
+  await magicVerify(new Request(`http://localhost/api/auth/magic/verify?code=${await issueCode(o.id, "login", 15)}`));
   expect((await t.sql`select role from users where id = ${o.id}`)[0].role).toBe("creator");
 });
 

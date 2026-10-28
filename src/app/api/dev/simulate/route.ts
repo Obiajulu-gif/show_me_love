@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { handleRasEvent } from "@/lib/payments";
-import { rasMode } from "@/lib/ras";
+import { practiceEnabled } from "@/lib/ras";
 
 /** Practice mode only: pretends RAS reported this payment as paid. */
 export async function POST(req: Request) {
-  if (rasMode() !== "practice") return new NextResponse(null, { status: 404 });
+  if (!practiceEnabled()) return new NextResponse(null, { status: 404 });
   const b = await req.json().catch(() => null);
   if (!b || typeof b.ref !== "string") return NextResponse.json({ error: "Send a ref." }, { status: 400 });
   const [p] = await db()`select amount_usdt from payments where ref = ${b.ref}`;

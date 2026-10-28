@@ -1,6 +1,6 @@
 # show-me-love
 
-A little love goes a long way.
+Small treats, real support.
 
 show-me-love lets a creator claim a link like `/@ada`, pick a small treat their supporters can buy them (a zobo, a coffee, a custom one), and get paid in USDT. Supporters pay by Roqqu payment link, the app credits the creator when Roqqu confirms, and the creator withdraws to a USDT wallet or a Nigerian bank account. Admins review early or bank withdrawals.
 
@@ -38,7 +38,7 @@ An end-to-end run in a real browser. Tier 1, the money loop: claim a username, s
 CRON_SECRET=<same value> BASE_URL=http://localhost:3000 node scripts/smoke.mjs
 ```
 
-It exits non-zero and names the failing step if anything breaks. It takes about three minutes, because a send only settles after it has been processing for two minutes; the script calls `/api/cron/expire` every 15 seconds until the row is Paid. You may need `npx playwright install chromium` once. Signups are rate limited to 10 per hour per IP (a run uses four), so restart `db:local` on a clean `.pglite` folder if you rerun it many times.pglite` folder if you rerun it many times.
+It exits non-zero and names the failing step if anything breaks. It takes about three minutes, because a send only settles after it has been processing for two minutes; the script calls `/api/cron/expire` every 15 seconds until the row is Paid. You may need `npx playwright install chromium` once. Signups are rate limited to 10 per hour per IP (a run uses four), so restart `db:local` on a clean `.pglite` folder if you rerun it many times.
 
 ## Responsive check
 
@@ -60,15 +60,23 @@ Creates the creator `demo` (`demo@show-me-love.test`) with a bio and three paid 
 | `test` | Real calls to Roqqu's staging service. | `RAS_TEST_KEY` |
 | `live` | Real money. | `RAS_LIVE_KEY` and `ALLOW_PRODUCTION_EXECUTION=true` |
 
-Live mode refuses to send anything unless `ALLOW_PRODUCTION_EXECUTION` is exactly `true`. If `RAS_MODE` is unset, the app picks `test` when only a test key exists, `live` for a live key, and `practice` otherwise. Set `RAS_MODE` explicitly on a real deployment.
+Live mode refuses to send anything unless `ALLOW_PRODUCTION_EXECUTION` is exactly `true`. Outside production, if `RAS_MODE` is unset the app picks `test` when only a test key exists, `live` for a live key, and `practice` otherwise. In production (`NODE_ENV=production`) `RAS_MODE` must be set explicitly, and `practice` is refused unless `ALLOW_PRACTICE=true`; the server also refuses to start with a missing `PUBLIC_APP_URL`, a `SESSION_SECRET` under 32 characters, or no email provider. The Simulate payment route and buttons exist only in practice mode.
 
 Webhook: register `https://<your-host>/api/ras/webhook` in the RAS dashboard. Events are encrypted with the key for the current mode and are what credit a creator.
 
 Cron: `/api/cron/expire` expires stale pending payments and settles sends. It needs `Authorization: Bearer $CRON_SECRET`. On Vercel Hobby, crons may only run daily, so `vercel.json` schedules it at 03:00 UTC. Pending payments also expire lazily whenever their status is read.
 
+**Cron frequency.** On Vercel Hobby the safety-net cron runs once a day, so a missed `token_sent` webhook can leave a withdrawal showing "Sending" for up to 24 hours. For tighter settling, point an external scheduler (cron-job.org, a VPS crontab, etc.) at the route every 5 minutes:
+
+```
+*/5 * * * * curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://<your-host>/api/cron/expire
+```
+
+Admin role: addresses in `ADMIN_EMAILS` become admins only after a successful magic-link sign-in (which proves they own the inbox), never at signup or password login.
+
 ## Deploy (pending approval)
 
-Demo-readiness checklist (nothing below has been done; each step waits for approval):
+Demo-readiness checklist (each step waits for approval):
 
 - [ ] Switch the production deployment to `RAS_MODE=test` once `RAS_TEST_KEY` is added.
 - [ ] Make one real test-mode payment and one USDT test withdrawal, and record the results here.

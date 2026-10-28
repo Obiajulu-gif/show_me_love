@@ -67,7 +67,7 @@ export default function Home() {
         <section className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-10 md:grid-cols-2">
           <div>
             <h2 className="font-serif text-3xl italic">Your page, ready to share</h2>
-            <p className="mt-3 text-cocoa-2">Pick your treat, set a price, and drop one link in your bio. Supporters leave a note with every treat and it lands on your wall of love.</p>
+            <p className="mt-3 text-cocoa-2">Pick your treat, set a price, and drop one link in your bio. Supporters leave a note with every treat and it shows up in your notes from supporters.</p>
           </div>
           <div className="mx-auto w-full max-w-sm"><CreatorPage creator={demo} mode="preview" payments={demoWall} /></div>
         </section>

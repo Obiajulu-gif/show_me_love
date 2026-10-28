@@ -31,10 +31,22 @@ export class RasFailure extends RasError {}
 
 export function rasMode(): RasMode {
   const forced = (process.env.RAS_MODE ?? "").trim().toLowerCase();
-  if (forced === "practice" || forced === "test" || forced === "live") return forced;
+  const prod = process.env.NODE_ENV === "production";
+  const valid = forced === "practice" || forced === "test" || forced === "live";
+  // A keyless production deploy must never fall into simulated payments.
+  if (prod && !valid) throw new RasConfigError("RAS_MODE must be set to test or live in production.");
+  if (prod && forced === "practice" && process.env.ALLOW_PRACTICE !== "true") {
+    throw new RasConfigError("Practice mode in production needs ALLOW_PRACTICE=true.");
+  }
+  if (valid) return forced;
   if (process.env.RAS_TEST_KEY) return "test";
   if (process.env.RAS_LIVE_KEY) return "live";
   return "practice";
+}
+
+/** True only when simulated payments are allowed here; a config error means no. Gates the Simulate route and buttons. */
+export function practiceEnabled(): boolean {
+  try { return rasMode() === "practice"; } catch { return false; }
 }
 
 function keyHeaders(): Record<string, string> {

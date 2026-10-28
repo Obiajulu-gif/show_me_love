@@ -22,8 +22,19 @@ export function ngnToUsdt(ngn: number, ngnPerUsd: number): string {
   return `${cents / 100n}.${(cents % 100n).toString().padStart(2, "0")}`;
 }
 
+export class ConfigError extends Error {}
+
+/** PLATFORM_FEE_BPS: an integer 0-2000 (default 500); anything else is a config error, never a silent wrong fee. */
+export function platformFeeBps(): number {
+  const raw = (process.env.PLATFORM_FEE_BPS ?? "").trim();
+  if (!raw) return 500;
+  const n = Number(raw);
+  if (!/^\d+$/.test(raw) || n > 2000) throw new ConfigError(`PLATFORM_FEE_BPS must be an integer from 0 to 2000 (got "${raw}").`);
+  return n;
+}
+
 /** Platform fee on amount, rounded down to 6dp. */
-export function feeUsdt(amount: string, bps = Number(process.env.PLATFORM_FEE_BPS ?? 500)): string {
+export function feeUsdt(amount: string, bps = platformFeeBps()): string {
   return fromMicro((toMicro(amount) * BigInt(bps)) / 10_000n);
 }
 

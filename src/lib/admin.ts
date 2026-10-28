@@ -7,7 +7,7 @@ import { addEntry } from "./ledger";
 import { fromMicro, toMicro } from "./money";
 import { networkFee, RasConfigError, RasFailure, sendCoin } from "./ras";
 import { requireUser, Unauthorized } from "./session";
-import { BEP20, dispatchUsdt, notifyAdmins, restoreRefund, settle, TRC20, WithdrawalError } from "./withdrawals";
+import { BEP20, dispatchUsdt, notifyAdmins, restoreRefund, settle, STUCK, TRC20, WithdrawalError } from "./withdrawals";
 
 export class Forbidden extends Error {
   constructor() { super("Admins only."); }
@@ -41,9 +41,12 @@ const need = (v: unknown, msg: string): string => {
   return s;
 };
 
-export async function approveWithdrawal(adminId: string, id: string): Promise<void> {
+/** Sends it and reports what really happened: `failed` (returned to the creator) or `stuck` (outcome unclear, admins alerted). */
+export async function approveWithdrawal(adminId: string, id: string): Promise<{ status: string; stuck: boolean }> {
   await assertAdmin(adminId);
   if (!(await dispatchUsdt(id))) throw new WithdrawalError(NOT_REVIEW);
+  const [w] = await db()`select status, admin_note from withdrawals where id = ${id}`;
+  return { status: w.status, stuck: w.admin_note === STUCK };
 }
 
 export async function markNgnPaid(adminId: string, id: string, bankReference: string): Promise<void> {
@@ -159,7 +162,12 @@ export async function refundPayment(adminId: string, ref: string, to: { address:
 
   try {
     const refid = await sendCoin({ token: "usdt", network, to: address, amount: fromMicro(amountMicro) });
-    await db()`update payments set refund_reference = ${refid} where ref = ${ref}`;
+    try {
+      await db()`update payments set refund_reference = ${refid} where ref = ${ref}`;
+    } catch (se) {
+      await notifyAdmins("Refund sent but reference not saved", `Refund of payment ${ref} was sent (RAS refid ${refid}) but saving refund_reference failed: ${(se as Error).message}. Set payments.refund_reference = ${refid} by hand so a bounce can be matched.`);
+      return { outcome: "unclear" };
+    }
     return { outcome: "sent" };
   } catch (e) {
     if (e instanceof RasFailure || e instanceof RasConfigError) {

@@ -8,6 +8,7 @@ import { handleRasEvent } from "../src/lib/payments";
 import { sendMail } from "../src/lib/email";
 import * as ras from "../src/lib/ras";
 import { startTestDb } from "../src/lib/testing";
+import { approveWithdrawal } from "../src/lib/admin";
 import { dispatchUsdt, pollProcessing, quoteWithdrawal, requestWithdrawal, setDestination } from "../src/lib/withdrawals";
 
 vi.mock("../src/lib/ras", async (orig) => {
@@ -238,6 +239,33 @@ test("token_sent pays, token_refunded releases; only from processing; unknown re
   expect((await t.sql`select status from withdrawals where id = ${w2.id}`)[0].status).toBe("failed");
   expect(await balance(ada)).toBe("6.000000"); // 10 - 4 (paid) ; the 2 is released
   expect(await handleRasEvent({ event_id: "s4", event_type: "token_received", meta_data: {} })).toEqual({ handled: false, reason: "unknown_event" });
+});
+
+test("token_refunded after paid changes nothing but emails admins with the id and reference", async () => {
+  vi.stubEnv("ADMIN_EMAILS", "boss@x.com");
+  const w = await ask("4");
+  await handleRasEvent({ event_id: "p1", event_type: "token_sent", meta_data: { reference: w.ras_reference } });
+  vi.mocked(sendMail).mockClear();
+  await handleRasEvent({ event_id: "p2", event_type: "token_refunded", meta_data: { refid: w.ras_reference } });
+  expect(await balance(ada)).toBe("6.000000");
+  const c = vi.mocked(sendMail).mock.calls.at(-1)!;
+  expect(c[0]).toBe("boss@x.com");
+  expect(c[2]).toContain(w.id); expect(c[2]).toContain(String(w.ras_reference));
+  vi.unstubAllEnvs(); vi.stubEnv("RAS_MODE", "practice");
+});
+
+test("admin approve reports the real outcome: failed, or sent-but-unclear", async () => {
+  const [boss] = await t.sql`insert into users (email, role) values ('boss2@x.com','admin') on conflict (email) do update set role = 'admin' returning id`;
+  await t.sql`update users set created_at = now() - interval '1 hour' where id = ${ada}`;
+  const w1 = await ask("2");
+  expect(w1.status).toBe("awaiting_review");
+  vi.mocked(ras.sendCoin).mockRejectedValueOnce(new ras.RasFailure("insufficient merchant balance"));
+  expect(await approveWithdrawal(boss.id, w1.id)).toEqual({ status: "failed", stuck: false });
+  const w2 = await ask("2");
+  vi.mocked(ras.sendCoin).mockRejectedValueOnce(new ras.RasError("Roqqu unreachable: timeout"));
+  expect(await approveWithdrawal(boss.id, w2.id)).toEqual({ status: "processing", stuck: true });
+  const w3 = await ask("2");
+  expect(await approveWithdrawal(boss.id, w3.id)).toEqual({ status: "processing", stuck: false });
 });
 
 test("cron settles processing withdrawals", async () => {

@@ -5,7 +5,7 @@ Status: approved in brainstorming, awaiting written-spec review
 
 ## 1. Intent
 
-show-me-love is a feature-for-feature clone of buymeamalt.com (a Nigerian "Buy Me a Coffee"), with the fiat payment rail replaced by the Roqqu API Service (RAS).
+show-me-love is a Nigerian creator-support app with feature parity to popular "buy me a treat" services, with the fiat payment rail replaced by the Roqqu API Service (RAS).
 
 - **Purpose:** entry for the Anambra Web3 Hackathon (Roqqu); demo on **2026-11-07**. It must also be a real, live product: real creators, real payments.
 - **Success:** every buymeamalt surface (landing, onboarding, dashboard pages, public page, goals, group support, share, developers/Connect, withdrawals) works end to end on Vercel, with payments settled through RAS. RAS test mode for the demo; switching to live is an env change only.

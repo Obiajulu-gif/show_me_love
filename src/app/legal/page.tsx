@@ -28,7 +28,7 @@ export default function Legal() {
         <div className="mt-3 space-y-3">
           <p><strong>What we collect.</strong> Your email, username and profile, the payments made to and by you (including the name or message a supporter chooses to add), payout details, and basic technical data needed to keep the service safe.</p>
           <p><strong>How we use it.</strong> To run your account, process payments and payouts, prevent fraud, send service emails, and answer reports. We do not sell personal data.</p>
-          <p><strong>Who sees it.</strong> Your public page shows what you choose to publish. Supporters&apos; names appear on the wall of love only if they choose to. Payment and email providers process data for us. Apps you allow through Connect see your support link, and your totals only if you tick that option. You can revoke an app at any time from the Share page.</p>
+          <p><strong>Who sees it.</strong> Your public page shows what you choose to publish. Supporters&apos; names appear in the notes from supporters only if they choose to. Payment and email providers process data for us. Apps you allow through Connect see your support link, and your totals only if you tick that option. You can revoke an app at any time from the Share page.</p>
           <p><strong>Keeping and deleting.</strong> We keep payment records as long as financial rules require. Ask us to close your account and delete what we are not required to keep.</p>
           <p><strong>Your choices.</strong> You can ask for a copy of your data or a correction by contacting us through the app.</p>
         </div>

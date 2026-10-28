@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, expect, test, vi } from "vitest";
 import { POST as webhook } from "../src/app/api/ras/webhook/route";
 import { GET as cron } from "../src/app/api/cron/expire/route";
 import { POST as simulate } from "../src/app/api/dev/simulate/route";
+import { sendMail } from "../src/lib/email";
 import { createCreator } from "../src/lib/creators";
 import * as ledger from "../src/lib/ledger";
 import { balance, totalReceived } from "../src/lib/ledger";
@@ -10,6 +11,7 @@ import { expireIfStale, expireStale, handleRasEvent } from "../src/lib/payments"
 import { startTestDb } from "../src/lib/testing";
 import { encryptWebhook, type RasEvent } from "../src/lib/webhookCrypto";
 
+vi.mock("../src/lib/email", async (orig) => ({ ...(await orig<typeof import("../src/lib/email")>()), sendMail: vi.fn(async () => ({ sent: true, via: "brevo" as const })) }));
 vi.mock("../src/lib/ledger", async (orig) => {
   const m = await orig<typeof import("../src/lib/ledger")>();
   return { ...m, addEntry: vi.fn(m.addEntry) };
@@ -105,6 +107,28 @@ test("late money on an expired payment still credits", async () => {
   await handleRasEvent(ev(ref));
   expect(await status(ref)).toBe("successful");
   expect(await balance(ada)).toBe("0.950000");
+});
+
+test("late or extra payment on a failed/successful row emails admins and changes no ledger", async () => {
+  vi.stubEnv("ADMIN_EMAILS", "boss@x.com");
+  const failed = await pay();
+  await handleRasEvent(ev(failed, "payment_link_failed"));
+  vi.mocked(sendMail).mockClear();
+  expect(await handleRasEvent(ev(failed, "payment_link_completed", "1.00"))).toEqual({ handled: true });
+  expect(await status(failed)).toBe("failed");
+  expect(await balance(ada)).toBe("0.000000");
+  let c = vi.mocked(sendMail).mock.calls.at(-1)!;
+  expect(c[0]).toBe("boss@x.com");
+  expect(c[2]).toContain(failed); expect(c[2]).toContain("payment_link_completed"); expect(c[2]).toContain("1.00");
+
+  const ok = await pay();
+  await handleRasEvent(ev(ok));
+  vi.mocked(sendMail).mockClear();
+  await handleRasEvent(ev(ok, "payment_link_overpaid", "2.50"));
+  expect(await balance(ada)).toBe("0.950000");
+  c = vi.mocked(sendMail).mock.calls.at(-1)!;
+  expect(c[2]).toContain(ok); expect(c[2]).toContain("payment_link_overpaid"); expect(c[2]).toContain("2.50");
+  vi.unstubAllEnvs(); vi.stubEnv("RAS_MODE", "practice");
 });
 
 test("webhook route: bad hash 400, good hash credits, practice 404", async () => {

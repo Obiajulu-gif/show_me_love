@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 
 import { issueCode } from "@/lib/codes";
 import { devHint, sendMail } from "@/lib/email";
+import { rejectCrossSite } from "@/lib/http";
 import { hit } from "@/lib/ratelimit";
 import { requireUser, Unauthorized } from "@/lib/session";
 import { maskedDestinations } from "@/lib/withdrawals";
 
 export async function POST(req: Request) {
+  const blocked = rejectCrossSite(req);
+  if (blocked) return blocked;
   try {
     const user = await requireUser();
     if (!(await hit(`wcodereq:${user.id}`, 5, 900))) return NextResponse.json({ error: "Too many codes requested. Try again in 15 minutes." }, { status: 429 });

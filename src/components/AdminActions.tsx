@@ -16,7 +16,10 @@ export function AdminActions({ w }: { w: Row }) {
     const r = await fetch(`/api/admin/withdrawals/${w.id}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({}));
     setBusy(false);
-    if (r.ok) router.refresh(); else setMsg(j.error ?? "Something went wrong.");
+    if (!r.ok) return setMsg(j.error ?? "Something went wrong.");
+    if (j.status === "failed") setMsg("Payout failed: nothing was sent and the money went back to the creator. Admins were emailed.");
+    else if (j.stuck) setMsg("Sent, but the outcome is unclear. Admins were emailed to reconcile.");
+    router.refresh();
   }
   const ask = (q: string) => (window.prompt(q) ?? "").trim();
   const btn = "rounded-full border border-line px-3 py-1 text-xs font-semibold disabled:opacity-50";

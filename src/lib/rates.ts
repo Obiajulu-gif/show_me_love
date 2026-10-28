@@ -11,7 +11,9 @@ export async function getRate(): Promise<{ ngnPerUsd: number; at: Date }> {
   const now = Date.now();
   if (cached && now - cached.at < FRESH_MS) return { ngnPerUsd: cached.value, at: new Date(cached.at) };
   try {
-    cached = { value: await ngnPerUsd(), at: now };
+    const value = await ngnPerUsd();
+    if (!Number.isFinite(value) || value <= 0) throw new Error("bad rate");
+    cached = { value, at: now };
   } catch {
     if (!cached || now - cached.at >= STALE_MS) throw new RateUnavailable("no recent NGN rate");
   }

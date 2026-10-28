@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { createCreator } from "@/lib/creators";
+import { rejectCrossSite } from "@/lib/http";
 import { requireUser, Unauthorized } from "@/lib/session";
 
 const FRIENDLY = /^(That username|You already|3–24|That name|Pick a treat from|Give your)/;
 
 export async function POST(req: Request) {
+  const blocked = rejectCrossSite(req);
+  if (blocked) return blocked;
   try {
     const user = await requireUser();
     const b = await req.json().catch(() => ({}));

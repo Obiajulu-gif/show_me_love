@@ -42,7 +42,7 @@ export async function createCreator(
       const [r] = await tx`
         insert into creators (user_id, username, display_name, treat_id, custom_treat, unit_price_ngn, presets, thank_you_text, share_message, page_style)
         values (${userId}, ${username}, ${username}, ${input.treatId}, ${input.customTreat ? tx.json(input.customTreat) : null}, 500, ${[1, 3, 5]},
-                'Thanks for the treat. It means a lot.', 'Feeling good today. Make it better: buy me a treat! 😊', ${tx.json(DEFAULT_STYLE)})
+                'Thanks for the treat. It means a lot.', 'Feeling good today. Send a little love my way 😊', ${tx.json(DEFAULT_STYLE)})
         returning *`;
       return toCreator(r);
     });

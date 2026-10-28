@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 
 import { ThanksStatus } from "@/components/ThanksStatus";
 import { paymentStatus } from "@/lib/checkout";
-import { rasMode } from "@/lib/ras";
+import { practiceEnabled } from "@/lib/ras";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export default async function Thanks({ params, searchParams }: { params: Promise
   if (!ref || !s || s.creatorUsername?.toLowerCase() !== username.toLowerCase()) notFound();
   return (
     <main className="mx-auto min-h-screen max-w-md bg-cream-2 px-4 py-12 text-cocoa">
-      <ThanksStatus ref_={ref} username={s.creatorUsername!} initial={s.status} amountNgn={s.amountNgn} canSimulate={rasMode() === "practice"} />
+      <ThanksStatus ref_={ref} username={s.creatorUsername!} initial={s.status} amountNgn={s.amountNgn} canSimulate={practiceEnabled()} />
     </main>
   );
 }

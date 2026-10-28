@@ -4,7 +4,7 @@ import { db } from "./db";
 import { creditGroup } from "./groups";
 import { addEntry } from "./ledger";
 import { feeUsdt, toMicro } from "./money";
-import { settleSendEvent } from "./withdrawals";
+import { notifyAdmins, settleSendEvent } from "./withdrawals";
 import type { RasEvent } from "./webhookCrypto";
 
 export type Outcome = { handled: true } | { handled: false; reason: "duplicate" | "not_ours" | "bad_amount" | "unknown_event" };
@@ -43,7 +43,11 @@ export async function handleRasEvent(event: RasEvent): Promise<Outcome> {
       return { handled: true };
     }
     // Late money on an expired link must still reach the creator.
-    if (p.status !== "pending" && p.status !== "expired") return { handled: true };
+    if (p.status !== "pending" && p.status !== "expired") {
+      // Money arrived for a payment that is already settled another way: no ledger change, a human must look.
+      await notifyAdmins("Late or extra payment", `Payment ${ref} is already ${p.status} but RAS reported ${type} with amount_received ${String(event.meta_data.amount_received)}. No ledger change was made; reconcile by hand.`);
+      return { handled: true };
+    }
     const received = positiveUsdt(event.meta_data.amount_received);
     if (!received) return { handled: false, reason: "bad_amount" };
 
