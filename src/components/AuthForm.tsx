@@ -3,6 +3,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import { safeNext } from "@/lib/safeNext";
+
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -12,7 +14,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [busy, setBusy] = useState(false);
   const signup = mode === "signup";
   const qs = new URLSearchParams();
-  for (const k of ["treat", "username"]) if (params.get(k)) qs.set(k, params.get(k)!);
+  for (const k of ["treat", "username", "next"]) if (params.get(k)) qs.set(k, params.get(k)!);
   const q = qs.toString() ? `?${qs}` : "";
 
   async function post(path: string, body: object) {
@@ -28,12 +30,12 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     e.preventDefault();
     const { res, data } = await post(`/api/auth/${mode}`, { email, password });
     if (!res.ok) return setMsg(data.error ?? "Something went wrong.");
-    router.push(signup ? `/onboarding${q}` : "/dashboard");
+    router.push(signup ? `/onboarding${q}` : safeNext(params.get("next")) ?? "/dashboard");
     router.refresh();
   }
 
   async function magic() {
-    const { res, data } = await post("/api/auth/magic", { email });
+    const { res, data } = await post("/api/auth/magic", { email, next: params.get("next") });
     if (!res.ok) return setMsg(data.error ?? "Something went wrong.");
     setMsg(data.devLink ? `Dev link: ${data.devLink}` : "If that email has an account, a sign-in link is on its way.");
   }

@@ -3,8 +3,10 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { CopyButton, MessageEditor, QrPanel } from "@/components/ShareTools";
+import { RevokeAppButton } from "@/components/RevokeAppButton";
 import { Card } from "@/components/ui/Card";
 import { listCatalog } from "@/lib/catalog";
+import { listConnectedApps } from "@/lib/connect";
 import { getCreatorByUser } from "@/lib/creators";
 import { toPageView, treatMap } from "@/lib/pageView";
 import { creatorLink, embedHtml } from "@/lib/share";
@@ -33,6 +35,7 @@ export default async function Share({ searchParams }: { searchParams: Promise<{ 
     const host = h.get("x-forwarded-host") ?? h.get("host");
     origin = host ? `${h.get("x-forwarded-proto") ?? "http"}://${host}` : "";
   }
+  const connected = tab === "apps" ? await listConnectedApps(uid) : [];
   const link = creatorLink(c.username, origin);
   const view = toPageView({
     username: c.username, displayName: c.displayName ?? c.username, bio: c.bio ?? "", photoUrl: c.photoUrl, treatId: c.treatId, customTreat: c.customTreat,
@@ -77,7 +80,24 @@ export default async function Share({ searchParams }: { searchParams: Promise<{ 
 
       {tab === "qr" && <Card><QrPanel link={link} username={c.username} treatName={view.treatName} /></Card>}
 
-      {tab === "apps" && <Card><p className="text-cocoa-2">No apps are connected yet.</p></Card>}
+      {tab === "apps" && (
+        <Card>
+          {connected.length === 0 ? <p className="text-cocoa-2">No apps are connected yet.</p> : (
+            <ul className="divide-y divide-line">
+              {connected.map((a) => (
+                <li key={a.appId} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-cocoa">{a.name}{a.mode === "sandbox" && <span className="ml-2 rounded-full border border-line bg-white px-2 py-0.5 text-xs text-cocoa-2">Sandbox</span>}</p>
+                    <p className="text-sm text-cocoa-2">Connected {a.connectedAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
+                  </div>
+                  {a.earningsShared && <span className="rounded-full bg-honey px-2.5 py-0.5 text-xs font-semibold text-honey-ink">Earnings shared</span>}
+                  <RevokeAppButton appId={a.appId} name={a.name} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

@@ -12,7 +12,7 @@ export class Unauthorized extends Error {
   }
 }
 
-function secret(): Uint8Array {
+export function secret(): Uint8Array {
   const value = process.env.SESSION_SECRET;
   if (value && value.length >= 32) return new TextEncoder().encode(value);
   if (process.env.NODE_ENV === "production") throw new Error("SESSION_SECRET must be set (32+ random characters) in production");
