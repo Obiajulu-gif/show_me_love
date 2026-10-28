@@ -26,11 +26,11 @@ export function RefundForm({ pref }: { pref: string }) {
   if (!open) return <button className="rounded-full border border-line px-3 py-1 text-xs font-semibold" onClick={() => setOpen(true)}>Refund</button>;
   return (
     <form onSubmit={submit} className="space-y-1">
-      <input required value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Supporter wallet address" className="w-full rounded-xl border border-line bg-white px-2 py-1 text-xs" />
-      <select value={network} onChange={(e) => setNetwork(e.target.value)} className="rounded-xl border border-line bg-white px-2 py-1 text-xs">
+      <input required value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Supporter wallet address" className="w-full rounded-xl border border-line bg-surface-2 px-2 py-1 text-xs" />
+      <select value={network} onChange={(e) => setNetwork(e.target.value)} className="rounded-xl border border-line bg-surface-2 px-2 py-1 text-xs">
         <option value="bep20">BEP20</option><option value="trc20">TRC20</option>
       </select>
-      <p className="text-xs text-cocoa-2">USDT will be sent to this address, minus the network fee.</p>
+      <p className="text-xs text-muted">USDT will be sent to this address, minus the network fee.</p>
       <button disabled={busy} className="rounded-full border border-line px-3 py-1 text-xs font-semibold disabled:opacity-50">Send refund</button>
       {msg && <p className="text-xs text-red-700">{msg}</p>}
     </form>

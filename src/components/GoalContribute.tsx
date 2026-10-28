@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { formatMoney, type GoalCurrency } from "@/lib/goalFormat";
 
-const field = "w-full rounded-xl border border-line bg-white px-3 py-2 text-sm";
+const field = "w-full rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm";
 
 export function GoalContribute({ goalId, currency, suggested, paused }: { goalId: string; currency: GoalCurrency; suggested: number; paused: boolean }) {
   const [amount, setAmount] = useState(String(suggested));
@@ -26,7 +26,7 @@ export function GoalContribute({ goalId, currency, suggested, paused }: { goalId
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-[18px] border border-line bg-cream-2 p-4">
+    <form onSubmit={submit} className="space-y-3 rounded-[18px] border border-line bg-surface p-4">
       <fieldset disabled={paused || busy} className="space-y-3">
         <label className="block text-sm font-semibold">Amount ({currency === "NGN" ? "₦" : "$"})
           <input type="number" required min={currency === "NGN" ? 100 : 1} step={currency === "NGN" ? "1" : "0.01"} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} className={`${field} mt-1 font-normal`} />
@@ -35,11 +35,11 @@ export function GoalContribute({ goalId, currency, suggested, paused }: { goalId
         <input aria-label="Your email" type="email" required placeholder="Your email" value={f.email} onChange={set("email")} className={field} />
         <textarea aria-label="Message" placeholder="Leave a note" maxLength={280} rows={2} value={f.message} onChange={set("message")} className={field} />
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.isPublic} onChange={(e) => setF({ ...f, isPublic: e.target.checked })} /> Show my note on the page</label>
-        <button type="submit" className="w-full rounded-xl bg-honey px-4 py-2 font-semibold text-honey-ink shadow-[0_4px_0_#3B2416] disabled:cursor-not-allowed disabled:opacity-60">
+        <button type="submit" className="w-full rounded-xl bg-accent px-4 py-2 font-semibold text-on-accent shadow-press disabled:cursor-not-allowed disabled:opacity-60">
           {paused ? "Goal paused" : busy ? "One moment..." : `Contribute ${Number.isFinite(n) && n > 0 ? formatMoney(currency, n) : ""}`.trim()}
         </button>
-        {currency === "USD" && <p className="text-center text-xs text-cocoa-2">You pay in naira at today&apos;s rate; the goal counts dollars.</p>}
-        <p className="text-center text-xs text-cocoa-2">Paid securely in USDT via Roqqu</p>
+        {currency === "USD" && <p className="text-center text-xs text-muted">You pay in naira at today&apos;s rate; the goal counts dollars.</p>}
+        <p className="text-center text-xs text-muted">Paid securely in USDT via Roqqu</p>
         {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
       </fieldset>
     </form>

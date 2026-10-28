@@ -16,7 +16,7 @@ export function TreatPicker({ value, onChange }: { value: TreatChoice; onChange:
   }, []);
 
   const pick = (id: string) => { onChange({ treatId: id }); setOpen(null); };
-  const cls = (on: boolean) => `${tile} ${on ? "border-cocoa bg-honey/40" : "border-line bg-white hover:bg-cream"}`;
+  const cls = (on: boolean) => `${tile} ${on ? "border-fg bg-accent/40" : "border-line bg-surface-2 hover:bg-canvas"}`;
   const selectedIn = (t: CatalogItem) => value.treatId === t.id || t.children.some((c) => c.id === value.treatId);
   const custom = value.customTreat ?? { name: "", emoji: "" };
 
@@ -36,9 +36,9 @@ export function TreatPicker({ value, onChange }: { value: TreatChoice; onChange:
               <span className="flex items-center gap-0.5">{t.name}{t.children.length > 0 && <ChevronDown size={14} />}</span>
             </button>
             {open === t.id && (
-              <div className="absolute left-0 top-full z-10 mt-1 grid w-44 grid-cols-1 gap-1 rounded-xl border border-line bg-cream p-2 shadow-lg">
+              <div className="absolute left-0 top-full z-10 mt-1 grid w-44 grid-cols-1 gap-1 rounded-xl border border-line bg-canvas p-2 shadow-lg">
                 {t.children.map((c) => (
-                  <button key={c.id} type="button" onClick={() => pick(c.id)} className={`flex items-center gap-2 rounded-lg px-2 py-1 text-left text-sm hover:bg-cream-2 ${value.treatId === c.id ? "bg-honey/40" : ""}`}>
+                  <button key={c.id} type="button" onClick={() => pick(c.id)} className={`flex items-center gap-2 rounded-lg px-2 py-1 text-left text-sm hover:bg-surface ${value.treatId === c.id ? "bg-accent/40" : ""}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {c.image && <img src={c.image} alt="" className="h-7 w-7" />}{c.name}
                   </button>
@@ -53,8 +53,8 @@ export function TreatPicker({ value, onChange }: { value: TreatChoice; onChange:
       </div>
       {value.treatId === "custom" && (
         <div className="mt-3 flex gap-2">
-          <input aria-label="Emoji" maxLength={8} placeholder="🍩" value={custom.emoji} onChange={(e) => onChange({ treatId: "custom", customTreat: { ...custom, emoji: e.target.value } })} className="w-16 rounded-xl border border-line bg-white px-3 py-2 text-center" />
-          <input aria-label="Treat name" maxLength={30} placeholder="Name your treat" value={custom.name} onChange={(e) => onChange({ treatId: "custom", customTreat: { ...custom, name: e.target.value } })} className="min-w-0 flex-1 rounded-xl border border-line bg-white px-3 py-2" />
+          <input aria-label="Emoji" maxLength={8} placeholder="🍩" value={custom.emoji} onChange={(e) => onChange({ treatId: "custom", customTreat: { ...custom, emoji: e.target.value } })} className="w-16 rounded-xl border border-line bg-surface-2 px-3 py-2 text-center" />
+          <input aria-label="Treat name" maxLength={30} placeholder="Name your treat" value={custom.name} onChange={(e) => onChange({ treatId: "custom", customTreat: { ...custom, name: e.target.value } })} className="min-w-0 flex-1 rounded-xl border border-line bg-surface-2 px-3 py-2" />
         </div>
       )}
     </div>

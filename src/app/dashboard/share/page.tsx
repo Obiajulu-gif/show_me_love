@@ -20,7 +20,7 @@ const TABS = [
   { id: "qr", label: "QR code" },
   { id: "apps", label: "Connected apps" },
 ] as const;
-const ACCENT: Record<string, string> = { honey: "bg-honey text-honey-ink", cocoa: "bg-cocoa text-cream", sage: "bg-[#A9C3A0] text-[#1F2D1B]" };
+const ACCENT: Record<string, string> = { honey: "bg-accent text-on-accent", cocoa: "bg-surface-2 text-fg border border-line", sage: "bg-love text-on-love" };
 
 export default async function Share({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const uid = await currentUserId();
@@ -45,20 +45,20 @@ export default async function Share({ searchParams }: { searchParams: Promise<{ 
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-cocoa">Share</h1>
-      <nav role="tablist" aria-label="Share options" className="inline-flex flex-wrap rounded-xl border border-line bg-white p-1">
+      <h1 className="text-2xl font-bold text-fg">Share</h1>
+      <nav role="tablist" aria-label="Share options" className="inline-flex flex-wrap rounded-xl border border-line bg-surface-2 p-1">
         {TABS.map((x) => (
           <Link key={x.id} role="tab" aria-selected={tab === x.id} href={`/dashboard/share?tab=${x.id}`}
-            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${tab === x.id ? "bg-honey text-honey-ink" : "text-cocoa-2 hover:bg-cream-2"}`}>{x.label}</Link>
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${tab === x.id ? "bg-accent text-on-accent" : "text-muted hover:bg-surface"}`}>{x.label}</Link>
         ))}
       </nav>
 
       {tab === "social" && (
         <Card className="space-y-5">
           <div>
-            <p className="text-sm font-semibold text-cocoa">Your page link</p>
+            <p className="text-sm font-semibold text-fg">Your page link</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <code className="break-all rounded-xl border border-line bg-white px-3 py-2 text-cocoa">{link}</code>
+              <code className="break-all rounded-xl border border-line bg-surface-2 px-3 py-2 text-fg">{link}</code>
               <CopyButton text={link} label="Copy link" />
             </div>
           </div>
@@ -68,12 +68,12 @@ export default async function Share({ searchParams }: { searchParams: Promise<{ 
 
       {tab === "website" && (
         <Card className="space-y-4">
-          <p className="text-sm text-cocoa-2">Paste this button into your site. It opens your page in a new tab.</p>
+          <p className="text-sm text-muted">Paste this button into your site. It opens your page in a new tab.</p>
           <div className="flex flex-wrap items-center gap-3">
-            <span className={`inline-block rounded-xl px-4 py-2.5 font-semibold shadow-[0_4px_0_#3B2416] ${ACCENT[c.pageStyle.accent ?? "honey"] ?? ACCENT.honey}`}>Send me a {view.treatName}</span>
-            <span className="rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold text-cocoa-2">Matches your page</span>
+            <span className={`inline-block rounded-xl px-4 py-2.5 font-semibold shadow-press ${ACCENT[c.pageStyle.accent ?? "honey"] ?? ACCENT.honey}`}>Send me a {view.treatName}</span>
+            <span className="rounded-full border border-line bg-surface-2 px-3 py-1 text-xs font-semibold text-muted">Matches your page</span>
           </div>
-          <pre className="whitespace-pre-wrap break-all rounded-xl border border-line bg-white p-3 text-xs text-cocoa">{embed}</pre>
+          <pre className="whitespace-pre-wrap break-all rounded-xl border border-line bg-surface-2 p-3 text-xs text-fg">{embed}</pre>
           <CopyButton text={embed} label="Copy HTML embed" />
         </Card>
       )}
@@ -82,15 +82,15 @@ export default async function Share({ searchParams }: { searchParams: Promise<{ 
 
       {tab === "apps" && (
         <Card>
-          {connected.length === 0 ? <p className="text-cocoa-2">No apps are connected yet.</p> : (
+          {connected.length === 0 ? <p className="text-muted">No apps are connected yet.</p> : (
             <ul className="divide-y divide-line">
               {connected.map((a) => (
                 <li key={a.appId} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-cocoa">{a.name}{a.mode === "sandbox" && <span className="ml-2 rounded-full border border-line bg-white px-2 py-0.5 text-xs text-cocoa-2">Sandbox</span>}</p>
-                    <p className="text-sm text-cocoa-2">Connected {a.connectedAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
+                    <p className="font-semibold text-fg">{a.name}{a.mode === "sandbox" && <span className="ml-2 rounded-full border border-line bg-surface-2 px-2 py-0.5 text-xs text-muted">Sandbox</span>}</p>
+                    <p className="text-sm text-muted">Connected {a.connectedAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
                   </div>
-                  {a.earningsShared && <span className="rounded-full bg-honey px-2.5 py-0.5 text-xs font-semibold text-honey-ink">Earnings shared</span>}
+                  {a.earningsShared && <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-on-accent">Earnings shared</span>}
                   <RevokeAppButton appId={a.appId} name={a.name} />
                 </li>
               ))}

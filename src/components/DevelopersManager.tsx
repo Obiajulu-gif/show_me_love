@@ -29,7 +29,7 @@ async function call(url: string, method: string, body: unknown): Promise<{ ok: b
 function CopyButton({ text, label }: { text: string; label: string }) {
   const [done, setDone] = useState(false);
   return (
-    <button type="button" aria-label={label} className="inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2 py-1 text-xs font-semibold hover:bg-cream-2"
+    <button type="button" aria-label={label} className="inline-flex items-center gap-1 rounded-lg border border-line bg-surface-2 px-2 py-1 text-xs font-semibold hover:bg-surface"
       onClick={async () => { try { await navigator.clipboard.writeText(text); setDone(true); setTimeout(() => setDone(false), 1500); } catch { /* the text is selectable on screen */ } }}>
       {done ? <Check size={14} /> : <Copy size={14} />} {done ? "Copied" : "Copy"}
     </button>
@@ -38,11 +38,11 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 
 function Overlay({ title, onClose, side, sticky, children }: { title: string; onClose: () => void; side?: boolean; sticky?: boolean; children: ReactNode }) {
   return (
-    <div className={`fixed inset-0 z-50 flex bg-cocoa/40 ${side ? "justify-end" : "items-center justify-center p-4"}`} onClick={sticky ? undefined : onClose}>
+    <div className={`fixed inset-0 z-50 flex bg-canvas/75 backdrop-blur-sm ${side ? "justify-end" : "items-center justify-center p-4"}`} onClick={sticky ? undefined : onClose}>
       <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}
-        className={`bg-cream p-6 shadow-xl ${side ? "h-full w-full max-w-md overflow-y-auto" : "w-full max-w-lg rounded-[18px] border border-line"}`}>
+        className={`bg-canvas p-6 shadow-xl ${side ? "h-full w-full max-w-md overflow-y-auto" : "w-full max-w-lg rounded-[18px] border border-line"}`}>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-serif text-2xl italic">{title}</h2>
+          <h2 className="font-display text-2xl font-semibold tracking-tight">{title}</h2>
           <button type="button" aria-label="Close" onClick={onClose}><X size={20} /></button>
         </div>
         {children}
@@ -67,7 +67,7 @@ function AppForm({ app, defaultMode, onCreated, onClose }: { app?: AppRow; defau
     if (!app) onCreated(mode);
     router.refresh(); onClose();
   }
-  const field = "mt-1 w-full rounded-xl border border-line bg-white px-3 py-2";
+  const field = "mt-1 w-full rounded-xl border border-line bg-surface-2 px-3 py-2";
   return (
     <Overlay title={app ? "Edit app" : "Create an app"} onClose={onClose}>
       <div className="space-y-4">
@@ -78,13 +78,13 @@ function AppForm({ app, defaultMode, onCreated, onClose }: { app?: AppRow; defau
           <div>
             <p className="text-sm font-semibold">Mode</p>
             <div className="mt-1"><Tabs label="App mode" tabs={[{ id: "sandbox", label: "Sandbox" }, { id: "live", label: "Live" }] as const} value={mode} onChange={setMode} /></div>
-            <p className="mt-1 text-xs text-cocoa-2">Sandbox keys are for testing. The mode can&apos;t change later.</p>
+            <p className="mt-1 text-xs text-muted">Sandbox keys are for testing. The mode can&apos;t change later.</p>
           </div>
         )}
         <label className="block text-sm font-semibold">Redirect links, one per line (up to 5)
           <textarea className={`${field} font-mono text-sm`} rows={4} value={uris} onChange={(e) => setUris(e.target.value)} placeholder="https://yourapp.com/sml/callback" />
         </label>
-        <p className="text-xs text-cocoa-2">Must start with https://. http:// works only for localhost. People are sent back to these exact links, so add each one in full.</p>
+        <p className="text-xs text-muted">Must start with https://. http:// works only for localhost. People are sent back to these exact links, so add each one in full.</p>
         {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
         <Button onClick={save} disabled={busy}>{app ? "Save changes" : "Create app"}</Button>
       </div>
@@ -104,7 +104,7 @@ function StarterConfig({ app, origin }: { app: AppRow; origin: string }) {
     `SML_REDIRECT_URI=${first}`,
   ].join("\n");
   return (
-    <div className="rounded-xl border border-line bg-white p-3">
+    <div className="rounded-xl border border-line bg-surface-2 p-3">
       <div className="mb-2 flex items-center justify-between">
         <p className="text-sm font-semibold">Starter configuration</p>
         <CopyButton text={text} label="Copy starter configuration" />
@@ -140,7 +140,7 @@ export function DevelopersManager({ apps, origin, guide }: { apps: AppRow[]; ori
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif text-3xl italic">Developers</h1>
+        <h1 className="font-display text-3xl font-semibold tracking-tight">Developers</h1>
         <div className="flex flex-wrap items-center gap-3">
           <Tabs label="Mode" tabs={MODES} value={mode} onChange={setMode} />
           <Button variant="ghost" onClick={() => router.push("?guide=open")}><BookOpen size={16} /> Integration guide</Button>
@@ -150,13 +150,13 @@ export function DevelopersManager({ apps, origin, guide }: { apps: AppRow[]; ori
       {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
       {apps.length === 0 ? (
         <Card className="text-center">
-          <Code2 className="mx-auto text-cocoa-2" size={32} />
+          <Code2 className="mx-auto text-muted" size={32} />
           <p className="mt-2 font-semibold">Let other apps send people to your page</p>
-          <p className="mt-1 text-sm text-cocoa-2">Register an app, get a client id and API keys, and let your own product link to show-me-love.</p>
+          <p className="mt-1 text-sm text-muted">Register an app, get a client id and API keys, and let your own product link to show-me-love.</p>
           <Button className="mt-4" onClick={() => setForm("new")}>Create an app</Button>
         </Card>
       ) : shown.length === 0 ? (
-        <Card className="text-center text-sm text-cocoa-2">No {mode} apps yet.</Card>
+        <Card className="text-center text-sm text-muted">No {mode} apps yet.</Card>
       ) : (
         <ul className="space-y-4">
           {shown.map((a) => (
@@ -165,8 +165,8 @@ export function DevelopersManager({ apps, origin, guide }: { apps: AppRow[]; ori
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-semibold">{a.name}</h2>
-                    <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-cocoa-2">
-                      Client id <code className="rounded bg-white px-1.5 py-0.5 text-cocoa">{a.clientId}</code>
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
+                      Client id <code className="rounded bg-surface-2 px-1.5 py-0.5 text-fg">{a.clientId}</code>
                       <CopyButton text={a.clientId} label={`Copy client id for ${a.name}`} />
                     </p>
                   </div>
@@ -181,11 +181,11 @@ export function DevelopersManager({ apps, origin, guide }: { apps: AppRow[]; ori
                     <p className="text-sm font-semibold">API keys</p>
                     <Button variant="ghost" onClick={() => generate(a)}>Generate key</Button>
                   </div>
-                  {a.keys.length === 0 ? <p className="mt-1 text-sm text-cocoa-2">No active keys.</p> : (
+                  {a.keys.length === 0 ? <p className="mt-1 text-sm text-muted">No active keys.</p> : (
                     <ul className="mt-2 space-y-2">
                       {a.keys.map((k) => (
-                        <li key={k.id} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-white px-3 py-2 text-sm">
-                          <span><code>{k.prefix}…{k.last4}</code> <span className="text-cocoa-2">created {date(k.createdAt)}</span></span>
+                        <li key={k.id} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm">
+                          <span><code>{k.prefix}…{k.last4}</code> <span className="text-muted">created {date(k.createdAt)}</span></span>
                           <button type="button" className="font-semibold text-red-700 hover:underline" onClick={() => revoke(a, k.id)}>Revoke</button>
                         </li>
                       ))}
@@ -202,7 +202,7 @@ export function DevelopersManager({ apps, origin, guide }: { apps: AppRow[]; ori
       {issued && (
         <Overlay title="Your new API key" sticky onClose={() => setIssued(null)}>
           <p className="text-sm">For <strong>{issued.app}</strong>. Copy it now. It won&apos;t be shown again.</p>
-          <pre className="mt-3 overflow-x-auto rounded-xl border border-line bg-white p-3 text-sm" data-testid="issued-key">{issued.key}</pre>
+          <pre className="mt-3 overflow-x-auto rounded-xl border border-line bg-surface-2 p-3 text-sm" data-testid="issued-key">{issued.key}</pre>
           <div className="mt-4 flex gap-3">
             <CopyButton text={issued.key} label="Copy API key" />
             <Button onClick={() => setIssued(null)}>I&apos;ve copied it</Button>

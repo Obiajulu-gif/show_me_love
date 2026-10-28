@@ -12,7 +12,7 @@ export default async function Thanks({ params, searchParams }: { params: Promise
   const s = ref && /^[A-Z0-9]{20}$/.test(ref) ? await paymentStatus(ref) : null;
   if (!ref || !s || s.creatorUsername?.toLowerCase() !== username.toLowerCase()) notFound();
   return (
-    <main className="mx-auto min-h-screen max-w-md bg-cream-2 px-4 py-12 text-cocoa">
+    <main className="mx-auto min-h-screen max-w-md bg-surface px-4 py-12 text-fg">
       <ThanksStatus ref_={ref} username={s.creatorUsername!} initial={s.status} amountNgn={s.amountNgn} canSimulate={practiceEnabled()} />
     </main>
   );

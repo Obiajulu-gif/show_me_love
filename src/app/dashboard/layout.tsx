@@ -10,7 +10,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const creator = await getCreatorByUser(uid);
   if (!creator) redirect("/onboarding");
   return (
-    <div className="min-h-screen bg-cream text-cocoa md:flex">
+    <div className="min-h-screen bg-canvas text-fg md:flex">
       <Sidebar username={creator.username} />
       <main className="min-w-0 flex-1 px-4 py-6 md:px-8">{children}</main>
     </div>

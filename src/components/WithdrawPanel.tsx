@@ -11,7 +11,7 @@ import { Tabs } from "@/components/ui/Tabs";
 type Usdt = { network: "bep20" | "trc20"; address: string } | null;
 type Bank = { bankName: string; accountNumber: string; accountName: string } | null;
 type Quote = { feeUsdt: string; receives: string; receivesNgn?: number };
-const input = "w-full rounded-xl border border-line bg-white px-3 py-2";
+const input = "w-full rounded-xl border border-line bg-surface-2 px-3 py-2";
 const short = (u: NonNullable<Usdt>) => `${u.network.toUpperCase()} ${u.address.slice(0, 6)}…${u.address.slice(-4)}`;
 const masked = (b: NonNullable<Bank>) => `${b.bankName} ••${b.accountNumber.slice(-4)}`;
 
@@ -49,19 +49,19 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
 
   return (
     <>
-      {notice && <p role="status" className="mb-3 rounded-xl border border-line bg-white p-3 text-sm">{notice}</p>}
+      {notice && <p role="status" className="mb-3 rounded-xl border border-line bg-surface-2 p-3 text-sm">{notice}</p>}
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
-          <div className="flex items-center justify-between text-sm text-cocoa-2">Available
+          <div className="flex items-center justify-between text-sm text-muted">Available
             <button aria-label="Refresh balance" onClick={() => router.refresh()}><RefreshCw size={16} /></button>
           </div>
-          <div className="mt-1 text-3xl font-bold">{Number(available).toFixed(2)} <span className="text-base font-medium">USDT</span></div>
+          <div className="data mt-1 text-3xl font-medium text-accent">{Number(available).toFixed(2)} <span className="text-base font-medium">USDT</span></div>
           <Button className="mt-4" onClick={() => setModal("withdraw")}>Make a withdrawal</Button>
         </Card>
         <Card>
-          <div className="text-sm text-cocoa-2">Where it goes</div>
+          <div className="text-sm text-muted">Where it goes</div>
           <div className="mt-1 space-y-1">
-            <div>{usdt ? short(usdt) : "No USDT wallet yet"}</div>
+            <div className="data">{usdt ? short(usdt) : "No USDT wallet yet"}</div>
             <div>{bank ? masked(bank) : "No bank account yet"}</div>
           </div>
           <Button variant="ghost" className="mt-4" onClick={() => setModal("dest")}>Change</Button>
@@ -69,8 +69,8 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
       </div>
 
       {modal && (
-        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-cocoa/40 p-4" onClick={close}>
-          <div className="w-full max-w-md space-y-4 rounded-[18px] bg-cream p-6" onClick={(e) => e.stopPropagation()}>
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-canvas/75 backdrop-blur-sm p-4" onClick={close}>
+          <div className="w-full max-w-md space-y-4 rounded-[18px] bg-canvas p-6" onClick={(e) => e.stopPropagation()}>
             {modal === "dest" ? (
               <>
                 <h2 className="text-xl font-semibold">Payout destination</h2>
@@ -106,7 +106,7 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
                     <option value="usdt">USDT wallet</option><option value="ngn_bank">NGN bank</option>
                   </select>
                 </label>
-                <div className="flex justify-between text-sm"><span>Available</span><b>{Number(available).toFixed(2)} USDT</b></div>
+                <div className="flex justify-between text-sm"><span>Available</span><b className="data">{Number(available).toFixed(2)} USDT</b></div>
                 <label className="block text-sm">Amount (USDT)
                   <div className="mt-1 flex gap-2">
                     <input className={input} inputMode="decimal" value={amount} onChange={(e) => { setAmount(e.target.value); setQuote(null); }}
@@ -116,8 +116,8 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
                 </label>
                 <p className="text-sm">{dest ? `To ${destLine}` : "Add a payout destination first."}</p>
                 {quote && (
-                  <div className="rounded-xl border border-line bg-white p-3 text-sm">
-                    <div className="flex justify-between"><span>Fee</span><span>{quote.feeUsdt} USDT</span></div>
+                  <div className="rounded-xl border border-line bg-surface-2 p-3 text-sm">
+                    <div className="flex justify-between"><span>Fee</span><span className="data">{quote.feeUsdt} USDT</span></div>
                     <div className="flex justify-between font-semibold"><span>Your destination receives</span>
                       <span>{method === "ngn_bank" && quote.receivesNgn !== undefined ? `₦${quote.receivesNgn.toLocaleString("en-NG")}` : `${quote.receives} USDT`}</span></div>
                   </div>

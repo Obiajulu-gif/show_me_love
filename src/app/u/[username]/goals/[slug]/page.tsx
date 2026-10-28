@@ -32,15 +32,15 @@ export default async function GoalPage({ params, searchParams }: { params: Promi
   const organizerPhoto = goal.organizerPhoto || c.photoUrl;
 
   return (
-    <div className="min-h-screen bg-cream-2 text-cocoa">
+    <div className="min-h-screen bg-surface text-fg">
       {goal.headerMode === "default" && (
-        <header className="flex items-center justify-between bg-cocoa px-5 py-3">
-          <span className="[&_a]:text-cream"><Logo /></span>
+        <header className="flex items-center justify-between border-b border-line bg-canvas/80 px-5 py-3 backdrop-blur">
+          <Logo />
           <Link href="/signup" className={buttonClass("primary", "text-sm")}>Create your page</Link>
         </header>
       )}
       {goal.headerMode === "logo" && (
-        <header className="flex items-center gap-3 bg-cocoa px-5 py-3 text-cream">
+        <header className="flex items-center gap-3 border-b border-line bg-canvas/80 px-5 py-3 backdrop-blur">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {c.photoUrl && <img src={c.photoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />}
           <Link href={`/@${c.username}`} className="font-semibold">{c.displayName ?? c.username}</Link>
@@ -53,14 +53,14 @@ export default async function GoalPage({ params, searchParams }: { params: Promi
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {goal.coverUrl && <img src={goal.coverUrl} alt="" className="h-56 w-full rounded-[18px] object-cover" />}
         <div>
-          <h1 className="font-serif text-3xl italic">{goal.title}</h1>
-          <p className="mt-2 inline-flex items-center gap-2 text-sm text-cocoa-2">
+          <h1 className="font-display text-3xl font-semibold tracking-tight">{goal.title}</h1>
+          <p className="mt-2 inline-flex items-center gap-2 text-sm text-muted">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {organizerPhoto && <img src={organizerPhoto} alt="" className="h-6 w-6 rounded-full object-cover" />}
             A goal by {organizer}
           </p>
         </div>
-        {goal.paused && <p role="status" className="rounded-xl bg-cocoa px-4 py-2 text-sm font-semibold text-cream">Paused: this goal is not taking contributions right now.</p>}
+        {goal.paused && <p role="status" className="rounded-xl border border-warn/40 bg-warn/10 px-4 py-2 text-sm font-semibold text-warn">Paused: this goal is not taking contributions right now.</p>}
         {goal.story && <p className="whitespace-pre-line text-sm leading-relaxed">{goal.story}</p>}
         {goal.showProgress && (
           <div className="space-y-2">
@@ -76,12 +76,12 @@ export default async function GoalPage({ params, searchParams }: { params: Promi
         {goal.showProgress && (
           <section aria-label="Contributors" className="space-y-2">
             <h2 className="font-semibold">Contributors</h2>
-            {people.length === 0 ? <p className="text-sm text-cocoa-2">Be the first to chip in.</p> : (
+            {people.length === 0 ? <p className="text-sm text-muted">Be the first to chip in.</p> : (
               <ul className="space-y-2">
                 {people.map((p, i) => (
-                  <li key={i} className="rounded-xl border border-line bg-cream p-3 text-sm">
+                  <li key={i} className="rounded-xl border border-line bg-canvas p-3 text-sm">
                     <span className="font-semibold">{p.name}</span>
-                    {p.message && <p className="mt-1 text-cocoa-2">{p.message}</p>}
+                    {p.message && <p className="mt-1 text-muted">{p.message}</p>}
                   </li>
                 ))}
               </ul>

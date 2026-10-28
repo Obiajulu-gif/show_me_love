@@ -3,7 +3,7 @@ import { useState } from "react";
 
 export type BuyCardProps = { treatName: string; treatImage: string; unitPriceNgn: number; presets: number[]; mode: "preview" | "live"; username?: string; onSend?: (qty: number) => void };
 
-const field = "w-full rounded-xl border border-line bg-white px-3 py-2 text-sm";
+const field = "w-full rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm";
 
 /** The supporter-facing "send a treat" box. Preview mode draws the same card, inert; live mode posts to /api/checkout. */
 export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, username, onSend }: BuyCardProps) {
@@ -34,7 +34,7 @@ export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, us
   }
 
   return (
-    <form onSubmit={submit} className="mt-4 rounded-[18px] border border-line bg-cream-2 p-4">
+    <form onSubmit={submit} className="mt-4 rounded-[18px] border border-line bg-surface p-4">
       <fieldset disabled={!live || busy} className="space-y-3 disabled:opacity-100">
         <div className="flex flex-wrap items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -42,15 +42,15 @@ export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, us
           <span className="text-sm">{treatName} x</span>
           {presets.map((n) => (
             <button key={n} type="button" aria-pressed={!custom && n === qty} onClick={() => { setCustom(false); setQty(n); }}
-              className={`rounded-full border px-3 py-1 text-sm ${!custom && n === qty ? "border-cocoa bg-honey" : "border-line bg-white"}`}>{n}</button>
+              className={`rounded-full border px-3 py-1 text-sm ${!custom && n === qty ? "border-fg bg-accent" : "border-line bg-surface-2"}`}>{n}</button>
           ))}
         </div>
         {!custom ? (
           <div className="flex items-center gap-3 text-sm">
-            <button type="button" aria-label="Fewer" disabled={qty <= 1} onClick={() => setQty(qty - 1)} className="h-8 w-8 rounded-full border border-line bg-white">-</button>
+            <button type="button" aria-label="Fewer" disabled={qty <= 1} onClick={() => setQty(qty - 1)} className="h-8 w-8 rounded-full border border-line bg-surface-2">-</button>
             <span data-testid="qty" className="w-8 text-center font-semibold">{qty}</span>
-            <button type="button" aria-label="More" disabled={qty >= 50} onClick={() => setQty(qty + 1)} className="h-8 w-8 rounded-full border border-line bg-white">+</button>
-            <span className="text-cocoa-2">₦{unitPriceNgn.toLocaleString("en-NG")} each</span>
+            <button type="button" aria-label="More" disabled={qty >= 50} onClick={() => setQty(qty + 1)} className="h-8 w-8 rounded-full border border-line bg-surface-2">+</button>
+            <span className="data text-muted">₦{unitPriceNgn.toLocaleString("en-NG")} each</span>
           </div>
         ) : (
           <input aria-label="Amount in naira" type="number" min={unitPriceNgn} step={1} inputMode="numeric" placeholder={`At least ₦${unitPriceNgn.toLocaleString("en-NG")}`} value={amount} onChange={(e) => setAmount(e.target.value)} className={field} />
@@ -62,10 +62,10 @@ export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, us
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={f.isPublic} onChange={(e) => setF({ ...f, isPublic: e.target.checked })} /> Show my note on the page
         </label>
-        <button type="submit" className="w-full rounded-xl bg-honey px-4 py-2 text-center font-semibold text-honey-ink shadow-[0_4px_0_#3B2416] disabled:cursor-default">
+        <button type="submit" className="w-full rounded-xl bg-accent px-4 py-2 text-center font-semibold text-on-accent shadow-press disabled:cursor-default">
           {busy ? "One moment..." : `Send ${treatName} · ₦${total.toLocaleString("en-NG")}`}
         </button>
-        <p className="text-center text-xs text-cocoa-2">Paid securely in USDT via Roqqu</p>
+        <p className="text-center text-xs text-muted">Paid securely in USDT via Roqqu</p>
         {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
       </fieldset>
     </form>

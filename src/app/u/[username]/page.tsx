@@ -29,22 +29,22 @@ export default async function PublicPage({ params }: { params: Promise<{ usernam
   }, treatMap(await listCatalog()));
 
   return (
-    <div className="min-h-screen bg-cream-2 text-cocoa">
-      <header className="flex items-center justify-between bg-cocoa px-5 py-3">
-        <span className="[&_a]:text-cream"><Logo /></span>
+    <div className="min-h-screen bg-surface text-fg">
+      <header className="flex items-center justify-between border-b border-line bg-canvas/80 px-5 py-3 backdrop-blur">
+        <Logo />
         <Link href="/signup" className={buttonClass("primary", "text-sm")}>Create your page</Link>
       </header>
       <main className="mx-auto max-w-xl px-4 py-8">
         <CreatorPage creator={view} mode="live" payments={await publicWall(c.userId)} />
         <SupportHeatmap dates={await publicTreatDates(c.userId, new Date(Date.now() - 84 * 864e5))} />
       </main>
-      <footer className="pb-8 text-center text-sm text-cocoa-2">
+      <footer className="pb-8 text-center text-sm text-muted">
         <p>Small treats, real support.</p>
-        <p className="mt-1 space-x-4">
+        <div className="mt-1 space-x-4">
           <Link href="/legal#terms" className="underline">Terms</Link>
           <Link href="/legal#privacy" className="underline">Privacy</Link>
           <ReportDialog username={c.username} />
-        </p>
+        </div>
       </footer>
     </div>
   );

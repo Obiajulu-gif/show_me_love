@@ -27,11 +27,11 @@ export function OnboardingForm({ treat: t0, username: u0 }: { treat: string; use
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-6 bg-cream px-4 py-10 text-cocoa">
+    <main className="flex min-h-screen flex-col items-center gap-6 bg-canvas px-4 py-10 text-fg">
       <Logo />
       <Card className="w-full max-w-md">
-        <h1 className="font-serif text-3xl italic">Almost there</h1>
-        <p className="mt-1 text-sm text-cocoa-2">Confirm your treat and your link. You can change both later.</p>
+        <h1 className="font-display text-3xl font-semibold tracking-tight">Almost there</h1>
+        <p className="mt-1 text-sm text-muted">Confirm your treat and your link. You can change both later.</p>
         <h2 className="mt-5 font-semibold">Your treat</h2>
         <div className="mt-2"><TreatPicker value={treat} onChange={setTreat} /></div>
         <h2 className="mt-5 font-semibold">Your username</h2>

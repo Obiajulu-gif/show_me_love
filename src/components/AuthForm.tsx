@@ -40,23 +40,23 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     setMsg(data.devLink ? `Dev link: ${data.devLink}` : "If that email has an account, a sign-in link is on its way.");
   }
 
-  const input = "w-full rounded-xl border border-line bg-white px-3 py-2 text-cocoa outline-none focus:border-cocoa-2";
+  const input = "w-full rounded-xl border border-line bg-surface-2 px-3 py-2 text-fg outline-none focus:border-muted";
   return (
-    <main className="flex min-h-screen items-center justify-center bg-cream px-4 text-cocoa">
-      <div className="w-full max-w-sm rounded-[18px] border border-line bg-cream-2 p-6">
-        <h1 className="font-serif text-3xl italic">{signup ? "Create your page" : "Welcome back"}</h1>
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-4 text-fg">
+      <div className="w-full max-w-sm rounded-[18px] border border-line bg-surface p-6">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">{signup ? "Create your page" : "Welcome back"}</h1>
         <form onSubmit={submit} className="mt-5 space-y-3">
           <input className={input} type="email" required placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
           <input className={input} type="password" required placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <button disabled={busy} className="w-full rounded-xl bg-honey px-4 py-2 font-semibold text-honey-ink shadow-[0_4px_0_#3B2416] disabled:opacity-60">
+          <button disabled={busy} className="w-full rounded-xl bg-accent px-4 py-2 font-semibold text-on-accent shadow-press disabled:opacity-60">
             {signup ? "Sign up" : "Log in"}
           </button>
         </form>
-        <button type="button" disabled={busy || !email} onClick={magic} className="mt-3 w-full rounded-xl border border-line px-4 py-2 text-sm hover:bg-cream disabled:opacity-60">
+        <button type="button" disabled={busy || !email} onClick={magic} className="mt-3 w-full rounded-xl border border-line px-4 py-2 text-sm hover:bg-canvas disabled:opacity-60">
           Email me a sign-in link
         </button>
-        {msg && <p className="mt-3 break-all text-sm text-cocoa-2">{msg}</p>}
-        <p className="mt-5 text-sm text-cocoa-2">
+        {msg && <p className="mt-3 break-all text-sm text-muted">{msg}</p>}
+        <p className="mt-5 text-sm text-muted">
           {signup ? (
             <>Already have an account? <Link className="underline" href={`/login${q}`}>Log in</Link></>
           ) : (

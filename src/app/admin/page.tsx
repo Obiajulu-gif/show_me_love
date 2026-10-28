@@ -9,7 +9,7 @@ export default async function AdminHome() {
     count(*) filter (where status = 'processing' and admin_note = 'stuck alerted')::int as stuck from withdrawals`;
   return (
     <div className="space-y-3">
-      <h1 className="font-serif text-3xl italic">Admin</h1>
+      <h1 className="font-display text-3xl font-semibold tracking-tight">Admin</h1>
       <p><Link className="underline" href="/admin/withdrawals">Withdrawal queue</Link>: {r.review} to review, {r.stuck} stuck in sending.</p>
       <p><Link className="underline" href="/admin/payments">Find a payment</Link></p>
     </div>

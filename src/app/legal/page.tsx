@@ -6,14 +6,14 @@ export const metadata: Metadata = { title: "Terms and Privacy · show-me-love" }
 
 export default function Legal() {
   return (
-    <div className="min-h-screen bg-cream text-cocoa">
+    <div className="min-h-screen bg-canvas text-fg">
       <header className="border-b border-line px-5 py-3"><Logo /></header>
       <main className="mx-auto max-w-2xl px-4 py-10">
-        <p role="note" className="rounded-xl border border-line bg-honey/30 p-3 text-sm font-semibold">
+        <p role="note" className="rounded-xl border border-warn/40 bg-warn/10 p-3 text-warn text-sm font-semibold">
           Draft: this page is plain-language placeholder text and has not been reviewed by a lawyer. It must be reviewed before launch.
         </p>
 
-        <h1 id="terms" className="mt-8 scroll-mt-6 font-serif text-4xl italic">Terms</h1>
+        <h1 id="terms" className="mt-8 scroll-mt-6 font-display text-4xl font-semibold tracking-tight">Terms</h1>
         <div className="mt-3 space-y-3">
           <p>show-me-love lets creators share a page where fans can send small treats of support, paid by card or bank transfer and credited to the creator in USDT.</p>
           <p><strong>Your account.</strong> You must be old enough to enter a contract where you live, give true details, and keep your login safe. You are responsible for what happens on your page.</p>
@@ -24,7 +24,7 @@ export default function Legal() {
           <p><strong>Our promise, and its limits.</strong> We work to keep the service running, but it is provided as is. To the extent the law allows, we are not liable for indirect losses.</p>
         </div>
 
-        <h1 id="privacy" className="mt-12 scroll-mt-6 font-serif text-4xl italic">Privacy</h1>
+        <h1 id="privacy" className="mt-12 scroll-mt-6 font-display text-4xl font-semibold tracking-tight">Privacy</h1>
         <div className="mt-3 space-y-3">
           <p><strong>What we collect.</strong> Your email, username and profile, the payments made to and by you (including the name or message a supporter chooses to add), payout details, and basic technical data needed to keep the service safe.</p>
           <p><strong>How we use it.</strong> To run your account, process payments and payouts, prevent fraud, send service emails, and answer reports. We do not sell personal data.</p>

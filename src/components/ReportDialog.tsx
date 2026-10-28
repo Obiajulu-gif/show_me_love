@@ -9,7 +9,7 @@ const REASONS = [
   ["inappropriate", "Content that should not be here"],
   ["other", "Something else"],
 ] as const;
-const field = "w-full rounded-xl border border-line bg-white px-3 py-2 text-sm";
+const field = "w-full rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm";
 
 export function ReportDialog({ username }: { username: string }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -28,12 +28,12 @@ export function ReportDialog({ username }: { username: string }) {
   return (
     <>
       <button type="button" className="underline" onClick={() => { setDone(false); setMsg(""); ref.current?.showModal(); }}>Report page</button>
-      <dialog ref={ref} className="w-[min(92vw,26rem)] rounded-[18px] border border-line bg-cream p-5 text-left text-cocoa">
+      <dialog ref={ref} className="w-[min(92vw,26rem)] rounded-[18px] border border-line bg-canvas p-5 text-left text-fg">
         {done ? (
           <div className="space-y-3"><p>Thanks. We will take a look.</p><button type="button" className="underline" onClick={() => ref.current?.close()}>Close</button></div>
         ) : (
           <form onSubmit={submit} className="space-y-3">
-            <h2 className="font-serif text-xl italic">Report @{username}</h2>
+            <h2 className="font-display text-xl font-semibold tracking-tight">Report @{username}</h2>
             <select name="reason" required defaultValue="" className={field}>
               <option value="" disabled>Why are you reporting this page?</option>
               {REASONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -42,7 +42,7 @@ export function ReportDialog({ username }: { username: string }) {
             <input name="email" type="email" placeholder="Your email, if you want a reply (optional)" className={field} />
             {msg && <p className="text-sm text-red-700">{msg}</p>}
             <div className="flex gap-3">
-              <button className="rounded-full bg-honey px-4 py-2 text-sm font-semibold text-honey-ink shadow-[0_4px_0_#3B2416]">Send report</button>
+              <button className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-on-accent shadow-press">Send report</button>
               <button type="button" className="underline" onClick={() => ref.current?.close()}>Cancel</button>
             </div>
           </form>

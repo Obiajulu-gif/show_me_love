@@ -27,15 +27,15 @@ export default async function Treats({ searchParams }: { searchParams: Promise<{
   const href = (p: number) => `/dashboard/treats?status=${filter}&page=${p}`;
   return (
     <div className="space-y-6">
-      <h1 className="font-serif text-3xl italic">Your treats</h1>
+      <h1 className="font-display text-3xl font-semibold tracking-tight">Your treats</h1>
       <form className="flex flex-wrap items-center gap-3" action="/dashboard/treats">
-        <select name="status" defaultValue={filter} aria-label="Status" className="rounded-xl border border-line bg-white px-3 py-2">
+        <select name="status" defaultValue={filter} aria-label="Status" className="rounded-xl border border-line bg-surface-2 px-3 py-2">
           {FILTERS.map((f) => <option key={f} value={f}>{f[0].toUpperCase() + f.slice(1)}</option>)}
         </select>
         <button className={buttonClass("ghost")}>Apply</button>
-        <span className="text-sm text-cocoa-2">{count} {count === 1 ? "payment" : "payments"}</span>
+        <span className="text-sm text-muted">{count} {count === 1 ? "payment" : "payments"}</span>
       </form>
-      {rows.length ? <PaymentsTable rows={rows} /> : <Card className="text-center text-cocoa-2">{EMPTY[filter]}</Card>}
+      {rows.length ? <PaymentsTable rows={rows} /> : <Card className="text-center text-muted">{EMPTY[filter]}</Card>}
       {pages > 1 && (
         <div className="flex items-center gap-4 text-sm">
           {page > 1 && <Link href={href(page - 1)} className="underline">Previous</Link>}

@@ -4,7 +4,7 @@ import { useRef, useState, type KeyboardEvent } from "react";
 
 import { heatmap, nextDay } from "@/lib/heatmap";
 
-const SHADES = ["bg-cream-2", "bg-[#E3C79B]", "bg-cocoa-2", "bg-cocoa"];
+const SHADES = ["bg-surface-2", "bg-[#1F6F6A]", "bg-[#28A994]", "bg-accent"];
 const fmt = (iso: string) => new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 const text = (n: number) => (n === 0 ? "No treats this day." : n === 1 ? "1 treat" : `${n} treats`);
 const COLS = { gridTemplateColumns: "repeat(12, minmax(0, 1fr))" };
@@ -27,11 +27,11 @@ export function SupportHeatmap({ dates, today = new Date() }: { dates: Date[]; t
   };
 
   return (
-    <section className="mt-6 rounded-[18px] border border-line bg-cream p-5 text-cocoa">
-      <h2 className="font-serif text-lg italic">Recent support</h2>
-      <p className="text-sm text-cocoa-2">The last 12 weeks</p>
+    <section className="mt-6 rounded-[18px] border border-line bg-canvas p-5 text-fg">
+      <h2 className="font-display text-lg font-semibold tracking-tight">Recent support</h2>
+      <p className="text-sm text-muted">The last 12 weeks</p>
       <div aria-hidden className="mt-3 grid gap-1" style={COLS}>
-        {weeks.map((_, c) => <span key={c} className="h-4 text-xs text-cocoa-2">{months.find((m) => m.col === c)?.label}</span>)}
+        {weeks.map((_, c) => <span key={c} className="h-4 text-xs text-muted">{months.find((m) => m.col === c)?.label}</span>)}
       </div>
       <div role="grid" aria-label="Support in the last 12 weeks" onKeyDown={onKey} className="mt-1 grid gap-1" style={COLS}>
         {weeks.map((w, c) => (
@@ -43,8 +43,8 @@ export function SupportHeatmap({ dates, today = new Date() }: { dates: Date[]; t
               return (
                 <span key={cell.date} ref={(el) => { refs.current[i] = el; }} role="gridcell" tabIndex={i === active ? 0 : -1}
                   aria-label={`${fmt(cell.date)}: ${text(cell.count)}`} onFocus={() => setActive(i)}
-                  className={`group relative aspect-square rounded-[4px] border border-line ${SHADES[cell.level]} focus:outline focus:outline-2 focus:outline-honey`}>
-                  <span aria-hidden className={`pointer-events-none absolute bottom-full z-10 mb-1 hidden w-max max-w-[10rem] rounded-md bg-cocoa px-2 py-1 text-xs text-cream group-hover:block group-focus:block ${pos}`}>
+                  className={`group relative aspect-square rounded-[4px] border border-line ${SHADES[cell.level]} focus:outline focus:outline-2 focus:outline-accent`}>
+                  <span aria-hidden className={`pointer-events-none absolute bottom-full z-10 mb-1 hidden w-max max-w-[10rem] rounded-md bg-fg px-2 py-1 text-xs text-canvas group-hover:block group-focus:block ${pos}`}>
                     <b className="block">{fmt(cell.date)}</b>{text(cell.count)}
                   </span>
                 </span>
@@ -53,8 +53,8 @@ export function SupportHeatmap({ dates, today = new Date() }: { dates: Date[]; t
           </div>
         ))}
       </div>
-      {empty && <p className="mt-3 text-sm text-cocoa-2">Treats will show up here.</p>}
-      <div className="mt-3 flex items-center justify-between text-xs text-cocoa-2">
+      {empty && <p className="mt-3 text-sm text-muted">Treats will show up here.</p>}
+      <div className="mt-3 flex items-center justify-between text-xs text-muted">
         <span>Days shown in UTC</span>
         <span className="flex items-center gap-1">Fewer {SHADES.map((s) => <i key={s} className={`h-3 w-3 rounded-[3px] border border-line ${s}`} />)} More</span>
       </div>

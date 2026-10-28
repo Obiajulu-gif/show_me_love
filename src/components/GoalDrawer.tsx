@@ -10,7 +10,7 @@ export type GoalFormValue = {
   headerMode: "default" | "logo" | "hidden"; currencyLocked?: boolean;
 };
 
-const field = "w-full rounded-xl border border-line bg-white px-3 py-2 text-sm";
+const field = "w-full rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm";
 const HEADERS = [
   { id: "default", label: "show-me-love header" },
   { id: "logo", label: "My photo and name" },
@@ -34,8 +34,8 @@ async function upload(file: File, kind: "avatar" | "cover"): Promise<string> {
 function Toggle({ label, help, on, set }: { label: string; help: string; on: boolean; set: (v: boolean) => void }) {
   return (
     <label className="flex items-start gap-3">
-      <input type="checkbox" role="switch" checked={on} onChange={(e) => set(e.target.checked)} className="mt-1 h-4 w-4 accent-[#F6C55A]" />
-      <span><span className="block text-sm font-semibold">{label}</span><span className="block text-xs text-cocoa-2">{help}</span></span>
+      <input type="checkbox" role="switch" checked={on} onChange={(e) => set(e.target.checked)} className="mt-1 h-4 w-4 accent-[#33E0BE]" />
+      <span><span className="block text-sm font-semibold">{label}</span><span className="block text-xs text-muted">{help}</span></span>
     </label>
   );
 }
@@ -73,11 +73,11 @@ export function GoalDrawer({ initial, defaultOrganizer, onClose, onSaved }: { in
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-cocoa/40" role="dialog" aria-modal="true" aria-label={initial.id ? "Edit goal" : "New goal"}>
-      <form onSubmit={save} className="flex h-full w-full max-w-md flex-col overflow-y-auto bg-cream p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex justify-end bg-canvas/75 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={initial.id ? "Edit goal" : "New goal"}>
+      <form onSubmit={save} className="flex h-full w-full max-w-md flex-col overflow-y-auto bg-canvas p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-serif text-2xl italic">{initial.id ? "Edit goal" : "New goal"}</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="rounded-full p-1 hover:bg-cream-2"><X size={18} /></button>
+          <h2 className="font-display text-2xl font-semibold tracking-tight">{initial.id ? "Edit goal" : "New goal"}</h2>
+          <button type="button" onClick={onClose} aria-label="Close" className="rounded-full p-1 hover:bg-surface"><X size={18} /></button>
         </div>
         <div className="space-y-4">
           <label className="block text-sm font-semibold">Title
@@ -96,7 +96,7 @@ export function GoalDrawer({ initial, defaultOrganizer, onClose, onSaved }: { in
               <option value="NGN">Naira (₦)</option>
               <option value="USD">US dollars ($)</option>
             </select>
-            {f.currencyLocked && <span className="mt-1 block text-xs font-normal text-cocoa-2">Currency locks when the first checkout starts.</span>}
+            {f.currencyLocked && <span className="mt-1 block text-xs font-normal text-muted">Currency locks when the first checkout starts.</span>}
           </label>
           <div className="grid grid-cols-2 gap-3">
             <label className="block text-sm font-semibold">Target
@@ -112,7 +112,7 @@ export function GoalDrawer({ initial, defaultOrganizer, onClose, onSaved }: { in
             <legend className="px-1 text-sm font-semibold">Goal organizer</legend>
             <input aria-label="Organizer name" maxLength={60} placeholder={defaultOrganizer} value={f.organizerName ?? ""} onChange={(e) => set("organizerName", e.target.value || null)} className={field} />
             <input type="file" accept="image/png,image/jpeg,image/webp" aria-label="Organizer photo" onChange={(e) => void pick("avatar", e.target.files?.[0])} className="block w-full text-xs" />
-            <span className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1 text-xs" data-testid="organizer-chip">
+            <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface-2 px-3 py-1 text-xs" data-testid="organizer-chip">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {f.organizerPhoto && <img src={f.organizerPhoto} alt="" className="h-5 w-5 rounded-full object-cover" />}
               A goal by {organizer}
@@ -126,7 +126,7 @@ export function GoalDrawer({ initial, defaultOrganizer, onClose, onSaved }: { in
               </label>
             ))}
           </fieldset>
-          <p className="rounded-xl bg-cream-2 p-3 text-xs text-cocoa-2">Supporters choose their own amount, starting from your suggestion. Money counts toward the goal once the payment clears.</p>
+          <p className="rounded-xl bg-surface p-3 text-xs text-muted">Supporters choose their own amount, starting from your suggestion. Money counts toward the goal once the payment clears.</p>
           {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
         </div>
         <div className="mt-6 flex justify-end gap-3">

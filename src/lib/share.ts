@@ -1,7 +1,7 @@
 const ACCENTS: Record<string, { bg: string; fg: string }> = {
-  honey: { bg: "#F6C55A", fg: "#2B1A0E" },
-  cocoa: { bg: "#3B2416", fg: "#FFF9EE" },
-  sage: { bg: "#A9C3A0", fg: "#1F2D1B" },
+  honey: { bg: "#33E0BE", fg: "#062520" },
+  cocoa: { bg: "#171E45", fg: "#EEF0FF" },
+  sage: { bg: "#FF8197", fg: "#2A0811" },
 };
 
 const esc = (v: string) => v.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -20,6 +20,6 @@ export type EmbedCreator = { username: string; displayName: string; treatName: s
 export function embedHtml(c: EmbedCreator, origin?: string): string {
   const a = ACCENTS[c.accent ?? "honey"] ?? ACCENTS.honey;
   const href = creatorLink(c.username, origin);
-  const style = `display:inline-block;padding:10px 18px;border-radius:12px;background:${a.bg};color:${a.fg};font:600 16px system-ui,sans-serif;text-decoration:none;box-shadow:0 4px 0 #3B2416`;
+  const style = `display:inline-block;padding:10px 18px;border-radius:12px;background:${a.bg};color:${a.fg};font:600 16px system-ui,sans-serif;text-decoration:none;box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 6px 18px rgba(51,224,190,.28)`;
   return `<a href="${esc(href)}" target="_blank" rel="noopener" title="${esc(c.displayName)}" style="${style}">Send me a ${esc(c.treatName)}</a>`;
 }

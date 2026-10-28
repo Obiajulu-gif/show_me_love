@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { ClaimCard } from "@/components/ClaimCard";
 import { CreatorPage } from "@/components/CreatorPage";
+import { LiveLedger } from "@/components/LiveLedger";
 import { Logo } from "@/components/Logo";
 import { buttonClass } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -30,7 +31,7 @@ const demoWall = [{ id: "d1", name: "Tunde", quantity: 3, message: "Your sourdou
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-cream text-cocoa">
+    <div className="min-h-screen bg-canvas text-fg">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
         <Logo />
         <nav className="flex items-center gap-3 text-sm">
@@ -42,14 +43,11 @@ export default function Home() {
       <main>
         <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-10 lg:grid-cols-2">
           <div>
-            <h1 className="font-serif text-5xl italic leading-tight sm:text-6xl">
-              Make it easy for your people<br /><span className="text-cocoa-2">to show you love.</span>
+            <h1 className="font-display text-5xl font-semibold tracking-tight leading-tight sm:text-6xl">
+              Make it easy for your people<br /><span className="text-muted">to show you love.</span>
             </h1>
-            <p className="mt-5 max-w-md text-lg">One link. Local treats like zobo and suya. Paid in USDT, withdrawn to your wallet or bank.</p>
-            <div className="mt-8 flex h-56 w-56 items-center justify-center rounded-full bg-honey">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/treats/zobo.svg" alt="A glass of zobo" className="h-32 w-32" />
-            </div>
+            <p className="mt-5 max-w-md text-lg text-muted">One link. Local treats like zobo and suya. Paid in USDT, withdrawn to your wallet or bank.</p>
+            <div className="mt-8 max-w-md"><LiveLedger /></div>
           </div>
           <div className="lg:justify-self-end"><ClaimCard /></div>
         </section>
@@ -57,42 +55,42 @@ export default function Home() {
         <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 md:grid-cols-3">
           {features.map(({ Icon, title, body }) => (
             <Card key={title}>
-              <Icon className="text-cocoa-2" />
+              <Icon className="text-accent" />
               <h3 className="mt-3 font-semibold">{title}</h3>
-              <p className="mt-1 text-sm text-cocoa-2">{body}</p>
+              <p className="mt-1 text-sm text-muted">{body}</p>
             </Card>
           ))}
         </section>
 
         <section className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-10 md:grid-cols-2">
           <div>
-            <h2 className="font-serif text-3xl italic">Your page, ready to share</h2>
-            <p className="mt-3 text-cocoa-2">Pick your treat, set a price, and drop one link in your bio. Supporters leave a note with every treat and it shows up in your notes from supporters.</p>
+            <h2 className="font-display text-3xl font-semibold tracking-tight">Your page, ready to share</h2>
+            <p className="mt-3 text-muted">Pick your treat, set a price, and drop one link in your bio. Supporters leave a note with every treat and it shows up in your notes from supporters.</p>
           </div>
           <div className="mx-auto w-full max-w-sm"><CreatorPage creator={demo} mode="preview" payments={demoWall} /></div>
         </section>
 
         <section className="mx-auto max-w-3xl px-5 py-10">
-          <h2 className="font-serif text-3xl italic">Questions</h2>
+          <h2 className="font-display text-3xl font-semibold tracking-tight">Questions</h2>
           <div className="mt-4 space-y-2">
             {faq.map(([q, a]) => (
-              <details key={q} className="rounded-[18px] border border-line bg-cream-2 px-5 py-3">
+              <details key={q} className="rounded-[18px] border border-line bg-surface px-5 py-3">
                 <summary className="cursor-pointer font-semibold">{q}</summary>
-                <p className="mt-2 text-sm text-cocoa-2">{a}</p>
+                <p className="mt-2 text-sm text-muted">{a}</p>
               </details>
             ))}
           </div>
         </section>
 
         <section className="mx-auto max-w-6xl px-5 py-10">
-          <div className="rounded-[18px] bg-cocoa px-6 py-10 text-center text-cream">
-            <h2 className="font-serif text-3xl italic">Your people are already cheering. Give them a way to say it.</h2>
+          <div className="rounded-2xl border border-accent/40 bg-surface px-6 py-12 text-center shadow-lift">
+            <h2 className="font-display text-3xl font-semibold tracking-tight">Your people are already cheering. Give them a way to say it.</h2>
             <Link href="/signup" className={buttonClass("primary", "mt-6")}>Create my page</Link>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-line py-8 text-center text-sm text-cocoa-2">
+      <footer className="border-t border-line py-8 text-center text-sm text-muted">
         <Logo />
         <p className="mt-2">Small treats, real support.</p>
       </footer>

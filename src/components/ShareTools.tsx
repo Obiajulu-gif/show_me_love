@@ -20,12 +20,12 @@ export function CopyButton({ text, label = "Copy" }: { text: string; label?: str
   return (
     <span className="inline-flex items-center gap-2">
       <Button type="button" variant="ghost" onClick={copy}>{state === "done" ? "Copied" : label}</Button>
-      {state === "fail" && <span role="status" className="text-sm text-cocoa-2">Copy is not available here. Select the text and copy it by hand.</span>}
+      {state === "fail" && <span role="status" className="text-sm text-muted">Copy is not available here. Select the text and copy it by hand.</span>}
     </span>
   );
 }
 
-const linkBtn = "rounded-xl border border-line bg-white px-4 py-2 font-semibold text-cocoa hover:bg-cream-2";
+const linkBtn = "rounded-xl border border-line bg-surface-2 px-4 py-2 font-semibold text-fg hover:bg-surface";
 
 export function MessageEditor({ initial, link }: { initial: string; link: string }) {
   const [msg, setMsg] = useState(initial);
@@ -39,15 +39,15 @@ export function MessageEditor({ initial, link }: { initial: string; link: string
   const text = shareText(msg, link);
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-semibold text-cocoa" htmlFor="share-msg">Message that goes with your link</label>
+      <label className="block text-sm font-semibold text-fg" htmlFor="share-msg">Message that goes with your link</label>
       <textarea id="share-msg" value={msg} maxLength={280} rows={3} onChange={(e) => { setMsg(e.target.value); setStatus(""); }}
-        className="w-full rounded-xl border border-line bg-white p-3 text-cocoa" />
+        className="w-full rounded-xl border border-line bg-surface-2 p-3 text-fg" />
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" onClick={save}>Save message</Button>
         <CopyButton text={text} label="Copy message and link" />
         <a className={linkBtn} href={xIntent(text)} target="_blank" rel="noopener">Share on X</a>
         <a className={linkBtn} href={whatsappLink(text)} target="_blank" rel="noopener">Send on WhatsApp</a>
-        <span role="status" className="text-sm text-cocoa-2">{status}</span>
+        <span role="status" className="text-sm text-muted">{status}</span>
       </div>
     </div>
   );
@@ -87,25 +87,25 @@ export function QrPanel({ link, username, treatName }: { link: string; username:
   const qrEl = <QRCodeCanvas ref={qr} value={link} size={360} marginSize={1} />;
   return (
     <div className="space-y-4">
-      <div className="inline-flex rounded-xl border border-line bg-white p-1" role="group" aria-label="QR style">
+      <div className="inline-flex rounded-xl border border-line bg-surface-2 p-1" role="group" aria-label="QR style">
         {(["card", "compact"] as const).map((m) => (
           <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${mode === m ? "bg-honey text-honey-ink" : "text-cocoa-2 hover:bg-cream-2"}`}>
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${mode === m ? "bg-accent text-on-accent" : "text-muted hover:bg-surface"}`}>
             {m === "card" ? "Branded card" : "Compact QR"}
           </button>
         ))}
       </div>
-      <p className="text-sm text-cocoa-2">Tip: in OBS, add the downloaded PNG as an image source to show it on stream.</p>
+      <p className="text-sm text-muted">Tip: in OBS, add the downloaded PNG as an image source to show it on stream.</p>
       {mode === "card" ? (
-        <div className="mx-auto w-full max-w-xs rounded-[18px] border border-line bg-cream p-6 text-center">
-          <p className="font-semibold text-cocoa-2">show-me-love</p>
-          <p className="mt-1 text-2xl font-bold text-cocoa">{heading}</p>
-          <div className="mx-auto mt-4 w-fit rounded-xl bg-white p-3 [&_canvas]:!h-auto [&_canvas]:!w-full">{qrEl}</div>
-          <p className="mt-3 text-lg font-semibold text-cocoa">@{username}</p>
-          <span className="mt-2 inline-block rounded-full bg-honey px-4 py-1.5 text-sm font-bold text-honey-ink">Scan to send love</span>
+        <div className="mx-auto w-full max-w-xs rounded-[18px] border border-line bg-canvas p-6 text-center">
+          <p className="font-semibold text-muted">show-me-love</p>
+          <p className="mt-1 text-2xl font-bold text-fg">{heading}</p>
+          <div className="mx-auto mt-4 w-fit rounded-xl bg-surface-2 p-3 [&_canvas]:!h-auto [&_canvas]:!w-full">{qrEl}</div>
+          <p className="mt-3 text-lg font-semibold text-fg">@{username}</p>
+          <span className="mt-2 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-bold text-on-accent">Scan to send love</span>
         </div>
       ) : (
-        <div className="mx-auto w-fit rounded-xl bg-white p-3 [&_canvas]:!h-auto [&_canvas]:!w-60">{qrEl}</div>
+        <div className="mx-auto w-fit rounded-xl bg-surface-2 p-3 [&_canvas]:!h-auto [&_canvas]:!w-60">{qrEl}</div>
       )}
       <Button type="button" onClick={download}>Download PNG</Button>
     </div>

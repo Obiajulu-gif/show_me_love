@@ -8,10 +8,10 @@ import { CALLBACK_SNIPPET, CONNECT_SNIPPET, ENV_BLOCK, HELPER_SNIPPET, SHOW_SNIP
 export const metadata: Metadata = { title: "Developer docs · show-me-love" };
 
 const Code = ({ children }: { children: string }) => (
-  <pre className="my-3 overflow-x-auto rounded-xl border border-line bg-white p-3 text-xs leading-relaxed"><code>{children}</code></pre>
+  <pre className="my-3 overflow-x-auto rounded-xl border border-line bg-surface-2 p-3 text-xs leading-relaxed"><code>{children}</code></pre>
 );
 const H2 = ({ id, children }: { id: string; children: ReactNode }) => (
-  <h2 id={id} className="mt-12 scroll-mt-6 font-serif text-3xl italic">{children}</h2>
+  <h2 id={id} className="mt-12 scroll-mt-6 font-display text-3xl font-semibold tracking-tight">{children}</h2>
 );
 
 type Err = [number, string, string];
@@ -77,13 +77,13 @@ const CURL = `curl -X POST "$SML_ORIGIN/api/connect/sessions" \\
 
 export default function Docs() {
   return (
-    <div className="min-h-screen bg-cream text-cocoa">
+    <div className="min-h-screen bg-canvas text-fg">
       <header className="flex items-center justify-between border-b border-line px-5 py-3">
         <Logo />
         <Link href="/dashboard/developers" className="text-sm font-semibold underline">Developers</Link>
       </header>
       <main className="mx-auto max-w-3xl px-4 py-10">
-        <h1 className="font-serif text-4xl italic">Connect: developer docs</h1>
+        <h1 className="font-display text-4xl font-semibold tracking-tight">Connect: developer docs</h1>
         <nav aria-label="On this page" className="mt-4 flex flex-wrap gap-3 text-sm">
           {TOC.map(([id, t]) => <a key={id} href={`#${id}`} className="underline">{t}</a>)}
         </nav>
@@ -116,8 +116,8 @@ export default function Docs() {
         </p>
         <Code>{CURL}</Code>
         {ENDPOINTS.map((e) => (
-          <section key={e.id} id={e.id} className="mt-8 scroll-mt-6 rounded-[18px] border border-line bg-white p-4">
-            <h3 className="text-lg font-bold"><span className="mr-2 rounded bg-honey px-2 py-0.5 text-sm text-honey-ink">{e.method}</span><code className="break-all text-base">{e.path}</code></h3>
+          <section key={e.id} id={e.id} className="mt-8 scroll-mt-6 rounded-[18px] border border-line bg-surface-2 p-4">
+            <h3 className="text-lg font-bold"><span className="mr-2 rounded bg-accent px-2 py-0.5 text-sm text-on-accent">{e.method}</span><code className="break-all text-base">{e.path}</code></h3>
             <p className="mt-2">{e.what}</p>
             {e.body && <><p className="mt-3 text-sm font-semibold">Body</p><Code>{e.body}</Code></>}
             <p className="mt-3 text-sm font-semibold">Success</p>
@@ -129,14 +129,14 @@ export default function Docs() {
                   <tr key={i} className="border-t border-line align-top">
                     <td className="py-1 pr-3 font-mono">{s}</td>
                     <td className="py-1 pr-3"><code>{m}</code></td>
-                    <td className="py-1 text-cocoa-2">{why}</td>
+                    <td className="py-1 text-muted">{why}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </section>
         ))}
-        <p className="mt-6 text-sm text-cocoa-2">
+        <p className="mt-6 text-sm text-muted">
           The callback: on Allow, the user returns to your redirect link with <code>?code=…&amp;state=…</code>. On Deny they return with <code>?error=access_denied&amp;state=…</code>.
           If you sent no <code>state</code>, none comes back.
         </p>

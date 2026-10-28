@@ -25,14 +25,14 @@ export function ConnectDecision({ req }: { req: string }) {
 
   return (
     <div className="mt-5 space-y-4">
-      <ul className="space-y-2 text-sm text-cocoa">
+      <ul className="space-y-2 text-sm text-fg">
         <li className="flex items-center gap-2"><input type="checkbox" checked disabled aria-label="Your public page link (always shared)" /> Your public page link</li>
         <li><label className="flex items-center gap-2"><input type="checkbox" checked={earnings} onChange={(e) => setEarnings(e.target.checked)} /> Your earnings</label></li>
       </ul>
       {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
       <div className="flex gap-3">
-        <button disabled={busy} onClick={() => decide("allow")} className="flex-1 rounded-xl bg-honey px-4 py-2 font-semibold text-honey-ink shadow-[0_4px_0_#3B2416] disabled:opacity-60">Allow</button>
-        <button disabled={busy} onClick={() => decide("deny")} className="flex-1 rounded-xl border border-line bg-white px-4 py-2 font-semibold text-cocoa hover:bg-cream disabled:opacity-60">Deny</button>
+        <button disabled={busy} onClick={() => decide("allow")} className="flex-1 rounded-xl bg-accent px-4 py-2 font-semibold text-on-accent shadow-press disabled:opacity-60">Allow</button>
+        <button disabled={busy} onClick={() => decide("deny")} className="flex-1 rounded-xl border border-line bg-surface-2 px-4 py-2 font-semibold text-fg hover:bg-canvas disabled:opacity-60">Deny</button>
       </div>
     </div>
   );

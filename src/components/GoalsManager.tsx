@@ -31,15 +31,15 @@ export function GoalsManager({ goals, username, origin }: { goals: GoalRow[]; us
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-serif text-3xl italic">Your goals</h1>
+        <h1 className="font-display text-3xl font-semibold tracking-tight">Your goals</h1>
         <Button onClick={() => setEditing(BLANK_GOAL)}><Plus size={16} /> New goal</Button>
       </div>
       {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
       {goals.length === 0 ? (
         <Card className="text-center">
-          <Target className="mx-auto text-cocoa-2" size={32} />
+          <Target className="mx-auto text-muted" size={32} />
           <p className="mt-2 font-semibold">No goals yet</p>
-          <p className="mt-1 text-sm text-cocoa-2">A goal gives people something specific to rally behind, like new gear or a trip. Start one and share its link.</p>
+          <p className="mt-1 text-sm text-muted">A goal gives people something specific to rally behind, like new gear or a trip. Start one and share its link.</p>
           <Button className="mt-4" onClick={() => setEditing(BLANK_GOAL)}>Create your first goal</Button>
         </Card>
       ) : (
@@ -48,14 +48,14 @@ export function GoalsManager({ goals, username, origin }: { goals: GoalRow[]; us
             <li key={g.id}>
               <Card className="flex flex-col gap-4 sm:flex-row">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {g.coverUrl ? <img src={g.coverUrl} alt="" className="h-24 w-full rounded-xl object-cover sm:w-36" /> : <div className="flex h-24 w-full items-center justify-center rounded-xl bg-line sm:w-36"><Target className="text-cocoa-2" /></div>}
+                {g.coverUrl ? <img src={g.coverUrl} alt="" className="h-24 w-full rounded-xl object-cover sm:w-36" /> : <div className="flex h-24 w-full items-center justify-center rounded-xl bg-line sm:w-36"><Target className="text-muted" /></div>}
                 <div className="min-w-0 flex-1 space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="truncate font-semibold">{g.title}</h2>
-                    {g.paused && <span className="rounded-full bg-cocoa px-2 py-0.5 text-xs font-semibold text-cream">Paused</span>}
+                    {g.paused && <span className="rounded-full bg-warn/15 px-2 py-0.5 text-xs font-semibold text-warn">Paused</span>}
                   </div>
                   <GoalBar raised={g.raised} target={g.target} />
-                  <p className="text-sm text-cocoa-2">{formatMoney(g.currency, g.raised)} of {formatMoney(g.currency, g.target)} · {g.count} {g.count === 1 ? "contribution" : "contributions"}</p>
+                  <p className="text-sm text-muted">{formatMoney(g.currency, g.raised)} of {formatMoney(g.currency, g.target)} · {g.count} {g.count === 1 ? "contribution" : "contributions"}</p>
                   <div className="flex flex-wrap gap-2">
                     <Button variant="ghost" className="px-3 py-1 text-sm" onClick={() => copy(g)}><Copy size={14} /> {copied === g.id ? "Copied" : "Copy link"}</Button>
                     <Button variant="ghost" className="px-3 py-1 text-sm" onClick={() => setEditing(g)}><Pencil size={14} /> Edit</Button>

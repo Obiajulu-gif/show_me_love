@@ -12,11 +12,11 @@ function Block({ text, label }: { text: string; label: string }) {
   return (
     <div className="relative my-3">
       <button type="button" aria-label={label}
-        className="absolute right-2 top-2 rounded-lg border border-line bg-white px-2 py-1 text-xs font-semibold hover:bg-cream-2"
+        className="absolute right-2 top-2 rounded-lg border border-line bg-surface-2 px-2 py-1 text-xs font-semibold hover:bg-surface"
         onClick={async () => { try { await navigator.clipboard.writeText(text); setDone(true); setTimeout(() => setDone(false), 1500); } catch { /* the text is selectable on screen */ } }}>
         {done ? "Copied" : "Copy"}
       </button>
-      <pre className="overflow-x-auto rounded-xl border border-line bg-white p-3 pt-9 text-xs leading-relaxed"><code>{text}</code></pre>
+      <pre className="overflow-x-auto rounded-xl border border-line bg-surface-2 p-3 pt-9 text-xs leading-relaxed"><code>{text}</code></pre>
     </div>
   );
 }
