@@ -35,9 +35,9 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   );
 }
 
-function Overlay({ title, onClose, side, children }: { title: string; onClose: () => void; side?: boolean; children: ReactNode }) {
+function Overlay({ title, onClose, side, sticky, children }: { title: string; onClose: () => void; side?: boolean; sticky?: boolean; children: ReactNode }) {
   return (
-    <div className={`fixed inset-0 z-50 flex bg-cocoa/40 ${side ? "justify-end" : "items-center justify-center p-4"}`} onClick={onClose}>
+    <div className={`fixed inset-0 z-50 flex bg-cocoa/40 ${side ? "justify-end" : "items-center justify-center p-4"}`} onClick={sticky ? undefined : onClose}>
       <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}
         className={`bg-cream p-6 shadow-xl ${side ? "h-full w-full max-w-md overflow-y-auto" : "w-full max-w-lg rounded-[18px] border border-line"}`}>
         <div className="mb-4 flex items-center justify-between">
@@ -50,10 +50,10 @@ function Overlay({ title, onClose, side, children }: { title: string; onClose: (
   );
 }
 
-function AppForm({ app, onClose }: { app?: AppRow; onClose: () => void }) {
+function AppForm({ app, defaultMode, onCreated, onClose }: { app?: AppRow; defaultMode: Mode; onCreated: (m: Mode) => void; onClose: () => void }) {
   const router = useRouter();
   const [name, setName] = useState(app?.name ?? "");
-  const [mode, setMode] = useState<Mode>(app?.mode ?? "sandbox");
+  const [mode, setMode] = useState<Mode>(app?.mode ?? defaultMode);
   const [uris, setUris] = useState(app?.redirectUris.join("\n") ?? "");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -63,6 +63,7 @@ function AppForm({ app, onClose }: { app?: AppRow; onClose: () => void }) {
     const r = app ? await call(`/api/developers/apps/${app.id}`, "PATCH", { name, redirectUris }) : await call("/api/developers/apps", "POST", { name, mode, redirectUris });
     setBusy(false);
     if (!r.ok) return setErr(r.data.error ?? "Couldn't save the app.");
+    if (!app) onCreated(mode);
     router.refresh(); onClose();
   }
   const field = "mt-1 w-full rounded-xl border border-line bg-white px-3 py-2";
@@ -196,14 +197,14 @@ export function DevelopersManager({ apps, origin, guide }: { apps: AppRow[]; ori
           ))}
         </ul>
       )}
-      {form && <AppForm app={form === "new" ? undefined : form} onClose={() => setForm(null)} />}
+      {form && <AppForm app={form === "new" ? undefined : form} defaultMode={mode} onCreated={setMode} onClose={() => setForm(null)} />}
       {issued && (
-        <Overlay title="Your new API key" onClose={() => setIssued(null)}>
+        <Overlay title="Your new API key" sticky onClose={() => setIssued(null)}>
           <p className="text-sm">For <strong>{issued.app}</strong>. Copy it now. It won&apos;t be shown again.</p>
           <pre className="mt-3 overflow-x-auto rounded-xl border border-line bg-white p-3 text-sm" data-testid="issued-key">{issued.key}</pre>
           <div className="mt-4 flex gap-3">
             <CopyButton text={issued.key} label="Copy API key" />
-            <Button onClick={() => setIssued(null)}>I&apos;ve saved it</Button>
+            <Button onClick={() => setIssued(null)}>I&apos;ve copied it</Button>
           </div>
         </Overlay>
       )}

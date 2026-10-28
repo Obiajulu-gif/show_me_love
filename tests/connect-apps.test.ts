@@ -8,6 +8,7 @@ vi.mock("../src/lib/session", async (orig) => {
   return { ...m, requireUser: vi.fn(async () => { if (!sessionUser) throw new m.Unauthorized(); return sessionUser; }) };
 });
 
+import { PATCH } from "../src/app/api/developers/apps/[id]/route";
 import { DELETE, POST as createKeyRoute } from "../src/app/api/developers/apps/[id]/keys/route";
 import { POST as createAppRoute } from "../src/app/api/developers/apps/route";
 import { authenticateApp, createApp, createKey, redirectAllowed, revokeKey, updateApp } from "../src/lib/connect";
@@ -77,7 +78,7 @@ test("redirectAllowed is exact string equality", async () => {
 });
 
 test("redirect URI and app validation", async () => {
-  for (const bad of ["ftp://shop.example.com/cb", "javascript:alert(1)", "http://shop.example.com/cb", "https://x.com/cb#frag", "nonsense", "https://x.com/" + "a".repeat(300)]) {
+  for (const bad of ["ftp://shop.example.com/cb", "javascript:alert(1)", "http://shop.example.com/cb", "https://x.com/cb#frag", "nonsense", "https://user@evil.com/cb", "https://user:pw@shop.example.com/", "https://shop.example.com/c\tb", "https://shop.example.com/\ncb", "https://shop.example.com/a b", "http://localhost.evil.com/cb", "http://[::1]/cb", "https://x.com/" + "a".repeat(300)]) {
     await expect(mk(ada, { redirectUris: [bad] })).rejects.toThrow(/./);
   }
   await expect(mk(ada, { redirectUris: ["ftp://shop.example.com/cb"] })).rejects.toThrow(/https/);
@@ -137,4 +138,25 @@ test("routes: 401, 400 for junk, 403 cross-site, 404 for others' apps", async ()
   expect((await DELETE(json(url, "DELETE", { keyId: 7 }), ctx(app.id))).status).toBe(400);
   sessionUser = { id: ada, email: "ada@x.com", role: "user" };
   expect((await DELETE(json(url, "DELETE", { keyId: kb.id }), ctx(app.id))).status).toBe(200);
+});
+
+test("PATCH route: 404 for another user's app, 400 for junk", async () => {
+  const app = await mk();
+  const url = "https://sml.test/api/developers/apps/x";
+  sessionUser = { id: bola, email: "bola@x.com", role: "user" };
+  expect((await PATCH(json(url, "PATCH", { name: "Stolen" }), ctx(app.id))).status).toBe(404);
+  sessionUser = { id: ada, email: "ada@x.com", role: "user" };
+  expect((await PATCH(json(url, "PATCH", [1]), ctx(app.id))).status).toBe(400);
+  expect((await PATCH(json(url, "PATCH", { redirectUris: ["ftp://x.com"] }), ctx(app.id))).status).toBe(400);
+  expect((await PATCH(json(url, "PATCH", { name: "Renamed app" }), ctx(app.id))).status).toBe(200);
+});
+
+test("concurrent creates cannot exceed the limits", async () => {
+  await Promise.allSettled(Array.from({ length: 14 }, () => mk()));
+  const [{ n }] = await t.sql`select count(*)::int as n from apps where owner_id = ${ada}`;
+  expect(n).toBe(10);
+  const [app] = await t.sql`select id from apps where owner_id = ${ada} limit 1`;
+  await Promise.allSettled(Array.from({ length: 9 }, () => createKey(ada, app.id)));
+  const [{ k }] = await t.sql`select count(*)::int as k from api_keys where app_id = ${app.id}`;
+  expect(k).toBe(5);
 });

@@ -33,10 +33,12 @@ function checkUris(v: unknown): string[] {
   if (!Array.isArray(v) || v.length < 1 || v.length > 5) throw new ConnectError("Add 1 to 5 redirect links.");
   for (const u of v) {
     if (typeof u !== "string" || u.length > 300) throw new ConnectError("Each redirect link can be at most 300 characters.");
+    if (/[\s\x00-\x1f\x7f]/.test(u)) throw new ConnectError("Redirect links can't contain spaces or hidden characters.");
     let url: URL;
     try { url = new URL(u); } catch { throw new ConnectError(`"${u.slice(0, 60)}" is not a valid link.`); }
     const local = url.hostname === "localhost" || url.hostname === "127.0.0.1";
     if (!(url.protocol === "https:" || (url.protocol === "http:" && local))) throw new ConnectError("Redirect links must start with https:// (http:// is only allowed for localhost).");
+    if (url.username || url.password) throw new ConnectError("Redirect links can't contain a username or password.");
     if (url.hash || u.includes("#")) throw new ConnectError("Redirect links can't contain a # fragment.");
   }
   return [...v];
@@ -57,12 +59,14 @@ export async function createApp(userId: string, input: AppInput): Promise<App> {
   if (input.mode !== "sandbox" && input.mode !== "live") throw new ConnectError("Pick Sandbox or Live.");
   const uris = checkUris(input.redirectUris);
   const clientId = "sml_app_" + randomBytes(8).toString("hex");
-  // The count check and the insert are one statement, so two quick requests can't slip past the limit.
-  const [row] = await db()`
-    insert into apps (owner_id, name, mode, redirect_uris, client_id)
-    select ${userId}, ${name}, ${input.mode}, ${uris}::text[], ${clientId}
-    where (select count(*) from apps where owner_id = ${userId}) < ${MAX_APPS}
-    returning *`;
+  // A per-user advisory lock serialises concurrent creates, so the count and the insert can't race past the limit.
+  const row = await db().begin(async (tx) => {
+    await tx`select pg_advisory_xact_lock(hashtext(${userId}))`;
+    const [{ n }] = await tx`select count(*)::int as n from apps where owner_id = ${userId}`;
+    if (n >= MAX_APPS) return null;
+    const [r] = await tx`insert into apps (owner_id, name, mode, redirect_uris, client_id) values (${userId}, ${name}, ${input.mode}, ${uris}::text[], ${clientId}) returning *`;
+    return r;
+  });
   if (!row) throw new ConnectError(`You can have up to ${MAX_APPS} apps.`);
   return toApp(row);
 }
@@ -85,11 +89,14 @@ export async function createKey(userId: string, appId: string): Promise<{ id: st
   const [app] = await sql`select mode from apps where id = ${appId} and owner_id = ${userId}`;
   if (!app) throw new ConnectError(NOT_FOUND);
   const key = keyPrefix(app.mode) + randomBytes(32).toString("base64url");
-  const [row] = await sql`
-    insert into api_keys (app_id, prefix, last4, key_hash)
-    select ${appId}, ${key.slice(0, 12)}, ${key.slice(-4)}, ${sha256(key)}
-    where (select count(*) from api_keys where app_id = ${appId} and revoked_at is null) < ${MAX_KEYS}
-    returning id`;
+  // Locked on the app id so concurrent requests can't both pass the count.
+  const row = await sql.begin(async (tx) => {
+    await tx`select pg_advisory_xact_lock(hashtext(${appId}))`;
+    const [{ n }] = await tx`select count(*)::int as n from api_keys where app_id = ${appId} and revoked_at is null`;
+    if (n >= MAX_KEYS) return null;
+    const [r] = await tx`insert into api_keys (app_id, prefix, last4, key_hash) values (${appId}, ${key.slice(0, 12)}, ${key.slice(-4)}, ${sha256(key)}) returning id`;
+    return r;
+  });
   if (!row) throw new ConnectError(`An app can have up to ${MAX_KEYS} active keys. Revoke one first.`);
   return { id: row.id, key, prefix: key.slice(0, 12), last4: key.slice(-4) };
 }
