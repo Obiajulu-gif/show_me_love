@@ -38,13 +38,19 @@ export async function POST() {
 }`;
 
 export const CALLBACK_SNIPPET = `// app/api/sml/callback/route.ts
+import { cookies } from "next/headers";
+import { sml } from "@/lib/sml";
+
 export async function GET(req: Request) {
   const q = new URL(req.url).searchParams;
-  const saved = (await cookies()).get("sml_state")?.value;
-  if (!saved || q.get("state") !== saved) return new Response("Bad state", { status: 400 });
-  if (q.get("error") === "access_denied") return Response.redirect(process.env.APP_ORIGIN + "/?denied=1");
-  await sml("/token", { method: "POST", body: { code: q.get("code") } }); // { connected: true }
-  return Response.redirect(process.env.APP_ORIGIN + "/");
+  const jar = await cookies();
+  const saved = jar.get("sml_state")?.value;
+  jar.delete("sml_state"); // single use, whatever happens next
+  const home = (qs = "") => Response.redirect(process.env.APP_ORIGIN + "/" + qs);
+  if (!saved || q.get("state") !== saved) return home("?error=Bad+state");
+  if (q.get("error") === "access_denied") return home("?denied=1");
+  const { status, data } = await sml("/token", { method: "POST", body: { code: q.get("code") } }); // 200 { connected: true }
+  return status === 200 ? home() : home("?error=" + encodeURIComponent(data.error ?? "Could not connect"));
 }`;
 
 export const SHOW_SNIPPET = `// Anywhere on the server

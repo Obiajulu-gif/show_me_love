@@ -30,7 +30,7 @@ npm run typecheck
 
 ## Smoke test
 
-An end-to-end run of the whole money loop in a real browser: claim a username, sign up, onboard, change the price, buy a treat, simulate the payment, withdraw, approve as admin, see "Paid".
+An end-to-end run in a real browser. Tier 1, the money loop: claim a username, sign up, onboard, change the price, buy a treat, simulate the payment, withdraw, approve as admin, see "Paid". Tier 2: create a goal and pay it (the dashboard shows the progress), sign up two more creators and pay a group of them (both see a "group" row), create a sandbox app and API key in Developers, then run the whole Connect flow over HTTP (sessions, Allow, token, connection) and revoke it from Share.
 
 ```bash
 # server: npm run dev, practice mode, with these set
@@ -38,7 +38,11 @@ An end-to-end run of the whole money loop in a real browser: claim a username, s
 CRON_SECRET=<same value> BASE_URL=http://localhost:3000 node scripts/smoke.mjs
 ```
 
-It exits non-zero and names the failing step if anything breaks. It takes about three minutes, because a send only settles after it has been processing for two minutes; the script calls `/api/cron/expire` every 15 seconds until the row is Paid. You may need `npx playwright install chromium` once. Signups are rate limited to 10 per hour per IP, so restart `db:local` on a clean `.pglite` folder if you rerun it many times.
+It exits non-zero and names the failing step if anything breaks. It takes about three minutes, because a send only settles after it has been processing for two minutes; the script calls `/api/cron/expire` every 15 seconds until the row is Paid. You may need `npx playwright install chromium` once. Signups are rate limited to 10 per hour per IP (a run uses four), so restart `db:local` on a clean `.pglite` folder if you rerun it many times.pglite` folder if you rerun it many times.
+
+## Responsive check
+
+`BASE_URL=http://localhost:3000 node scripts/responsive.mjs` opens the key screens at 375 px wide, fails on any horizontal scroll, and saves screenshots to `docs/screenshots/375/`.
 
 ## Demo data
 
@@ -63,6 +67,14 @@ Webhook: register `https://<your-host>/api/ras/webhook` in the RAS dashboard. Ev
 Cron: `/api/cron/expire` expires stale pending payments and settles sends. It needs `Authorization: Bearer $CRON_SECRET`. On Vercel Hobby, crons may only run daily, so `vercel.json` schedules it at 03:00 UTC. Pending payments also expire lazily whenever their status is read.
 
 ## Deploy (pending approval)
+
+Demo-readiness checklist (nothing below has been done; each step waits for approval):
+
+- [ ] Switch the production deployment to `RAS_MODE=test` once `RAS_TEST_KEY` is added.
+- [ ] Make one real test-mode payment and one USDT test withdrawal, and record the results here.
+- [ ] Run `scripts/seed-demo.mjs` against production for the demo creator (it needs practice mode, so run it before the switch or against a practice deployment).
+- [ ] Deploy and update the memory note with the live URLs.
+
 
 Nothing has been pushed or deployed yet. When approved:
 
