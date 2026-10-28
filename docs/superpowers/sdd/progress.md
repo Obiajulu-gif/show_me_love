@@ -173,4 +173,37 @@ Task 19: minor (deferred): RasError from networkFee surfaces as 500 (map to frie
 Task 19: complete (commits 689a36a..dfb9a1d, review clean)
 TIER 2 COMPLETE.
 - Ruling: Task 20 copy original — do not use "Who are we treating?" or "Your group starts with a username." (other site's wording); write own strings.
-Task 20: implementer stopped mid-task for move to cloud; WIP committed as-is (unreviewed, may not pass tests)
+Task 20: moved to cloud at eb0534d (WIP); cloud session pushed nothing (origin still eb0534d). Resumed locally 2026-10-28 from eb0534d.
+Task 20: implemented dfb9a1d..7174e3c (code in eb0534d; 7174e3c empty), in review
+Task 20: minor (deferred): "Show my message publicly" checkbox has no public surface for group payments; admin search by creator misses group payments; wall/heatmap exclude group payments; custom-split '@' strip dead + per-key DB lookups before size cap; groupPaymentStatus duplicates expiry (hardcoded 60); shared checkout rate-limit bucket; /api/groups/check unthrottled; even-split preview shows fractional naira; move shareWeights to money.ts
+Task 20: complete (commits dfb9a1d..7174e3c, review clean)
+- Ruling: Task 21 empty-state copy "Bring show-me-love to your platform" echoes the other site's "Bring BMM to your platform"; use "Let other apps send people to your page" + button "Create an app" — copy rule — if wrong, string swap.
+Task 21: implemented 7a7e9bb (base 7174e3c), in review
+- Ruling: Task 21 minors raised to Important (cheap, security/UX): redirect URIs reject userinfo and raw whitespace/control chars; key modal ignores backdrop clicks; limit race closed with pg_advisory_xact_lock(hashtext(userId)) in a transaction (comment corrected) — if wrong, small extra work.
+Task 21: minor (deferred): Overlay lacks Escape/focus trap; revoked keys accumulate unbounded
+Task 21: fix round 1/5 implemented (commits 7a7e9bb..9a8ee42), in re-review
+Task 21: fix round 1/5 (5 addressed, 0 open; commits 7a7e9bb..9a8ee42)
+Task 21: minor (deferred): modals lack Escape handling
+Task 21: complete (commits 7174e3c..9a8ee42, review clean)
+Task 22: implemented 25de40d (base 9a8ee42), in review
+- Ruling: Task 22 minors #1 (frame-ancestors on /connect/authorize), #2 (separate Connect JWT key via HMAC(SESSION_SECRET,"connect")), #3 (expire unused auth_codes on revoke/disconnect), #4 (exchangeCode in one transaction) raised to Important — consent/security hardening, all cheap — if wrong, small extra work.
+Task 22: minor (deferred): reconnect keeps old created_at; live earnings total includes goals while treats excludes them; RevokeAppButton ignores non-OK, no confirm; test gaps (revokeByCreator assertion, live earnings seeded, cross-app HTTP read); consent screen doesn't show user_ref; failed app auth not rate-limited
+Task 22: fix round 1/5 implemented (commits 25de40d..2021aec), in re-review
+Task 22: fix round 1/5 (4 addressed, 0 open; commits 25de40d..2021aec)
+Task 22: minor (deferred): trigger function boom() not dropped in test; authorizeHeaders named export in next.config
+Task 22: complete (commits 9a8ee42..2021aec, review clean)
+- Ruling: Task 23 docs, integration guide, AI prompt, starter README and /legal must be written fresh in show-me-love's own words — never adapt the other site's integration guide text seen during research — if wrong, docs rewrite.
+Task 23: implemented aee2e62 (base 2021aec), in review; e2e starter run not done (route-handler tests instead)
+Task 23: minor (deferred): root tsc still type-checks starter via test import; starter cookies no Secure (README note); connect-starter test env stubs not reset; empty "why" cells in /sessions error table
+- Ruling (carry to Task 24): fix docs CALLBACK_SNIPPET (missing imports, ignores /token result, doesn't clear sml_state) — developers copy it — if skipped, broken sample code.
+Task 23: complete (commits 2021aec..aee2e62, review clean)
+- Ruling: Task 24 steps 4–6 (switch production to RAS_MODE=test, real test-mode payment/withdrawal, seed production, deploy) are deferred to the user's approval like Task 15's deploy; Task 24 runs steps 1–3 locally plus the docs snippet fix and compiling the starter UI — deploy/publish needs the user's OK — if wrong, demo prep happens after approval.
+Task 24: implemented d649a4d (base aee2e62), in review; smoke OK extended
+Task 24: minor (deferred): README smoke sentence garbled/duplicated; README checklist overlaps numbered steps; responsive.mjs pre-exemption could hide overflow; FAST skips settle path
+Task 24: complete (commits aee2e62..d649a4d, review clean)
+ALL TASKS COMPLETE. Final whole-branch review next.
+FINAL REVIEW (8e54072..d649a4d): With fixes — Critical: admin role granted at unverified signup; keyless deploy runs practice with public simulate. Important: late/overpaid on failed/successful dropped silently; token_refunded after paid dropped; cron daily; CSRF guard missing on withdrawals/code/onboarding/uploads; leftover copy ("wall of love", README tagline, "buy me a treat!" share default); totalReceived counts refunded/recredit.
+- Ruling: Important 5 (daily cron) resolved by documenting the delay and an external 5-minute cron option in README rather than adding a GitHub Actions workflow — a scheduled workflow is an outward-facing change on a public repo — if wrong, stuck payouts surface up to 24 h late.
+- Ruling: final fix wave also takes the reviewer's "fix before public deploy" deferred items (UI success on failed/stuck sends, refid in admin email, report body cap, boot config check for email/PUBLIC_APP_URL, PLATFORM_FEE_BPS/rate validation, README garble) and rewords the public spec's "clone of buymeamalt.com" line — all low-cost and user-visible — if wrong, a larger fix diff.
+Final fix wave: implemented d649a4d..d7f09ab (204 tests, smoke OK), in scoped re-review
+Final fix wave: re-review all 14 addressed (commits d649a4d..d7f09ab). BRANCH COMPLETE.
