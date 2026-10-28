@@ -183,7 +183,7 @@ export function PageEditor({ creator, treats }: { creator: Creator; treats: Reco
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-canvas/95 px-4 py-3 backdrop-blur md:left-60">
         <div className="mx-auto flex max-w-5xl items-center gap-3">
-          <p role="status" className={`min-w-0 flex-1 truncate text-sm ${msg?.ok === false ? "text-red-700" : "text-muted"}`}>{msg?.text ?? (dirty ? "You have unsaved changes." : "")}</p>
+          <p role="status" className={`min-w-0 flex-1 truncate text-sm ${msg?.ok === false ? "text-danger" : "text-muted"}`}>{msg?.text ?? (dirty ? "You have unsaved changes." : "")}</p>
           <Button variant="ghost" disabled={idx === 0} onClick={() => setTab(TABS[idx - 1].id)}>Prev</Button>
           <Button variant="ghost" disabled={idx === TABS.length - 1} onClick={() => setTab(TABS[idx + 1].id)}>Next</Button>
           <Button disabled={!dirty || busy} onClick={save}>{busy ? "Saving…" : "Save"}</Button>

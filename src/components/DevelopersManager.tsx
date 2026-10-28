@@ -38,9 +38,9 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 
 function Overlay({ title, onClose, side, sticky, children }: { title: string; onClose: () => void; side?: boolean; sticky?: boolean; children: ReactNode }) {
   return (
-    <div className={`fixed inset-0 z-50 flex bg-canvas/75 backdrop-blur-sm ${side ? "justify-end" : "items-center justify-center p-4"}`} onClick={sticky ? undefined : onClose}>
+    <div className={`fixed inset-0 z-50 flex bg-canvas/75 backdrop-blur-sm motion-safe:animate-scrim-in ${side ? "justify-end" : "items-center justify-center p-4"}`} onClick={sticky ? undefined : onClose}>
       <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}
-        className={`bg-canvas p-6 shadow-xl ${side ? "h-full w-full max-w-md overflow-y-auto" : "w-full max-w-lg rounded-[18px] border border-line"}`}>
+        className={`bg-canvas p-6 shadow-xl ${side ? "h-full w-full max-w-md overflow-y-auto border-l border-line motion-safe:animate-drawer-in" : "w-full max-w-lg rounded-[18px] border border-line motion-safe:animate-dialog-in"}`}>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-2xl font-semibold tracking-tight">{title}</h2>
           <button type="button" aria-label="Close" onClick={onClose}><X size={20} /></button>
@@ -85,7 +85,7 @@ function AppForm({ app, defaultMode, onCreated, onClose }: { app?: AppRow; defau
           <textarea className={`${field} font-mono text-sm`} rows={4} value={uris} onChange={(e) => setUris(e.target.value)} placeholder="https://yourapp.com/sml/callback" />
         </label>
         <p className="text-xs text-muted">Must start with https://. http:// works only for localhost. People are sent back to these exact links, so add each one in full.</p>
-        {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
+        {err && <p role="alert" className="text-sm text-danger">{err}</p>}
         <Button onClick={save} disabled={busy}>{app ? "Save changes" : "Create app"}</Button>
       </div>
     </Overlay>
@@ -147,7 +147,7 @@ export function DevelopersManager({ apps, origin, guide }: { apps: AppRow[]; ori
           {apps.length > 0 && <Button onClick={() => setForm("new")}><Plus size={16} /> Create an app</Button>}
         </div>
       </div>
-      {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
+      {err && <p role="alert" className="text-sm text-danger">{err}</p>}
       {apps.length === 0 ? (
         <Card className="text-center">
           <Code2 className="mx-auto text-muted" size={32} />
@@ -186,7 +186,7 @@ export function DevelopersManager({ apps, origin, guide }: { apps: AppRow[]; ori
                       {a.keys.map((k) => (
                         <li key={k.id} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm">
                           <span><code>{k.prefix}…{k.last4}</code> <span className="text-muted">created {date(k.createdAt)}</span></span>
-                          <button type="button" className="font-semibold text-red-700 hover:underline" onClick={() => revoke(a, k.id)}>Revoke</button>
+                          <button type="button" className="font-semibold text-danger hover:underline" onClick={() => revoke(a, k.id)}>Revoke</button>
                         </li>
                       ))}
                     </ul>

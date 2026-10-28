@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { SuccessMark } from "@/components/ui/SuccessMark";
 import { useCallback, useEffect, useState } from "react";
 
 const FINAL = ["successful", "failed", "expired", "refunded"];
@@ -35,7 +36,7 @@ export function ThanksStatus({ ref_, username, initial, amountNgn, canSimulate }
     <div data-testid="thanks" data-status={status} className="rounded-[18px] border border-line bg-canvas p-6 text-center">
       {status === "successful" ? (
         <>
-          <p className="text-5xl" aria-hidden>🎉</p>
+          <SuccessMark />
           <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight">Your love landed!</h1>
           <p className="mt-2 text-sm">₦{amountNgn.toLocaleString("en-NG")} is on its way to @{username}. Thank you for showing up.</p>
         </>
@@ -46,7 +47,7 @@ export function ThanksStatus({ ref_, username, initial, amountNgn, canSimulate }
           {canSimulate && (
             <button type="button" onClick={simulate} className="mt-4 rounded-xl bg-accent px-4 py-2 font-semibold text-on-accent shadow-press">Simulate payment</button>
           )}
-          {err && <p role="alert" className="mt-2 text-sm text-red-700">{err}</p>}
+          {err && <p role="alert" className="mt-2 text-sm text-danger">{err}</p>}
         </>
       ) : (
         <>

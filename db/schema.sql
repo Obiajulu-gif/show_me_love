@@ -218,26 +218,31 @@ create table if not exists webhook_events (
 
 -- Treat catalog seed. Generic names only, no trademarks.
 insert into treat_catalog (id, name, aliases, emoji, image, category, parent_id, sort_order) values
-  ('malt',      'Malt',         '{"malt drink"}',      '🥤', '/treats/malt.svg',      'drink'  , null, 1),
-  ('zobo',      'Zobo',         '{"hibiscus","sobo"}', '🌺', '/treats/zobo.svg',      'drink',   null, 2),
-  ('suya',      'Suya',         '{"kebab","skewer"}',  '🍢', '/treats/suya.svg',      'food',    null, 3),
-  ('jollof',    'Jollof',       '{"rice","jollof rice"}', '🍛', '/treats/jollof.svg', 'food',    null, 4),
-  ('coffee',    'Coffee',       '{"cafe","latte"}',    '☕', '/treats/coffee.svg',    'drink',   null, 5),
-  ('glucose-d', 'Glucose D',    '{"glucose","energy"}','🥤', '/treats/glucose-d.svg', 'drink',   null, 6),
-  ('ribena',    'Blackcurrant', '{"cordial","juice"}', '🧃', '/treats/ribena.svg',    'drink',   null, 7),
-  ('lucozade',  'Energy Drink', '{"energy drink"}',    '⚡', '/treats/lucozade.svg',  'drink',   null, 8),
-  ('chapman',   'Chapman',      '{"cocktail","mocktail"}', '🍹', '/treats/chapman.svg', 'treat', null, 9),
-  ('trophy',    'Trophy',       '{"award","cup"}',     '🏆', '/treats/trophy.svg',    'alcohol', null, 10)
+  ('malt',      'Malt',         '{"malt drink"}',      '🥤', '/treats/malt.webp',      'drink'  , null, 1),
+  ('zobo',      'Zobo',         '{"hibiscus","sobo"}', '🌺', '/treats/zobo.webp',      'drink',   null, 2),
+  ('suya',      'Suya',         '{"kebab","skewer"}',  '🍢', '/treats/suya.webp',      'food',    null, 3),
+  ('jollof',    'Jollof',       '{"rice","jollof rice"}', '🍛', '/treats/jollof.webp', 'food',    null, 4),
+  ('coffee',    'Coffee',       '{"cafe","latte"}',    '☕', '/treats/coffee.webp',    'drink',   null, 5),
+  ('glucose-d', 'Glucose D',    '{"glucose","energy"}','🥤', '/treats/glucose-d.webp', 'drink',   null, 6),
+  ('ribena',    'Blackcurrant', '{"cordial","juice"}', '🧃', '/treats/ribena.webp',    'drink',   null, 7),
+  ('lucozade',  'Energy Drink', '{"energy drink"}',    '⚡', '/treats/lucozade.webp',  'drink',   null, 8),
+  ('chapman',   'Chapman',      '{"cocktail","mocktail"}', '🍹', '/treats/chapman.webp', 'treat', null, 9),
+  ('trophy',    'Trophy',       '{"award","cup"}',     '🏆', '/treats/trophy.webp',    'alcohol', null, 10)
 on conflict (id) do nothing;
 
 insert into treat_catalog (id, name, aliases, emoji, image, category, parent_id, sort_order) values
-  ('malt-classic',  'Classic Malt',  '{}', '🥤', '/treats/malt-classic.svg',  'drink'  , 'malt',   1),
-  ('malt-dark',     'Dark Malt',     '{}', '🥤', '/treats/malt-dark.svg',     'drink'  , 'malt',   2),
-  ('malt-gold',     'Gold Malt',     '{}', '🥤', '/treats/malt-gold.svg',     'drink'  , 'malt',   3),
-  ('trophy-gold',   'Gold Trophy',   '{}', '🏆', '/treats/trophy-gold.svg',   'alcohol', 'trophy', 1),
-  ('trophy-silver', 'Silver Trophy', '{}', '🏆', '/treats/trophy-silver.svg', 'alcohol', 'trophy', 2)
+  ('malt-classic',  'Classic Malt',  '{}', '🥤', '/treats/malt.webp',  'drink'  , 'malt',   1),
+  ('malt-dark',     'Dark Malt',     '{}', '🥤', '/treats/malt.webp',     'drink'  , 'malt',   2),
+  ('malt-gold',     'Gold Malt',     '{}', '🥤', '/treats/malt.webp',     'drink'  , 'malt',   3),
+  ('trophy-gold',   'Gold Trophy',   '{}', '🏆', '/treats/trophy.webp',   'alcohol', 'trophy', 1),
+  ('trophy-silver', 'Silver Trophy', '{}', '🏆', '/treats/trophy.webp', 'alcohol', 'trophy', 2)
 on conflict (id) do nothing;
 
 -- Malt is non-alcoholic: fix databases seeded before this correction.
 update treat_catalog set category = 'drink', emoji = '🥤'
   where id in ('malt', 'malt-classic', 'malt-dark', 'malt-gold') and category = 'alcohol';
+
+-- Real treat photos: move databases seeded with the illustrations onto them.
+update treat_catalog set image = '/treats/' || coalesce(parent_id, id) || '.webp'
+  where image like '/treats/%.svg' and coalesce(parent_id, id) in
+    ('malt','zobo','suya','jollof','coffee','glucose-d','ribena','lucozade','chapman','trophy');

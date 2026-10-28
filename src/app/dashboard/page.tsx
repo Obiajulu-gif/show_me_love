@@ -1,3 +1,4 @@
+import { CheckCircle2, Circle } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -49,7 +50,7 @@ export default async function Overview() {
       <Card>
         <h2 className="font-semibold">Page setup: {steps.filter((s) => s.done).length} of 3 complete</h2>
         <ul className="mt-3 space-y-1 text-sm">
-          {steps.map((s) => <li key={s.label}>{s.done ? "✓" : "○"} {s.label}</li>)}
+          {steps.map((s) => <li key={s.label} className="flex items-center gap-2">{s.done ? <CheckCircle2 size={16} className="text-accent" aria-label="Done" /> : <Circle size={16} className="text-muted" aria-label="Not done yet" />}{s.label}</li>)}
         </ul>
       </Card>
       <section>

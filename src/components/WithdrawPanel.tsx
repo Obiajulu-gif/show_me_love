@@ -69,8 +69,8 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
       </div>
 
       {modal && (
-        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-canvas/75 backdrop-blur-sm p-4" onClick={close}>
-          <div className="w-full max-w-md space-y-4 rounded-[18px] bg-canvas p-6" onClick={(e) => e.stopPropagation()}>
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-canvas/75 backdrop-blur-sm p-4 motion-safe:animate-scrim-in" onClick={close}>
+          <div className="w-full max-w-md space-y-4 rounded-[18px] border border-line bg-canvas p-6 motion-safe:animate-dialog-in" onClick={(e) => e.stopPropagation()}>
             {modal === "dest" ? (
               <>
                 <h2 className="text-xl font-semibold">Payout destination</h2>
@@ -89,7 +89,7 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
                     <input aria-label="Account name" className={input} placeholder="Account name" value={b.accountName} onChange={(e) => setB({ ...b, accountName: e.target.value })} />
                   </>
                 )}
-                {msg && <p role="alert" className="text-sm text-red-700">{msg}</p>}
+                {msg && <p role="alert" className="text-sm text-danger">{msg}</p>}
                 <div className="flex gap-2">
                   <Button disabled={busy} onClick={() => run(async () => {
                     await call("/api/withdrawals/destination", "PUT", tab === "usdt" ? { kind: "usdt", network: net, address: addr } : { kind: "bank", ...b });
@@ -123,7 +123,7 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
                   </div>
                 )}
                 {sent && <input aria-label="6-digit code" className={input} inputMode="numeric" maxLength={6} placeholder="6-digit code from your email" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} />}
-                {msg && <p role="alert" className="text-sm text-red-700">{msg}</p>}
+                {msg && <p role="alert" className="text-sm text-danger">{msg}</p>}
                 <div className="flex gap-2">
                   {!sent ? (
                     <Button disabled={busy || !dest || !amount} onClick={() => run(async () => {

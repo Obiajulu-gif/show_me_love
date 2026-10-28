@@ -36,13 +36,13 @@ export async function createCreator(
       if (have) throw new Error("You already have a page.");
       const ct = input.customTreat;
       if (input.treatId === "custom") {
-        if (!ct || !ct.name?.trim() || ct.name.length > 30 || !ct.emoji?.trim() || ct.emoji.length > 8) throw new Error("Give your custom treat a short name and an emoji.");
+        if (!ct || !ct.name?.trim() || ct.name.length > 30 || (ct.emoji != null && (typeof ct.emoji !== "string" || ct.emoji.length > 8))) throw new Error("Give your custom treat a short name.");
       } else if (ct || !(await tx`select 1 from treat_catalog where id = ${input.treatId} and active`).length) throw new Error(PICK);
       await claimUsername(tx, username);
       const [r] = await tx`
         insert into creators (user_id, username, display_name, treat_id, custom_treat, unit_price_ngn, presets, thank_you_text, share_message, page_style)
         values (${userId}, ${username}, ${username}, ${input.treatId}, ${input.customTreat ? tx.json(input.customTreat) : null}, 500, ${[1, 3, 5]},
-                'Thanks for the treat. It means a lot.', 'Feeling good today. Send a little love my way 😊', ${tx.json(DEFAULT_STYLE)})
+                'Thanks for the treat. It means a lot.', 'Feeling good today. Send a little love my way.', ${tx.json(DEFAULT_STYLE)})
         returning *`;
       return toCreator(r);
     });
@@ -95,7 +95,7 @@ function validate(p: Partial<EditableCreator>) {
   const okUrl = (u: unknown) => u == null || (typeof u === "string" && (/^\/uploads\//.test(u) || /^https:\/\//.test(u)));
   if (!okUrl(p.photo_url) || !okUrl((p.page_style as { cover?: unknown } | undefined)?.cover)) throw new Error("Page style is not valid.");
   const ct = p.custom_treat;
-  if (p.treat_id === "custom" && !(ct && ct.name?.trim() && ct.name.length <= 30 && ct.emoji?.trim() && ct.emoji.length <= 8)) throw new Error("Give your custom treat a short name and an emoji.");
+  if (p.treat_id === "custom" && !(ct && ct.name?.trim() && ct.name.length <= 30 && (ct.emoji == null || (typeof ct.emoji === "string" && ct.emoji.length <= 8)))) throw new Error("Give your custom treat a short name.");
   const ps = p.page_style;
   if (ps && ((ps.tagline && ps.tagline.length > 80) || (ps.accent && !["honey", "cocoa", "sage"].includes(ps.accent)) || (ps.header && !["default", "cover"].includes(ps.header))))
     throw new Error("Page style is not valid.");

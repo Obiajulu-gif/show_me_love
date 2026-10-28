@@ -40,7 +40,7 @@ export function GoalContribute({ goalId, currency, suggested, paused }: { goalId
         </button>
         {currency === "USD" && <p className="text-center text-xs text-muted">You pay in naira at today&apos;s rate; the goal counts dollars.</p>}
         <p className="text-center text-xs text-muted">Paid securely in USDT via Roqqu</p>
-        {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
+        {err && <p role="alert" className="text-sm text-danger">{err}</p>}
       </fieldset>
     </form>
   );

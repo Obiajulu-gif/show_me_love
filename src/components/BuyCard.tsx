@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { Gift, Loader2 } from "lucide-react";
 
 export type BuyCardProps = { treatName: string; treatImage: string; unitPriceNgn: number; presets: number[]; mode: "preview" | "live"; username?: string; onSend?: (qty: number) => void };
 
@@ -38,17 +39,17 @@ export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, us
       <fieldset disabled={!live || busy} className="space-y-3 disabled:opacity-100">
         <div className="flex flex-wrap items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          {treatImage ? <img src={treatImage} alt="" className="h-12 w-12" /> : null}
+          {treatImage ? <img src={treatImage} alt="" className="h-12 w-12 rounded-full object-cover ring-1 ring-line" /> : <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-2 text-love"><Gift size={22} aria-hidden /></span>}
           <span className="text-sm">{treatName} x</span>
           {presets.map((n) => (
             <button key={n} type="button" aria-pressed={!custom && n === qty} onClick={() => { setCustom(false); setQty(n); }}
-              className={`rounded-full border px-3 py-1 text-sm ${!custom && n === qty ? "border-fg bg-accent" : "border-line bg-surface-2"}`}>{n}</button>
+              className={`rounded-full border px-3 py-1 text-sm transition-colors duration-150 ${!custom && n === qty ? "border-accent bg-accent text-on-accent" : "border-line bg-surface-2 hover:border-muted/60"}`}>{n}</button>
           ))}
         </div>
         {!custom ? (
           <div className="flex items-center gap-3 text-sm">
             <button type="button" aria-label="Fewer" disabled={qty <= 1} onClick={() => setQty(qty - 1)} className="h-8 w-8 rounded-full border border-line bg-surface-2">-</button>
-            <span data-testid="qty" className="w-8 text-center font-semibold">{qty}</span>
+            <span data-testid="qty" key={qty} className="data w-8 text-center font-semibold motion-safe:animate-tick-up">{qty}</span>
             <button type="button" aria-label="More" disabled={qty >= 50} onClick={() => setQty(qty + 1)} className="h-8 w-8 rounded-full border border-line bg-surface-2">+</button>
             <span className="data text-muted">₦{unitPriceNgn.toLocaleString("en-NG")} each</span>
           </div>
@@ -62,11 +63,11 @@ export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, us
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={f.isPublic} onChange={(e) => setF({ ...f, isPublic: e.target.checked })} /> Show my note on the page
         </label>
-        <button type="submit" className="w-full rounded-xl bg-accent px-4 py-2 text-center font-semibold text-on-accent shadow-press disabled:cursor-default">
-          {busy ? "One moment..." : `Send ${treatName} · ₦${total.toLocaleString("en-NG")}`}
+        <button type="submit" className="w-full rounded-xl bg-accent px-4 py-2 text-center font-semibold text-on-accent shadow-press transition-[filter,transform] duration-150 hover:brightness-110 active:translate-y-px disabled:cursor-default">
+          {busy ? <span className="inline-flex items-center justify-center gap-2"><Loader2 size={16} className="motion-safe:animate-spin" aria-hidden /> Opening checkout</span> : <>Send {treatName} for <span key={total} className="data inline-block motion-safe:animate-tick-up">₦{total.toLocaleString("en-NG")}</span></>}
         </button>
         <p className="text-center text-xs text-muted">Paid securely in USDT via Roqqu</p>
-        {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
+        {err && <p role="alert" className="text-sm text-danger">{err}</p>}
       </fieldset>
     </form>
   );

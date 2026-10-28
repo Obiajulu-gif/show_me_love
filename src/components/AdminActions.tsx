@@ -48,7 +48,7 @@ export function AdminActions({ w }: { w: Row }) {
           </>
         )}
       </div>
-      {msg && <p className="text-xs text-red-700">{msg}</p>}
+      {msg && <p className="text-xs text-danger">{msg}</p>}
     </div>
   );
 }

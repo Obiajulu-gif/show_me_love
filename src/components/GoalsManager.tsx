@@ -34,7 +34,7 @@ export function GoalsManager({ goals, username, origin }: { goals: GoalRow[]; us
         <h1 className="font-display text-3xl font-semibold tracking-tight">Your goals</h1>
         <Button onClick={() => setEditing(BLANK_GOAL)}><Plus size={16} /> New goal</Button>
       </div>
-      {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
+      {err && <p role="alert" className="text-sm text-danger">{err}</p>}
       {goals.length === 0 ? (
         <Card className="text-center">
           <Target className="mx-auto text-muted" size={32} />

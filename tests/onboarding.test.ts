@@ -18,7 +18,7 @@ test("createCreator applies defaults and lowercases the username", async () => {
     userId: ada, username: "ada_bakes", displayName: "Ada_Bakes".toLowerCase(), treatId: "zobo", customTreat: null,
     unitPriceNgn: 500, presets: [1, 3, 5],
     thankYouText: "Thanks for the treat. It means a lot.",
-    shareMessage: "Feeling good today. Send a little love my way 😊",
+    shareMessage: "Feeling good today. Send a little love my way.",
     pageStyle: { accent: "honey", tagline: "A little love. A lot of possibility.", header: "default" },
   });
 });

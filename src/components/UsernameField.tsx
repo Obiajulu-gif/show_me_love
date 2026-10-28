@@ -25,7 +25,7 @@ export function UsernameField({ value, onChange, onStatus }: { value: string; on
         <span className="pl-3 text-muted">show-me-love/@</span>
         <input aria-label="Username" value={value} onChange={(e) => onChange(e.target.value.trim().toLowerCase())} maxLength={24} placeholder="yourname" autoCapitalize="none" autoComplete="off" className="min-w-0 flex-1 bg-transparent px-1 py-2 outline-none" />
       </div>
-      <p aria-live="polite" className={`mt-1 min-h-5 text-sm ${status?.ok ? "text-green-700" : "text-muted"}`}>{status?.text}</p>
+      <p aria-live="polite" className={`mt-1 min-h-5 text-sm ${status?.ok ? "text-accent" : "text-muted"}`}>{status?.text}</p>
     </div>
   );
 }

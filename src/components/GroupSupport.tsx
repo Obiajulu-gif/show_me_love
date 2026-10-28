@@ -1,5 +1,6 @@
 "use client";
 import { Plus, X } from "lucide-react";
+import { SuccessMark } from "@/components/ui/SuccessMark";
 import { useCallback, useEffect, useState } from "react";
 
 import { parseUsernames } from "@/lib/groupNames";
@@ -35,13 +36,13 @@ function ThanksPanel({ thanks, canSimulate }: { thanks: Thanks; canSimulate: boo
   return (
     <Card data-testid="group-thanks" data-status={status} className="text-center">
       {status === "successful" ? (
-        <><p className="text-4xl" aria-hidden>🎉</p><h2 className="mt-2 font-display text-2xl font-semibold tracking-tight">Your group got your love!</h2>
+        <><SuccessMark /><h2 className="mt-2 font-display text-2xl font-semibold tracking-tight">Your group got your love!</h2>
           <p className="mt-1 text-sm">{money(thanks.total, thanks.currency)} is on its way to everyone in the group.</p></>
       ) : status === "pending" ? (
         <><h2 className="font-display text-2xl font-semibold tracking-tight">Waiting for your payment</h2>
           <p className="mt-1 text-sm text-muted">Status: pending. This updates on its own once it is confirmed.</p>
           {canSimulate && <Button type="button" onClick={simulate} className="mt-4">Simulate payment</Button>}
-          {err && <p role="alert" className="mt-2 text-sm text-red-700">{err}</p>}</>
+          {err && <p role="alert" className="mt-2 text-sm text-danger">{err}</p>}</>
       ) : (
         <><h2 className="font-display text-2xl font-semibold tracking-tight">This payment didn&apos;t go through</h2>
           <p className="mt-1 text-sm text-muted">Status: {status}. Nobody was paid. You can start again below.</p></>
@@ -152,7 +153,7 @@ export function GroupSupport({ history, thanks, canSimulate }: { history: Hist[]
                 <input inputMode="decimal" aria-label={`Amount for ${c.username}`} value={custom[c.username] ?? ""} onChange={(e) => setCustom({ ...custom, [c.username]: e.target.value })} className="w-32 rounded-xl border border-line bg-surface-2 px-3 py-1.5" />
               </label>
             ))}
-            {mode === "custom" && <p className={customOk ? "text-muted" : "text-red-700"}>Entered {money(sum / 100, currency)} of {money(totalNum || 0, currency)}</p>}
+            {mode === "custom" && <p className={customOk ? "text-muted" : "text-danger"}>Entered {money(sum / 100, currency)} of {money(totalNum || 0, currency)}</p>}
           </fieldset>
           <textarea aria-label="Message" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={280} placeholder="A message (optional)" className="w-full rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm" />
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />Show my message publicly</label>
@@ -164,7 +165,7 @@ export function GroupSupport({ history, thanks, canSimulate }: { history: Hist[]
               </ul>
             </div>
           )}
-          {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
+          {err && <p role="alert" className="text-sm text-danger">{err}</p>}
           <Button type="button" onClick={pay} disabled={busy || chips.length < 2 || !(totalNum > 0)} className="w-full">{busy ? "Starting checkout…" : "Pay"}</Button>
         </Card>
       )}

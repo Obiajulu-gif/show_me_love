@@ -61,8 +61,8 @@ export function Sidebar({ username }: { username: string }) {
       </header>
       {open && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-canvas/75 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col bg-canvas p-4" aria-label="Menu">
+          <div className="absolute inset-0 bg-canvas/75 backdrop-blur-sm motion-safe:animate-scrim-in" onClick={() => setOpen(false)} />
+          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-line bg-canvas p-4 motion-safe:animate-[drawer-in_.26s_cubic-bezier(.16,1,.3,1)_reverse]" aria-label="Menu">
             <div className="flex items-center justify-between"><Logo href="/dashboard" /><button type="button" aria-label="Close menu" onClick={() => setOpen(false)}><X /></button></div>
             {body(false)}
           </aside>

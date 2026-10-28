@@ -36,7 +36,7 @@ export function OnboardingForm({ treat: t0, username: u0 }: { treat: string; use
         <div className="mt-2"><TreatPicker value={treat} onChange={setTreat} /></div>
         <h2 className="mt-5 font-semibold">Your username</h2>
         <div className="mt-2"><UsernameField value={username} onChange={setUsername} onStatus={setOk} /></div>
-        {err && <p role="alert" className="mb-2 text-sm text-red-700">{err}</p>}
+        {err && <p role="alert" className="mb-2 text-sm text-danger">{err}</p>}
         <Button disabled={busy || !ok} onClick={submit} className="mt-2 w-full">Create my page</Button>
       </Card>
     </main>

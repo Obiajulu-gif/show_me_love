@@ -24,7 +24,7 @@ const faq = [
 
 const demo = {
   username: "ada_bakes", displayName: "Ada Bakes", bio: "Baking tutorials every Friday. Fuel me with zobo.", photoUrl: null,
-  treatName: "Zobo", treatImage: "/treats/zobo.svg", unitPriceNgn: 500, presets: [1, 3, 5], thankYouText: "", tagline: "A little love. A lot of possibility.",
+  treatName: "Zobo", treatImage: "/treats/zobo.webp", unitPriceNgn: 500, presets: [1, 3, 5], thankYouText: "", tagline: "A little love. A lot of possibility.",
   accent: "honey", header: "default", coverUrl: null, socials: [],
 };
 const demoWall = [{ id: "d1", name: "Tunde", quantity: 3, message: "Your sourdough saved my weekend.", at: new Date(0) }, { id: "d2", name: "Ife", quantity: 1, message: "Keep going!", at: new Date(0) }];

@@ -32,7 +32,7 @@ export function RefundForm({ pref }: { pref: string }) {
       </select>
       <p className="text-xs text-muted">USDT will be sent to this address, minus the network fee.</p>
       <button disabled={busy} className="rounded-full border border-line px-3 py-1 text-xs font-semibold disabled:opacity-50">Send refund</button>
-      {msg && <p className="text-xs text-red-700">{msg}</p>}
+      {msg && <p className="text-xs text-danger">{msg}</p>}
     </form>
   );
 }

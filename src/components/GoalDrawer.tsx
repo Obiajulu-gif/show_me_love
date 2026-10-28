@@ -73,8 +73,8 @@ export function GoalDrawer({ initial, defaultOrganizer, onClose, onSaved }: { in
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-canvas/75 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={initial.id ? "Edit goal" : "New goal"}>
-      <form onSubmit={save} className="flex h-full w-full max-w-md flex-col overflow-y-auto bg-canvas p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex justify-end bg-canvas/75 backdrop-blur-sm motion-safe:animate-scrim-in" role="dialog" aria-modal="true" aria-label={initial.id ? "Edit goal" : "New goal"}>
+      <form onSubmit={save} className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-line bg-canvas p-6 shadow-xl motion-safe:animate-drawer-in">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-2xl font-semibold tracking-tight">{initial.id ? "Edit goal" : "New goal"}</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="rounded-full p-1 hover:bg-surface"><X size={18} /></button>
@@ -127,7 +127,7 @@ export function GoalDrawer({ initial, defaultOrganizer, onClose, onSaved }: { in
             ))}
           </fieldset>
           <p className="rounded-xl bg-surface p-3 text-xs text-muted">Supporters choose their own amount, starting from your suggestion. Money counts toward the goal once the payment clears.</p>
-          {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
+          {err && <p role="alert" className="text-sm text-danger">{err}</p>}
         </div>
         <div className="mt-6 flex justify-end gap-3">
           <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
