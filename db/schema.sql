@@ -159,6 +159,7 @@ create table if not exists apps (
   redirect_uris text[] not null default '{}',
   client_id text unique not null
 );
+alter table apps add column if not exists created_at timestamptz not null default now();
 
 create table if not exists api_keys (
   id uuid primary key default gen_random_uuid(),
@@ -168,6 +169,7 @@ create table if not exists api_keys (
   key_hash text not null,
   revoked_at timestamptz
 );
+alter table api_keys add column if not exists created_at timestamptz not null default now();
 
 create table if not exists auth_codes (
   code_hash text primary key,
