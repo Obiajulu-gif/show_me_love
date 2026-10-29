@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PageHead } from "@/components/AdminUi";
 import { ResolveReportButton } from "@/components/ResolveReportButton";
 import { listOpenReports, requireAdminPage } from "@/lib/admin";
 
@@ -8,8 +9,8 @@ export default async function AdminReports() {
   const rows = await listOpenReports();
   return (
     <div className="space-y-4">
-      <h1 className="font-display text-3xl font-semibold tracking-tight">Open reports</h1>
-      {rows.length === 0 ? <p>Nothing to review.</p> : (
+      <PageHead title="Reports" sub="Pages people flagged. Review the page, then mark the report resolved." />
+      {rows.length === 0 ? <p className="text-muted">No open reports.</p> : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="text-muted"><tr><th className="p-2">Page</th><th className="p-2">Reason</th><th className="p-2">Details</th><th className="p-2">Date</th><th className="p-2" /></tr></thead>

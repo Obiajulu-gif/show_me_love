@@ -1,18 +1,16 @@
-import Link from "next/link";
-
+import { AdminNav } from "@/components/AdminNav";
 import { requireAdminPage } from "@/lib/admin";
+import { db } from "@/lib/db";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdminPage();
+  const [c] = await db()`select
+    (select count(*) from withdrawals where status in ('awaiting_review','processing'))::int as withdrawals,
+    (select count(*) from reports where resolved_at is null)::int as reports`;
   return (
-    <div className="min-h-screen bg-canvas px-4 py-6 text-fg md:px-8">
-      <nav className="mb-6 flex gap-4 text-sm font-semibold">
-        <Link href="/admin">Admin</Link>
-        <Link href="/admin/withdrawals">Withdrawals</Link>
-        <Link href="/admin/payments">Payments</Link>
-        <Link href="/admin/reports">Reports</Link>
-      </nav>
-      {children}
+    <div className="min-h-screen bg-canvas text-fg md:flex">
+      <AdminNav counts={{ withdrawals: c.withdrawals, reports: c.reports }} />
+      <main className="min-w-0 flex-1 px-4 py-6 md:px-10 md:py-8">{children}</main>
     </div>
   );
 }

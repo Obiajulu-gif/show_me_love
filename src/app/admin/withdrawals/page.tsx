@@ -1,3 +1,4 @@
+import { PageHead } from "@/components/AdminUi";
 import { AdminActions } from "@/components/AdminActions";
 import { listQueue, requireAdminPage } from "@/lib/admin";
 
@@ -9,8 +10,8 @@ export default async function AdminWithdrawals() {
   const rows = await listQueue();
   return (
     <div className="space-y-4">
-      <h1 className="font-display text-3xl font-semibold tracking-tight">Withdrawal queue</h1>
-      {rows.length === 0 ? <p>Nothing waiting.</p> : (
+      <PageHead title="Withdrawals" sub="Requests waiting for review, and USDT sends that got stuck." />
+      {rows.length === 0 ? <p className="text-muted">Nothing waiting. New requests show up here.</p> : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="text-muted"><tr><th className="p-2">Creator</th><th className="p-2">Amount</th><th className="p-2">Pay to</th><th className="p-2">State</th><th className="p-2">Action</th></tr></thead>
