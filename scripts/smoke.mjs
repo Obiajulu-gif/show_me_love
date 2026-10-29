@@ -45,9 +45,9 @@ try {
 
   t("sign up");
   await page.waitForURL(/\/signup/);
-  await page.getByPlaceholder("Email").fill(email);
-  await page.getByPlaceholder("Password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Sign up" }).click();
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
+  await page.getByRole("button", { name: "Create account" }).click();
 
   t("onboarding");
   await page.waitForURL(/\/onboarding/);

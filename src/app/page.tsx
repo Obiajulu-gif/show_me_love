@@ -5,6 +5,7 @@ import { ClaimCard } from "@/components/ClaimCard";
 import { CreatorPage } from "@/components/CreatorPage";
 import { LiveLedger } from "@/components/LiveLedger";
 import { Logo } from "@/components/Logo";
+import { SiteHeader } from "@/components/SiteHeader";
 import { buttonClass } from "@/components/ui/Button";
 
 const steps = [
@@ -42,18 +43,7 @@ const section = "mx-auto max-w-6xl px-5";
 export default function Home() {
   return (
     <div className="min-h-screen bg-canvas text-fg">
-      <header className="sticky top-0 z-30 border-b border-line/60 bg-canvas/80 backdrop-blur">
-        <div className={`${section} flex items-center justify-between py-3`}>
-          <Logo />
-          <nav className="flex items-center gap-5 text-sm">
-            <a href="#how" className="hidden text-muted hover:text-fg sm:inline">How it works</a>
-            <Link href="/docs" className="hidden text-muted hover:text-fg sm:inline">Developers</Link>
-            <a href="#faq" className="hidden text-muted hover:text-fg sm:inline">Questions</a>
-            <Link href="/login" className="hover:text-accent">Log in</Link>
-            <Link href="/signup" className={buttonClass("primary", "py-1.5")}>Sign up</Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main>
         <section className={`${section} grid items-center gap-12 pb-16 pt-12 lg:grid-cols-[1.1fr_1fr] lg:pt-20`}>

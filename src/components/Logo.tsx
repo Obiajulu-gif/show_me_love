@@ -1,21 +1,21 @@
 import Link from "next/link";
 
-/** A heart-shaped cup: coral heart, teal rim — affection that settles as money. */
-export function LogoMark({ size = 28 }: { size?: number }) {
+/** A coral heart with a teal coin tucked against it, ticked: love that has settled. */
+export function LogoMark({ size = 30 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect x="1" y="1" width="30" height="30" rx="9" fill="#171E45" stroke="#2E3778" />
-      <path d="M8 12h14v5.5a6.5 6.5 0 0 1-6.5 6.5h-1A6.5 6.5 0 0 1 8 17.5V12Z" stroke="#33E0BE" strokeWidth="1.8" strokeLinejoin="round" />
-      <path d="M22 13.5h1.6a2.4 2.4 0 0 1 0 4.8H22" stroke="#33E0BE" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M15 21s-3.6-2.1-3.6-4.6a1.9 1.9 0 0 1 3.6-1 1.9 1.9 0 0 1 3.6 1C18.6 18.9 15 21 15 21Z" fill="#FF8197" />
+      <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="9.25" fill="#202859" stroke="#2E3778" strokeWidth="1.5" />
+      <path d="M13.5 24.2s-8-4.8-8-10.6a4.3 4.3 0 0 1 8-2.2 4.3 4.3 0 0 1 8 2.2c0 1-.2 2-.7 2.9" fill="#FF8197" />
+      <circle cx="21.6" cy="21.4" r="6.2" fill="#33E0BE" stroke="#202859" strokeWidth="2" />
+      <path d="m18.9 21.5 1.9 1.9 3.5-3.7" stroke="#062520" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 export function Logo({ href = "/" }: { href?: string }) {
   return (
-    <Link href={href} className="inline-flex items-center gap-2 font-display text-lg font-semibold tracking-tight text-fg">
-      <LogoMark />
+    <Link href={href} aria-label="show-me-love home" className="group inline-flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg font-display text-[1.15rem] font-bold tracking-[-0.03em] text-fg">
+      <span className="transition-transform duration-200 ease-out group-hover:-rotate-6"><LogoMark /></span>
       show-me-love
     </Link>
   );

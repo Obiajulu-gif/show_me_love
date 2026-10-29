@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { Logo } from "@/components/Logo";
+import { SiteHeader } from "@/components/SiteHeader";
 import { CALLBACK_SNIPPET, CONNECT_SNIPPET, ENV_BLOCK, HELPER_SNIPPET, SHOW_SNIPPET } from "@/lib/docsContent";
 
 export const metadata: Metadata = { title: "Developer docs · show-me-love" };
@@ -78,10 +78,7 @@ const CURL = `curl -X POST "$SML_ORIGIN/api/connect/sessions" \\
 export default function Docs() {
   return (
     <div className="min-h-screen bg-canvas text-fg">
-      <header className="flex items-center justify-between border-b border-line px-5 py-3">
-        <Logo />
-        <Link href="/dashboard/developers" className="text-sm font-semibold underline">Developers</Link>
-      </header>
+      <SiteHeader />
       <main className="mx-auto max-w-3xl px-4 py-10">
         <h1 className="font-display text-4xl font-semibold tracking-tight">Connect: developer docs</h1>
         <nav aria-label="On this page" className="mt-4 flex flex-wrap gap-3 text-sm">

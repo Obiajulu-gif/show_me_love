@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
-import { Logo } from "@/components/Logo";
+import { SiteHeader } from "@/components/SiteHeader";
 
 export const metadata: Metadata = { title: "Terms and Privacy · show-me-love" };
 
 export default function Legal() {
   return (
     <div className="min-h-screen bg-canvas text-fg">
-      <header className="border-b border-line px-5 py-3"><Logo /></header>
+      <SiteHeader />
       <main className="mx-auto max-w-2xl px-4 py-10">
         <p role="note" className="rounded-xl border border-warn/40 bg-warn/10 p-3 text-warn text-sm font-semibold">
           Draft: this page is plain-language placeholder text and has not been reviewed by a lawyer. It must be reviewed before launch.
