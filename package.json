@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@vercel/blob": "^1.0.0",
-    "@wagmi/connectors": "^5.11.2",
-    "@wagmi/core": "^2.22.1",
+    "@wagmi/connectors": "5.11.2",
+    "@wagmi/core": "2.21.2",
     "@walletconnect/ethereum-provider": "^2.26.0",
     "jose": "^6.2.12",
     "lucide-react": "^0.525.0",
