@@ -24,7 +24,9 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-  const [msg, setMsg] = useState<{ text: string; error: boolean } | null>(null);
+  const [msg, setMsg] = useState<{ text: string; error: boolean } | null>(
+    params.get("error") === "link" ? { text: "That sign-in link has expired or was already used. Enter your email and send a new one.", error: true } : null,
+  );
   const [busy, setBusy] = useState<"form" | "magic" | null>(null);
   const signup = mode === "signup";
   const claiming = params.get("username");

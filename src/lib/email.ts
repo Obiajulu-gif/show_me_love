@@ -27,7 +27,7 @@ export async function sendMail(to: string, subject: string, text: string): Promi
           textContent: text,
         }),
       });
-      return res.ok ? { sent: true, via: "brevo" } : { sent: false, via: "brevo", error: `Brevo HTTP ${res.status}` };
+      return res.ok ? { sent: true, via: "brevo" } : { sent: false, via: "brevo", error: `Brevo HTTP ${res.status} ${(await res.text().catch(() => "")).slice(0, 200)}` };
     }
     if (process.env.ZEPTOMAIL_API_KEY) {
       const res = await fetch("https://api.zeptomail.com/v1.1/email", {

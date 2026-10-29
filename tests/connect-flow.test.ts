@@ -240,10 +240,11 @@ test("safeNext honours only same-origin /connect/authorize paths", () => {
 
 test("magic-link verify honours a safe next and ignores an unsafe one", async () => {
   const { issueCode } = await import("../src/lib/codes");
-  const { GET } = await import("../src/app/api/auth/magic/verify/route");
+  const { POST } = await import("../src/app/api/auth/magic/verify/route");
   const go = async (next: string) => {
     const code = await issueCode(ada, "login", 15);
-    const r = await GET(new Request(`https://sml.test/api/auth/magic/verify?code=${code}&next=${encodeURIComponent(next)}`));
+    const f = new FormData(); f.set("code", code); f.set("next", next);
+    const r = await POST(new Request("https://sml.test/api/auth/magic/verify", { method: "POST", body: f }));
     return new URL(r.headers.get("location")!);
   };
   const ok = await go("/connect/authorize?req=abc");

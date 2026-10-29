@@ -3,7 +3,8 @@ import { startTestDb } from "@/lib/testing";
 import { AuthError, signIn, signUp } from "@/lib/auth";
 import { consumeCode, issueCode } from "@/lib/codes";
 import { hit } from "@/lib/ratelimit";
-import { GET as magicVerify } from "../src/app/api/auth/magic/verify/route";
+import { GET as magicOpen, POST as magicPost } from "../src/app/api/auth/magic/verify/route";
+const magicVerify = (url: string) => { const u = new URL(url); const f = new FormData(); f.set("code", u.searchParams.get("code") ?? ""); f.set("next", u.searchParams.get("next") ?? ""); return magicPost(new Request(u.origin + u.pathname, { method: "POST", body: f })); };
 
 vi.mock("../src/lib/session", async (orig) => ({ ...(await orig<typeof import("../src/lib/session")>()), setSessionCookie: vi.fn() }));
 
@@ -28,11 +29,11 @@ test("signup never grants admin; only a magic-link login proves the inbox", asyn
   expect((await t.sql`select role from users where id = ${id}`)[0].role).toBe("creator");
   await signIn("boss@x.com", "password1");
   expect((await t.sql`select role from users where id = ${id}`)[0].role).toBe("creator");
-  const res = await magicVerify(new Request(`http://localhost/api/auth/magic/verify?code=${await issueCode(id, "login", 15)}`));
-  expect(res.status).toBe(307);
+  const res = await magicVerify(`http://localhost/api/auth/magic/verify?code=${await issueCode(id, "login", 15)}`);
+  expect(res.status).toBe(303);
   expect((await t.sql`select role from users where id = ${id}`)[0].role).toBe("admin");
   const o = await signUp("plain@x.com", "password1");
-  await magicVerify(new Request(`http://localhost/api/auth/magic/verify?code=${await issueCode(o.id, "login", 15)}`));
+  await magicVerify(`http://localhost/api/auth/magic/verify?code=${await issueCode(o.id, "login", 15)}`);
   expect((await t.sql`select role from users where id = ${o.id}`)[0].role).toBe("creator");
 });
 
@@ -62,4 +63,13 @@ test("signUp rejects non-string email/password with AuthError", async () => {
   await expect(signUp("n@x.com", 12345678 as unknown as string)).rejects.toThrow(AuthError);
   await expect(signUp("n@x.com", undefined as unknown as string)).rejects.toThrow(AuthError);
   await expect(signUp({} as unknown as string, "password1")).rejects.toThrow(AuthError);
+});
+
+test("opening the emailed link does not spend it (mail scanners prefetch links)", async () => {
+  const { id } = await signUp("scan@x.com", "password1");
+  const code = await issueCode(id, "login", 15);
+  const open = await magicOpen(new Request(`http://localhost/api/auth/magic/verify?code=${code}`));
+  expect(new URL(open.headers.get("location")!).pathname).toBe("/login/link");
+  await magicOpen(new Request(`http://localhost/api/auth/magic/verify?code=${code}`));
+  expect(await consumeCode(null, "login", code)).toBe(id);
 });

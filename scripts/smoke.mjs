@@ -113,6 +113,8 @@ try {
   const { devLink } = await r.json();
   if (!devLink) throw new Error("No dev sign-in link was offered for the admin.");
   await apage.goto(devLink);
+  await apage.getByRole("button", { name: "Sign in" }).click();
+  await apage.waitForURL((u) => !u.pathname.startsWith("/login"));
   await apage.goto("/admin/withdrawals");
   const row = apage.locator("tr", { hasText: `@${username}` });
   await expect(row).toBeVisible();

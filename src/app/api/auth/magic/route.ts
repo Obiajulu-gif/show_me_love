@@ -15,7 +15,9 @@ export async function POST(req: Request) {
   if (u) {
     const code = await issueCode(u.id, "login", 15);
     const url = `${process.env.PUBLIC_APP_URL ?? ""}/api/auth/magic/verify?code=${code}${safeNext(next) ? `&next=${encodeURIComponent(safeNext(next)!)}` : ""}`;
-    devLink = devHint(await sendMail(e, "Your show-me-love sign-in link", `Sign in to show-me-love (valid for 15 minutes):\n\n${url}`), url);
+    const mail = await sendMail(e, "Your show-me-love sign-in link", `Sign in to show-me-love (valid for 15 minutes):\n\n${url}`);
+    if (!mail.sent && mail.via !== "none") console.error(`magic link email failed via ${mail.via}: ${mail.error}`);
+    devLink = devHint(mail, url);
   }
   // Same response whether or not the account exists (devLink only shows in dev with no mail provider).
   return NextResponse.json({ ok: true, devLink });
