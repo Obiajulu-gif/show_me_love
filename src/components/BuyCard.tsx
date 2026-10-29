@@ -1,6 +1,12 @@
 "use client";
 import { useState } from "react";
-import { Gift, Loader2 } from "lucide-react";
+import { ArrowLeft, Gift, Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
+
+import type { WalletPay as Pay } from "@/lib/walletPay";
+
+// Wallet libraries load only when a supporter reaches the pay step.
+const WalletPay = dynamic(() => import("./WalletPay").then((m) => m.WalletPay), { ssr: false, loading: () => <p className="text-sm text-muted">Loading wallets…</p> });
 
 export type BuyCardProps = { treatName: string; treatImage: string; unitPriceNgn: number; presets: number[]; mode: "preview" | "live"; username?: string; onSend?: (qty: number) => void };
 
@@ -14,6 +20,7 @@ export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, us
   const [f, setF] = useState({ name: "", email: "", message: "", isPublic: true });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [pay, setPay] = useState<{ ref: string; url: string; wallet: Pay } | null>(null);
   const live = mode === "live";
   const total = custom ? Math.floor(Number(amount) || 0) : unitPriceNgn * qty;
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
@@ -28,11 +35,22 @@ export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, us
         body: JSON.stringify({ username, ...(custom ? { amountNgn: total } : { quantity: qty }), ...f }),
       });
       const j = await r.json().catch(() => ({}));
+      if (r.ok && j.url && j.wallet) { setPay(j); setBusy(false); return; }
       if (r.ok && j.url) { window.location.assign(j.url); return; }
       setErr(j.error ?? "Something went wrong. Please try again.");
     } catch { setErr("Couldn't reach the server. Please try again."); }
     setBusy(false);
   }
+
+  if (pay) return (
+    <section aria-label="Pay" className="mt-4 rounded-[18px] border border-line bg-surface p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="font-semibold">Pay with your wallet</h3>
+        <button type="button" onClick={() => setPay(null)} className="inline-flex items-center gap-1 text-xs text-muted underline hover:text-fg"><ArrowLeft size={12} aria-hidden />Change order</button>
+      </div>
+      <WalletPay pay={pay.wallet} payRef={pay.ref} roqquUrl={pay.url} thanksUrl={`/@${username}/thanks?ref=${pay.ref}`} />
+    </section>
+  );
 
   return (
     <form onSubmit={submit} className="mt-4 rounded-[18px] border border-line bg-surface p-4">

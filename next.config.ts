@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/connect/authorize", headers: authorizeHeaders }];
   },
+  // Optional deps that wallet SDKs probe for (React Native storage, pretty logs); the browser never needs them.
+  webpack(config) {
+    config.resolve.alias = { ...config.resolve.alias, "@react-native-async-storage/async-storage": false, "pino-pretty": false };
+    return config;
+  },
 };
 
 export default nextConfig;

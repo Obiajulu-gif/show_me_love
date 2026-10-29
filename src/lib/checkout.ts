@@ -5,6 +5,7 @@ import { ngnToUsdt } from "./money";
 import { expireIfStale } from "./payments";
 import { createPaymentLink } from "./ras";
 import { getRate } from "./rates";
+import { walletPay, type WalletPay } from "./walletPay";
 
 /** Safe to show to the supporter. */
 export class CheckoutBusy extends Error {}
@@ -27,8 +28,11 @@ export type CheckoutInput = {
 
 const MAX_NGN = 10_000_000;
 
+/** `wallet` is set when the supporter can pay the link's BEP20 address straight from their own wallet. */
+export type Checkout = { ref: string; url: string; wallet?: WalletPay | null };
+
 /** Creates a pending payment row at the current rate, then the RAS link. Returns where to send the supporter. */
-export async function startCheckout(i: CheckoutInput): Promise<{ ref: string; url: string }> {
+export async function startCheckout(i: CheckoutInput): Promise<Checkout> {
   let creatorId = i.creatorId;
   let goalId: string | null = null;
   if (i.kind === "goal" && i.goalId) {
@@ -68,13 +72,13 @@ export async function startCheckout(i: CheckoutInput): Promise<{ ref: string; ur
   const base = (i.origin ?? process.env.PUBLIC_APP_URL ?? "").replace(/\/$/, "");
   const tail = goalId ? "&thanks=1" : "";
   return attachLink(ref, {
-    amountNgn: n, name, email, base, successPath: `${i.successPath}?ref=${ref}${tail}`,
+    amountNgn: n, amountUsdt: usdt, name, email, base, successPath: `${i.successPath}?ref=${ref}${tail}`,
     cancelPath: goalId ? i.successPath : i.successPath.replace(/\/thanks$/, ""),
   });
 }
 
 /** Creates the RAS link for a pending payment and stores it; a failure marks the payment failed. */
-export async function attachLink(ref: string, a: { amountNgn: number; name: string; email: string; base: string; successPath: string; cancelPath: string }): Promise<{ ref: string; url: string }> {
+export async function attachLink(ref: string, a: { amountNgn: number; amountUsdt?: string; name: string; email: string; base: string; successPath: string; cancelPath: string }): Promise<Checkout> {
   const [first, ...rest] = a.name.trim().split(/\s+/).filter(Boolean);
   try {
     const link = await createPaymentLink({
@@ -85,7 +89,8 @@ export async function attachLink(ref: string, a: { amountNgn: number; name: stri
     });
     const url = link.payment_link ?? `${a.successPath}&practice=1`;
     await db()`update payments set link_url = ${url} where ref = ${ref}`;
-    return { ref, url };
+    const bep20 = link.wallets.find((w) => w.network === "bep20")?.address;
+    return { ref, url, wallet: a.amountUsdt ? walletPay(bep20, a.amountUsdt) : null };
   } catch (e) {
     await db()`update payments set status = 'failed', failure_reason = ${`RAS: ${e instanceof Error ? e.message : String(e)}`.slice(0, 500)} where ref = ${ref}`;
     throw new CheckoutBusy("Checkout is busy, try again.");
