@@ -34,7 +34,7 @@ export function LiveLedger() {
       </figcaption>
       <ol className="divide-y divide-line" aria-live="polite">
         {ROWS.slice(0, shown).map((r) => (
-          <li key={r.tx} className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 px-5 py-3 motion-safe:animate-[ledger-in_.5s_ease-out]">
+          <li key={r.tx} className="ledger-row grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 px-5 py-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`/treats/${r.img}.webp`} alt="" className="row-span-2 h-10 w-10 rounded-full object-cover ring-1 ring-line" />
             <span className="truncate">

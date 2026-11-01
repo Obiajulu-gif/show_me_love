@@ -140,7 +140,10 @@ export function DevelopersManager({ apps, origin, guide }: { apps: AppRow[]; ori
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">Developers</h1>
+        <div>
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-accent">Developers</p>
+          <h1 className="mt-1.5 font-display text-[clamp(1.9rem,3.2vw,2.6rem)] font-extrabold leading-[1] tracking-[-0.04em]">Connect your app</h1>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           <Tabs label="Mode" tabs={MODES} value={mode} onChange={setMode} />
           <Button variant="ghost" onClick={() => router.push("?guide=open")}><BookOpen size={16} /> Integration guide</Button>

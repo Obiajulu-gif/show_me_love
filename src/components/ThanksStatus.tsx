@@ -33,16 +33,16 @@ export function ThanksStatus({ ref_, username, initial, amountNgn, canSimulate }
 
   const back = <Link href={`/@${username}`} className="mt-6 inline-block underline">Back to @{username}</Link>;
   return (
-    <div data-testid="thanks" data-status={status} className="rounded-[18px] border border-line bg-canvas p-6 text-center">
+    <div data-testid="thanks" data-status={status} className="rounded-[24px] border border-line bg-surface p-7 text-center shadow-paper-lift">
       {status === "successful" ? (
         <>
           <SuccessMark />
-          <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight">Your love landed!</h1>
+          <h1 className="mt-3 font-display text-[clamp(1.8rem,3.5vw,2.4rem)] font-extrabold leading-[1.02] tracking-[-0.04em]">Your love landed!</h1>
           <p className="mt-2 text-sm">₦{amountNgn.toLocaleString("en-NG")} is on its way to @{username}. Thank you for showing up.</p>
         </>
       ) : status === "pending" ? (
         <>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">Waiting for your payment</h1>
+          <h1 className="font-display text-[clamp(1.8rem,3.5vw,2.4rem)] font-extrabold leading-[1.02] tracking-[-0.04em]">Waiting for your payment</h1>
           <p className="mt-2 text-sm text-muted">Status: pending. This page updates on its own once the payment is confirmed.</p>
           {canSimulate && (
             <button type="button" onClick={simulate} className="mt-4 rounded-xl bg-accent px-4 py-2 font-semibold text-on-accent shadow-press">Simulate payment</button>
@@ -51,7 +51,7 @@ export function ThanksStatus({ ref_, username, initial, amountNgn, canSimulate }
         </>
       ) : (
         <>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">This payment didn&apos;t go through</h1>
+          <h1 className="font-display text-[clamp(1.8rem,3.5vw,2.4rem)] font-extrabold leading-[1.02] tracking-[-0.04em]">This payment didn&apos;t go through</h1>
           <p className="mt-2 text-sm text-muted">Status: {status}. No treat was sent. You can try again from the page.</p>
         </>
       )}

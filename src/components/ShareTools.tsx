@@ -90,7 +90,7 @@ export function QrPanel({ link, username, treatName }: { link: string; username:
       <div className="inline-flex rounded-xl border border-line bg-surface-2 p-1" role="group" aria-label="QR style">
         {(["card", "compact"] as const).map((m) => (
           <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${mode === m ? "bg-accent text-on-accent" : "text-muted hover:bg-surface"}`}>
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-transform duration-150 ease-out active:scale-[0.97] ${mode === m ? "bg-accent text-on-accent" : "text-muted hover:bg-surface"}`}>
             {m === "card" ? "Branded card" : "Compact QR"}
           </button>
         ))}

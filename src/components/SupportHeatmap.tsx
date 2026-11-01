@@ -4,7 +4,7 @@ import { useRef, useState, type KeyboardEvent } from "react";
 
 import { heatmap, nextDay } from "@/lib/heatmap";
 
-const SHADES = ["bg-surface-2", "bg-[#1F6F6A]", "bg-[#28A994]", "bg-accent"];
+const SHADES = ["bg-surface-2", "bg-mint/25", "bg-mint/55", "bg-mint"];
 const fmt = (iso: string) => new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 const text = (n: number) => (n === 0 ? "No treats this day." : n === 1 ? "1 treat" : `${n} treats`);
 const COLS = { gridTemplateColumns: "repeat(12, minmax(0, 1fr))" };
@@ -27,7 +27,7 @@ export function SupportHeatmap({ dates, today = new Date() }: { dates: Date[]; t
   };
 
   return (
-    <section className="mt-6 rounded-[18px] border border-line bg-canvas p-5 text-fg">
+    <section className="mt-6 rounded-[20px] border border-line bg-surface p-5 text-fg shadow-paper">
       <h2 className="font-display text-lg font-semibold tracking-tight">Recent support</h2>
       <p className="text-sm text-muted">The last 12 weeks</p>
       <div aria-hidden className="mt-3 grid gap-1" style={COLS}>

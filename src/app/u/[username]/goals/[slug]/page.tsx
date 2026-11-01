@@ -32,21 +32,25 @@ export default async function GoalPage({ params, searchParams }: { params: Promi
   const organizerPhoto = goal.organizerPhoto || c.photoUrl;
 
   return (
-    <div className="min-h-screen bg-surface text-fg">
+    <div className="theme-paper min-h-screen bg-canvas text-fg">
       {goal.headerMode === "default" && (
-        <header className="flex items-center justify-between border-b border-line bg-canvas/80 px-5 py-3 backdrop-blur">
-          <Logo />
-          <Link href="/signup" className={buttonClass("primary", "text-sm")}>Create your page</Link>
+        <header className="border-b border-line bg-canvas/80 px-5 py-3.5 backdrop-blur">
+          <div className="mx-auto flex max-w-[680px] items-center justify-between gap-4">
+            <Logo />
+            <Link href="/signup" className={buttonClass("primary", "rounded-full px-4 py-1.5 text-sm")}>Create your page</Link>
+          </div>
         </header>
       )}
       {goal.headerMode === "logo" && (
-        <header className="flex items-center gap-3 border-b border-line bg-canvas/80 px-5 py-3 backdrop-blur">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          {c.photoUrl && <img src={c.photoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />}
-          <Link href={`/@${c.username}`} className="font-semibold">{c.displayName ?? c.username}</Link>
+        <header className="border-b border-line bg-canvas/80 px-5 py-3.5 backdrop-blur">
+          <div className="mx-auto flex max-w-[680px] items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {c.photoUrl && <img src={c.photoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />}
+            <Link href={`/@${c.username}`} className="font-semibold">{c.displayName ?? c.username}</Link>
+          </div>
         </header>
       )}
-      <main className="mx-auto max-w-xl space-y-5 px-4 py-8">
+      <main className="mx-auto max-w-[620px] space-y-5 px-4 py-8">
         {showThanks && (
           <ThanksStatus ref_={sp.ref!} username={c.username} initial={thanks.status} amountNgn={thanks.amountNgn} canSimulate={practiceEnabled()} />
         )}

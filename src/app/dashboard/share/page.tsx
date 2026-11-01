@@ -45,7 +45,11 @@ export default async function Share({ searchParams }: { searchParams: Promise<{ 
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-fg">Share</h1>
+      <div>
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-accent">Share</p>
+        <h1 className="mt-1.5 font-display text-[clamp(1.9rem,3.2vw,2.6rem)] font-extrabold leading-[1] tracking-[-0.04em]">Put your link everywhere.</h1>
+        <p className="mt-2 text-sm text-muted">One page, one link. Social bios, your website, a QR code for the table.</p>
+      </div>
       <nav role="tablist" aria-label="Share options" className="inline-flex flex-wrap rounded-xl border border-line bg-surface-2 p-1">
         {TABS.map((x) => (
           <Link key={x.id} role="tab" aria-selected={tab === x.id} href={`/dashboard/share?tab=${x.id}`}
