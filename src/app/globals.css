@@ -2,11 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Ledger — warm espresso, mint for money, coral for notes. */
+  --canvas: 23 19 16;
+  --surface: 33 26 20;
+  --surface-2: 42 34 27;
+  --fg: 245 238 228;
+  --muted: 181 166 149;
+  --line: 59 47 36;
+  --accent: 51 224 190;
+  --on-accent: 6 37 32;
+  --love: 255 142 126;
+  --on-love: 42 8 17;
+  --warn: 255 193 94;
+  --danger: 255 107 120;
+  --coral: 240 103 90;
+  --on-coral: 43 13 9;
+  --mint: 51 224 190;
+  --on-mint: 6 37 32;
+  --green: 110 221 190;
+  --sidebar-w: 240px;
+}
+
+/* Paper — the marketing site and the creator's shopfront. */
+.theme-paper {
+  --canvas: 250 245 235;
+  --surface: 255 255 255;
+  --surface-2: 242 234 220;
+  --fg: 22 21 19;
+  --muted: 98 91 79;
+  --line: 229 220 205;
+  --accent: 240 103 90;
+  --on-accent: 43 13 9;
+  --love: 240 103 90;
+  --on-love: 43 13 9;
+  --warn: 161 93 0;
+  --danger: 180 35 24;
+  --coral: 240 103 90;
+  --on-coral: 43 13 9;
+  --mint: 23 179 148;
+  --on-mint: 5 37 31;
+  --green: 14 124 102;
+  color-scheme: light;
+  background-color: rgb(var(--canvas));
+  color: rgb(var(--fg));
+}
+
+/* A dark island inside a Paper route (the landing's back-office band). */
+.theme-ledger {
+  --canvas: 23 19 16;
+  --surface: 33 26 20;
+  --surface-2: 42 34 27;
+  --fg: 245 238 228;
+  --muted: 181 166 149;
+  --line: 59 47 36;
+  --accent: 51 224 190;
+  --on-accent: 6 37 32;
+  --love: 255 142 126;
+  --on-love: 42 8 17;
+  --warn: 255 193 94;
+  --danger: 255 107 120;
+  --coral: 255 142 126;
+  --on-coral: 42 8 17;
+  --mint: 51 224 190;
+  --on-mint: 6 37 32;
+  --green: 110 221 190;
+  color-scheme: dark;
+  background-color: rgb(var(--canvas));
+  color: rgb(var(--fg));
+}
+
 body {
   @apply bg-canvas text-fg font-sans antialiased;
   background-image:
-    radial-gradient(60rem 40rem at 85% -10%, rgba(51, 224, 190, 0.09), transparent 60%),
-    radial-gradient(50rem 30rem at -10% 110%, rgba(255, 129, 151, 0.07), transparent 60%);
+    radial-gradient(60rem 40rem at 85% -10%, rgba(51, 224, 190, 0.07), transparent 60%),
+    radial-gradient(50rem 30rem at -10% 110%, rgba(255, 142, 126, 0.06), transparent 60%);
   background-attachment: fixed;
 }
 
@@ -18,11 +88,26 @@ body {
   @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-canvas;
 }
 
-/* Native form controls follow the dark canvas. */
+/* Native form controls follow the surface. */
 input,
 select,
 textarea {
   color-scheme: dark;
+}
+.theme-paper input,
+.theme-paper select,
+.theme-paper textarea {
+  color-scheme: light;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: rgb(var(--accent));
+}
+
+/* Long URLs and identifiers in prose wrap instead of widening the page. */
+code {
+  overflow-wrap: anywhere;
 }
 
 /* On-chain data (amounts, addresses, refs, keys) reads as data. */
@@ -30,25 +115,27 @@ textarea {
   @apply font-mono tabular-nums tracking-tight;
 }
 
-@keyframes ledger-in {
-  from {
+/* Ledger row entry — uses @starting-style so it never restarts from zero on
+   interruption and honors prefers-reduced-motion by overriding the start state. */
+.ledger-row {
+  transition: opacity 200ms ease-out, transform 200ms ease-out, background-color 200ms ease-out;
+  @starting-style {
     opacity: 0;
     transform: translateY(-6px);
     background-color: rgba(51, 224, 190, 0.12);
   }
-  to {
-    opacity: 1;
-    transform: none;
-    background-color: transparent;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  /* Reduced motion: remove movement/position animations, keep opacity & color. */
+  .ledger-row {
+    @starting-style {
+      opacity: 1;
+      transform: none;
+      background-color: transparent;
+    }
+  }
+  button:active {
+    transform: none !important;
   }
 }

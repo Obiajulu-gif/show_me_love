@@ -27,7 +27,11 @@ export default async function Treats({ searchParams }: { searchParams: Promise<{
   const href = (p: number) => `/dashboard/treats?status=${filter}&page=${p}`;
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl font-semibold tracking-tight">Your treats</h1>
+      <div>
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-accent">Treats</p>
+        <h1 className="mt-1.5 font-display text-[clamp(1.9rem,3.2vw,2.6rem)] font-extrabold leading-[1] tracking-[-0.04em]">Your treats</h1>
+        <p className="mt-2 text-sm text-muted">Every payment, what arrived, and the note that came with it.</p>
+      </div>
       <form className="flex flex-wrap items-center gap-3" action="/dashboard/treats">
         <select name="status" defaultValue={filter} aria-label="Status" className="rounded-xl border border-line bg-surface-2 px-3 py-2">
           {FILTERS.map((f) => <option key={f} value={f}>{f[0].toUpperCase() + f.slice(1)}</option>)}

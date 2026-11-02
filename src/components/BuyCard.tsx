@@ -8,12 +8,12 @@ import type { WalletPay as Pay } from "@/lib/walletPay";
 // Wallet libraries load only when a supporter reaches the pay step.
 const WalletPay = dynamic(() => import("./WalletPay").then((m) => m.WalletPay), { ssr: false, loading: () => <p className="text-sm text-muted">Loading wallets…</p> });
 
-export type BuyCardProps = { treatName: string; treatImage: string; unitPriceNgn: number; presets: number[]; mode: "preview" | "live"; username?: string; onSend?: (qty: number) => void };
+export type BuyCardProps = { creatorName?: string; treatName: string; treatImage: string; unitPriceNgn: number; presets: number[]; mode: "preview" | "live"; username?: string; onSend?: (qty: number) => void };
 
-const field = "w-full rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm";
+const field = "w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-sm text-fg placeholder:text-muted/70 outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/20";
 
 /** The supporter-facing "send a treat" box. Preview mode draws the same card, inert; live mode posts to /api/checkout. */
-export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, username, onSend }: BuyCardProps) {
+export function BuyCard({ creatorName, treatName, treatImage, unitPriceNgn, presets, mode, username, onSend }: BuyCardProps) {
   const [qty, setQty] = useState(presets[0] ?? 1);
   const [custom, setCustom] = useState(false);
   const [amount, setAmount] = useState("");
@@ -24,6 +24,8 @@ export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, us
   const live = mode === "live";
   const total = custom ? Math.floor(Number(amount) || 0) : unitPriceNgn * qty;
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
+  const firstName = creatorName?.trim().split(/\s+/)[0];
+  const treat = treatName.toLowerCase();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,9 +45,9 @@ export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, us
   }
 
   if (pay) return (
-    <section aria-label="Pay" className="mt-4 rounded-[18px] border border-line bg-surface p-4">
+    <section aria-label="Pay" className="rounded-[18px] border border-line bg-canvas p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="font-semibold">Pay with your wallet</h3>
+        <h2 className="font-display text-lg font-bold tracking-tight">Pay with your wallet</h2>
         <button type="button" onClick={() => setPay(null)} className="inline-flex items-center gap-1 text-xs text-muted underline hover:text-fg"><ArrowLeft size={12} aria-hidden />Change order</button>
       </div>
       <WalletPay pay={pay.wallet} payRef={pay.ref} roqquUrl={pay.url} thanksUrl={`/@${username}/thanks?ref=${pay.ref}`} />
@@ -53,39 +55,53 @@ export function BuyCard({ treatName, treatImage, unitPriceNgn, presets, mode, us
   );
 
   return (
-    <form onSubmit={submit} className="mt-4 rounded-[18px] border border-line bg-surface p-4">
-      <fieldset disabled={!live || busy} className="space-y-3 disabled:opacity-100">
-        <div className="flex flex-wrap items-center gap-3">
+    <form onSubmit={submit} className="rounded-[18px] border border-line bg-[#FFFDF8] p-4 sm:p-5">
+      <fieldset disabled={!live || busy} className="disabled:opacity-100">
+        <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          {treatImage ? <img src={treatImage} alt="" className="h-12 w-12 rounded-full object-cover ring-1 ring-line" /> : <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-2 text-love"><Gift size={22} aria-hidden /></span>}
-          <span className="text-sm">{treatName} x</span>
-          {presets.map((n) => (
-            <button key={n} type="button" aria-pressed={!custom && n === qty} onClick={() => { setCustom(false); setQty(n); }}
-              className={`rounded-full border px-3 py-1 text-sm transition-colors duration-150 ${!custom && n === qty ? "border-accent bg-accent text-on-accent" : "border-line bg-surface-2 hover:border-muted/60"}`}>{n}</button>
-          ))}
+          {treatImage ? <img src={treatImage} alt="" className="h-14 w-14 shrink-0 rounded-2xl border border-line object-cover" /> : <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-surface-2 text-accent"><Gift size={24} aria-hidden /></span>}
+          <div className="min-w-0">
+            <h2 className="font-display text-[19px] font-bold leading-tight tracking-[-0.025em]">Buy {firstName ?? "me"} a {treat}</h2>
+            <p className="mt-0.5 text-[11.5px] text-muted">₦{unitPriceNgn.toLocaleString("en-NG")} each · every treat carries a note</p>
+          </div>
         </div>
-        {!custom ? (
-          <div className="flex items-center gap-3 text-sm">
-            <button type="button" aria-label="Fewer" disabled={qty <= 1} onClick={() => setQty(qty - 1)} className="h-8 w-8 rounded-full border border-line bg-surface-2">-</button>
-            <span data-testid="qty" key={qty} className="data w-8 text-center font-semibold motion-safe:animate-tick-up">{qty}</span>
-            <button type="button" aria-label="More" disabled={qty >= 50} onClick={() => setQty(qty + 1)} className="h-8 w-8 rounded-full border border-line bg-surface-2">+</button>
-            <span className="data text-muted">₦{unitPriceNgn.toLocaleString("en-NG")} each</span>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-muted">How many?</span>
+          <div className="flex overflow-hidden rounded-xl border border-line bg-surface" role="group" aria-label="Quantity">
+            {presets.map((n) => (
+              <button key={n} type="button" aria-pressed={!custom && n === qty} onClick={() => { setCustom(false); setQty(n); }}
+                className={`border-r border-line px-3.5 py-1.5 text-[13px] font-bold transition-colors ${!custom && n === qty ? "bg-fg text-canvas" : "text-muted hover:text-fg"}`}>{n}</button>
+            ))}
+            <button type="button" aria-pressed={custom} onClick={() => setCustom(true)}
+              className={`px-3 py-1.5 text-[11px] font-bold transition-colors ${custom ? "bg-fg text-canvas" : "text-muted hover:text-fg"}`}>Custom</button>
+          </div>
+        </div>
+
+        {custom ? (
+          <div className="mt-3">
+            <input aria-label="Amount in naira" type="number" min={unitPriceNgn} step={1} inputMode="numeric" placeholder={`At least ₦${unitPriceNgn.toLocaleString("en-NG")}`} value={amount} onChange={(e) => setAmount(e.target.value)} className={field} />
+            <p className="mt-1.5 text-[11px] text-muted">The full amount goes to {firstName ?? "the creator"}, minus the platform fee shown at checkout.</p>
           </div>
         ) : (
-          <input aria-label="Amount in naira" type="number" min={unitPriceNgn} step={1} inputMode="numeric" placeholder={`At least ₦${unitPriceNgn.toLocaleString("en-NG")}`} value={amount} onChange={(e) => setAmount(e.target.value)} className={field} />
+          <p className="mt-2 text-[11.5px] text-muted">{qty} × ₦{unitPriceNgn.toLocaleString("en-NG")} = <b className="font-semibold text-fg">₦{total.toLocaleString("en-NG")}</b></p>
         )}
-        <button type="button" onClick={() => setCustom(!custom)} className="text-xs underline">{custom ? "Back to treats" : "Choose an amount"}</button>
-        <input aria-label="Your name" placeholder="Your name (optional)" maxLength={50} value={f.name} onChange={set("name")} className={field} />
-        <input aria-label="Your email" type="email" required placeholder="Your email" value={f.email} onChange={set("email")} className={field} />
-        <textarea aria-label="Message" placeholder="Leave a note" maxLength={280} rows={2} value={f.message} onChange={set("message")} className={field} />
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={f.isPublic} onChange={(e) => setF({ ...f, isPublic: e.target.checked })} /> Show my note on the page
+
+        <div className="mt-4 grid gap-2">
+          <input aria-label="Your name" placeholder="Your name (optional)" maxLength={50} value={f.name} onChange={set("name")} className={field} />
+          <input aria-label="Your email" type="email" required placeholder="Email — for your receipt" value={f.email} onChange={set("email")} className={field} />
+          <textarea aria-label="Message" placeholder={`Leave a note for ${firstName ?? "the creator"}`} maxLength={280} rows={2} value={f.message} onChange={set("message")} className={field} />
+        </div>
+
+        <label className="mt-3 flex items-start gap-2 text-[11.5px] leading-snug text-muted">
+          <input type="checkbox" checked={f.isPublic} onChange={(e) => setF({ ...f, isPublic: e.target.checked })} className="mt-0.5 accent-[#F0675A]" /> Show my note on the page
         </label>
-        <button type="submit" className="w-full rounded-xl bg-accent px-4 py-2 text-center font-semibold text-on-accent shadow-press transition-[filter,transform] duration-150 hover:brightness-110 active:translate-y-px disabled:cursor-default">
-          {busy ? <span className="inline-flex items-center justify-center gap-2"><Loader2 size={16} className="motion-safe:animate-spin" aria-hidden /> Opening checkout</span> : <>Send {treatName} for <span key={total} className="data inline-block motion-safe:animate-tick-up">₦{total.toLocaleString("en-NG")}</span></>}
+
+        <button type="submit" className="mt-4 w-full rounded-xl bg-accent px-4 py-3 text-center font-extrabold text-on-accent shadow-[0_10px_24px_-14px_rgba(240,103,90,.9)] transition-[filter,transform] duration-150 hover:brightness-105 active:translate-y-px active:scale-[0.97] disabled:cursor-default">
+          {busy ? <span className="inline-flex items-center justify-center gap-2"><Loader2 size={16} className="motion-safe:animate-spin" aria-hidden /> Opening checkout</span> : <>Send {custom ? "a custom amount" : `${qty} ${treat}${qty > 1 ? "s" : ""}`} for <span key={total} className="data inline-block motion-safe:animate-tick-up">₦{total.toLocaleString("en-NG")}</span></>}
         </button>
-        <p className="text-center text-xs text-muted">Paid securely in USDT via Roqqu</p>
-        {err && <p role="alert" className="text-sm text-danger">{err}</p>}
+        <p className="mt-2 text-center text-[10.5px] text-muted">Paid securely in USDT via Roqqu · No account needed</p>
+        {err && <p role="alert" className="mt-2 text-sm text-danger">{err}</p>}
       </fieldset>
     </form>
   );

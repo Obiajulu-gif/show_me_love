@@ -31,7 +31,10 @@ export function GoalsManager({ goals, username, origin }: { goals: GoalRow[]; us
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">Your goals</h1>
+        <div>
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-accent">Goals</p>
+          <h1 className="mt-1.5 font-display text-[clamp(1.9rem,3.2vw,2.6rem)] font-extrabold leading-[1] tracking-[-0.04em]">Your goals</h1>
+        </div>
         <Button onClick={() => setEditing(BLANK_GOAL)}><Plus size={16} /> New goal</Button>
       </div>
       {err && <p role="alert" className="text-sm text-danger">{err}</p>}

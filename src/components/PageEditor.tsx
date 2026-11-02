@@ -1,5 +1,5 @@
 "use client";
-import { ExternalLink, Maximize2, Minimize2, Monitor, Smartphone } from "lucide-react";
+import { ExternalLink, Eye, Maximize2, Minimize2, Monitor, PenLine, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -50,6 +50,7 @@ export function PageEditor({ creator, treats }: { creator: Creator; treats: Reco
   const [f, setF] = useState(() => fromCreator(creator));
   const [tab, setTab] = useState<Tab>("basics");
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
+  const [pane, setPane] = useState<"edit" | "preview">("edit");
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -99,10 +100,20 @@ export function PageEditor({ creator, treats }: { creator: Creator; treats: Reco
   );
 
   return (
-    <div className="pb-28">
-      <h1 className="font-display text-3xl font-semibold tracking-tight">Make your page yours.</h1>
-      <div className="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
-        <section aria-label="Page settings">
+    <div className="mx-auto max-w-[1180px] pb-8">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-accent">Your page</p>
+          <h1 className="mt-1.5 font-display text-[clamp(1.9rem,3.2vw,2.6rem)] font-extrabold leading-[1] tracking-[-0.04em]">Make your page yours.</h1>
+          <p className="mt-2 text-sm text-muted">Changes appear in the preview as you type. Nothing goes live until you save.</p>
+        </div>
+        <div className="inline-flex shrink-0 rounded-xl border border-line bg-surface-2 p-1 text-sm font-semibold lg:hidden" role="group" aria-label="Editor view">
+          <button type="button" aria-pressed={pane === "edit"} onClick={() => setPane("edit")} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors duration-150 ${pane === "edit" ? "bg-accent text-on-accent" : "text-muted hover:text-fg"}`}><PenLine size={14} aria-hidden /> Edit</button>
+          <button type="button" aria-pressed={pane === "preview"} onClick={() => setPane("preview")} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors duration-150 ${pane === "preview" ? "bg-accent text-on-accent" : "text-muted hover:text-fg"}`}><Eye size={14} aria-hidden /> Preview</button>
+        </div>
+      </div>
+      <div className="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,430px)]">
+        <section aria-label="Page settings" className={`min-w-0 ${pane === "preview" ? "hidden lg:block" : ""}`}>
           <Tabs tabs={TABS} value={tab} onChange={setTab} label="Page sections" />
           {tab === "basics" && (
             <div>
@@ -114,12 +125,12 @@ export function PageEditor({ creator, treats }: { creator: Creator; treats: Reco
               <label htmlFor="bio" className={label}>Bio <span className="font-normal text-muted">({f.bio.length}/280)</span></label>
               <textarea id="bio" className={input} rows={3} maxLength={280} value={f.bio} onChange={(e) => set("bio", e.target.value)} />
               <label htmlFor="avatar" className={label}>Photo</label>
-              <input id="avatar" type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => upload("avatar", e.target.files?.[0])} />
+              <input id="avatar" type="file" accept="image/png,image/jpeg,image/webp" className="max-w-full text-sm" onChange={(e) => upload("avatar", e.target.files?.[0])} />
               <p className="mt-1 text-xs text-muted">PNG, JPEG or WebP, up to 4 MB.</p>
               <label htmlFor="links" className={label}>Social links <span className="font-normal text-muted">(one https:// link per line, up to 6)</span></label>
               <textarea id="links" className={input} rows={3} value={f.links} onChange={(e) => set("links", e.target.value)} />
               <label htmlFor="birthday" className={label}>Birthday</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <input id="birthday" type="date" className={input} value={f.birthday} onChange={(e) => set("birthday", e.target.value)} />
                 <select aria-label="Birthday on your page" className={input} value={f.birthdayMode} onChange={(e) => set("birthdayMode", e.target.value)}>
                   <option value="off">Keep private</option>
@@ -158,7 +169,7 @@ export function PageEditor({ creator, treats }: { creator: Creator; treats: Reco
               {f.header === "cover" && (
                 <>
                   <label htmlFor="cover" className={label}>Cover image</label>
-                  <input id="cover" type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => upload("cover", e.target.files?.[0])} />
+                  <input id="cover" type="file" accept="image/png,image/jpeg,image/webp" className="max-w-full text-sm" onChange={(e) => upload("cover", e.target.files?.[0])} />
                   <p className="mt-1 text-xs text-muted">PNG, JPEG or WebP, up to 4 MB.</p>
                 </>
               )}
@@ -166,27 +177,33 @@ export function PageEditor({ creator, treats }: { creator: Creator; treats: Reco
           )}
         </section>
 
-        <section aria-label="Preview" className={expanded ? "fixed inset-0 z-50 overflow-auto bg-canvas p-6" : "lg:sticky lg:top-6 lg:self-start"}>
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <Tabs tabs={[{ id: "mobile", label: "Mobile" }, { id: "desktop", label: "Desktop" }] as const} value={device} onChange={setDevice} label="Preview size" />
-            <div className="flex items-center gap-2">
-              <button type="button" aria-label={expanded ? "Shrink preview" : "Expand preview"} onClick={() => setExpanded(!expanded)} className="rounded-lg border border-line bg-surface-2 p-2 hover:bg-surface">
-                {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-              </button>
-              <Link href={`/@${liveName}`} target="_blank" className={buttonClass("ghost", "py-1.5 text-sm")}>View live page <ExternalLink size={14} /></Link>
+        <section aria-label="Preview" className={`min-w-0 ${expanded ? "fixed inset-0 z-50 overflow-auto bg-canvas p-4 sm:p-6" : pane === "edit" ? "hidden lg:block" : ""}`}>
+          <div className={expanded ? "mx-auto max-w-[760px]" : "lg:sticky lg:top-6"}>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <Tabs tabs={[{ id: "mobile", label: "Mobile" }, { id: "desktop", label: "Desktop" }] as const} value={device} onChange={setDevice} label="Preview size" />
+              <div className="flex items-center gap-2">
+                <button type="button" aria-label={expanded ? "Shrink preview" : "Expand preview"} onClick={() => setExpanded(!expanded)} className="rounded-lg border border-line bg-surface-2 p-2 hover:bg-surface">
+                  {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                </button>
+                <Link href={`/@${liveName}`} target="_blank" className={buttonClass("ghost", "py-1.5 text-sm")}>View live page <ExternalLink size={14} /></Link>
+              </div>
+            </div>
+            <p className="mb-2 flex items-center gap-1 text-xs text-muted">{device === "mobile" ? <Smartphone size={12} /> : <Monitor size={12} />} Live preview, updates as you type</p>
+            <div className={expanded ? "" : "lg:max-h-[calc(100vh-11rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1"}>
+              {preview}
             </div>
           </div>
-          <p className="mb-2 flex items-center gap-1 text-xs text-muted">{device === "mobile" ? <Smartphone size={12} /> : <Monitor size={12} />} Live preview, updates as you type</p>
-          {preview}
         </section>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-canvas/95 px-4 py-3 backdrop-blur md:left-60">
-        <div className="mx-auto flex max-w-5xl items-center gap-3">
-          <p role="status" className={`min-w-0 flex-1 truncate text-sm ${msg?.ok === false ? "text-danger" : "text-muted"}`}>{msg?.text ?? (dirty ? "You have unsaved changes." : "")}</p>
-          <Button variant="ghost" disabled={idx === 0} onClick={() => setTab(TABS[idx - 1].id)}>Prev</Button>
-          <Button variant="ghost" disabled={idx === TABS.length - 1} onClick={() => setTab(TABS[idx + 1].id)}>Next</Button>
-          <Button disabled={!dirty || busy} onClick={save}>{busy ? "Saving…" : "Save"}</Button>
+      <div className="sticky bottom-4 z-30 mt-8">
+        <div className="mx-auto flex max-w-2xl items-center gap-2 rounded-2xl border border-line bg-surface/95 p-2 shadow-lift backdrop-blur">
+          <p role="status" className={`max-sm:sr-only min-w-0 flex-1 truncate px-1 text-sm ${msg?.ok === false ? "text-danger" : "text-muted"}`}>{msg?.text ?? (dirty ? "You have unsaved changes." : "")}</p>
+          <div className="ml-auto flex items-center gap-2">
+            <Button variant="ghost" disabled={idx === 0} onClick={() => setTab(TABS[idx - 1].id)}>Prev</Button>
+            <Button variant="ghost" disabled={idx === TABS.length - 1} onClick={() => setTab(TABS[idx + 1].id)}>Next</Button>
+            <Button disabled={!dirty || busy} onClick={save}>{busy ? "Saving…" : "Save"}</Button>
+          </div>
         </div>
       </div>
     </div>

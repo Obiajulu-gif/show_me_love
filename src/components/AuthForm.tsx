@@ -61,11 +61,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const input = "w-full rounded-xl border border-line bg-surface-2 px-3.5 py-2.5 text-fg placeholder:text-muted/70 transition-colors duration-150 focus:border-accent focus:outline-none";
 
   return (
-    <main className="grid min-h-screen bg-canvas text-fg lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+    <main className="theme-paper grid min-h-screen bg-canvas text-fg lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
       <section className="flex flex-col px-5 py-6 sm:px-10">
         <Logo />
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
-          <h1 className="font-display text-4xl font-semibold tracking-tight">{signup ? "Create your account" : "Log in"}</h1>
+          <h1 className="font-display text-[clamp(2.2rem,4vw,3rem)] font-extrabold leading-[0.98] tracking-[-0.045em]">{signup ? "Create your account" : "Log in"}</h1>
           <p className="mt-2 text-muted">
             {signup ? "Free to start. Your page is live in about a minute." : "Pick up where you left off: your page, your treats, your balance."}
           </p>
@@ -123,7 +123,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         </div>
       </section>
 
-      <aside className="relative hidden overflow-hidden border-l border-line bg-surface/50 lg:flex lg:flex-col lg:justify-center lg:px-14">
+      <aside className="theme-ledger relative hidden overflow-hidden border-l border-line bg-canvas lg:flex lg:flex-col lg:justify-center lg:px-14">
         <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-love/15 blur-3xl" aria-hidden />
         <div className="pointer-events-none absolute -bottom-32 left-0 h-96 w-96 rounded-full bg-accent/10 blur-3xl" aria-hidden />
         {signup ? (

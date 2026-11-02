@@ -8,10 +8,10 @@ import { getDestinations, listWithdrawals } from "@/lib/withdrawals";
 
 const CHIP: Record<string, [string, string]> = {
   awaiting_review: ["In review", "bg-warn/15 text-warn"],
-  processing: ["Sending", "bg-blue-100"],
-  paid: ["Paid", "bg-green-100"],
-  rejected: ["Rejected", "bg-red-100"],
-  failed: ["Failed", "bg-red-100"],
+  processing: ["Sending", "bg-accent/15 text-accent"],
+  paid: ["Paid", "bg-green/15 text-green"],
+  rejected: ["Rejected", "bg-danger/15 text-danger"],
+  failed: ["Failed", "bg-danger/15 text-danger"],
 };
 const dest = (d: Record<string, string>) => (d.kind === "bank" ? `${d.bankName} ••${d.accountNumber?.slice(-4)}` : `${String(d.network).toUpperCase()} ${d.address?.slice(0, 6)}…${d.address?.slice(-4)}`);
 
@@ -21,7 +21,11 @@ export default async function Withdrawals() {
   const [bal, dests, rows] = await Promise.all([balance(uid), getDestinations(uid), listWithdrawals(uid)]);
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl font-semibold tracking-tight">Withdrawals</h1>
+      <div>
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-accent">Money</p>
+        <h1 className="mt-1.5 font-display text-[clamp(1.9rem,3.2vw,2.6rem)] font-extrabold leading-[1] tracking-[-0.04em]">Withdrawals</h1>
+        <p className="mt-2 text-sm text-muted">Send your balance to a bank account or a USDT wallet. Fees are shown before you confirm.</p>
+      </div>
       <WithdrawPanel available={bal} usdt={dests.usdt} bank={dests.bank} />
       <Card className="overflow-x-auto p-0">
         {rows.length ? (

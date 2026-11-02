@@ -94,8 +94,11 @@ export function GroupSupport({ history, thanks, canSimulate }: { history: Hist[]
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="font-display text-3xl font-semibold tracking-tight">Support a group</h1>
+    <div className="max-w-2xl space-y-6">
+      <div>
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-accent">Group support</p>
+        <h1 className="mt-1.5 font-display text-[clamp(1.9rem,3.2vw,2.6rem)] font-extrabold leading-[1] tracking-[-0.04em]">Support a group</h1>
+      </div>
       {thanks && <ThanksPanel thanks={thanks} canSimulate={canSimulate} />}
       <Tabs label="Group support" value={tab} onChange={setTab} tabs={[{ id: "add", label: "Add support" }, { id: "history", label: "History" }]} />
       {tab === "history" ? (

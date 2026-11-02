@@ -8,10 +8,10 @@ import { CALLBACK_SNIPPET, CONNECT_SNIPPET, ENV_BLOCK, HELPER_SNIPPET, SHOW_SNIP
 export const metadata: Metadata = { title: "Developer docs · show-me-love" };
 
 const Code = ({ children }: { children: string }) => (
-  <pre className="my-3 overflow-x-auto rounded-xl border border-line bg-surface-2 p-3 text-xs leading-relaxed"><code>{children}</code></pre>
+  <pre tabIndex={0} role="region" aria-label="Code sample" className="my-3 overflow-x-auto rounded-xl border border-line bg-surface-2 p-3.5 font-mono text-[12.5px] leading-relaxed text-fg focus-visible:ring-2 focus-visible:ring-accent"><code>{children}</code></pre>
 );
 const H2 = ({ id, children }: { id: string; children: ReactNode }) => (
-  <h2 id={id} className="mt-12 scroll-mt-6 font-display text-3xl font-semibold tracking-tight">{children}</h2>
+  <h2 id={id} className="mt-12 scroll-mt-6 font-display text-2xl font-extrabold tracking-[-0.035em] sm:text-3xl">{children}</h2>
 );
 
 type Err = [number, string, string];
@@ -77,12 +77,14 @@ const CURL = `curl -X POST "$SML_ORIGIN/api/connect/sessions" \\
 
 export default function Docs() {
   return (
-    <div className="min-h-screen bg-canvas text-fg">
+    <div className="theme-paper min-h-screen bg-canvas text-fg">
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-4 py-10">
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Connect: developer docs</h1>
-        <nav aria-label="On this page" className="mt-4 flex flex-wrap gap-3 text-sm">
-          {TOC.map(([id, t]) => <a key={id} href={`#${id}`} className="underline">{t}</a>)}
+      <main className="mx-auto max-w-3xl px-5 py-10 text-[15px] leading-relaxed sm:py-14">
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-accent">Developers · Connect API</p>
+        <h1 className="mt-2 font-display text-[clamp(2.4rem,5vw,3.6rem)] font-extrabold leading-[0.98] tracking-[-0.045em]">Connect: developer docs</h1>
+        <p className="mt-4 max-w-[58ch] text-muted">Link your app to a creator&apos;s show-me-love page, then read their support link and totals with their permission. Plain HTTP, no SDK.</p>
+        <nav aria-label="On this page" className="mt-6 flex flex-wrap gap-2 text-[12.5px] font-semibold">
+          {TOC.map(([id, t]) => <a key={id} href={`#${id}`} className="rounded-full border border-line bg-surface px-3 py-1.5 text-muted transition-colors hover:border-accent/50 hover:text-fg">{t}</a>)}
         </nav>
 
         <H2 id="overview">Overview</H2>
@@ -113,7 +115,7 @@ export default function Docs() {
         </p>
         <Code>{CURL}</Code>
         {ENDPOINTS.map((e) => (
-          <section key={e.id} id={e.id} className="mt-8 scroll-mt-6 rounded-[18px] border border-line bg-surface-2 p-4">
+          <section key={e.id} id={e.id} className="mt-8 scroll-mt-6 rounded-[18px] border border-line bg-surface p-4 shadow-paper">
             <h3 className="text-lg font-bold"><span className="mr-2 rounded bg-accent px-2 py-0.5 text-sm text-on-accent">{e.method}</span><code className="break-all text-base">{e.path}</code></h3>
             <p className="mt-2">{e.what}</p>
             {e.body && <><p className="mt-3 text-sm font-semibold">Body</p><Code>{e.body}</Code></>}

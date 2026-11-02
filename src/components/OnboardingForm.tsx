@@ -85,7 +85,7 @@ export function OnboardingForm({ treat: t0, username: u0 }: { treat: string; use
   }, treatMap(catalog));
 
   return (
-    <main className="min-h-screen bg-canvas px-4 py-8 text-fg">
+    <main className="theme-ledger min-h-screen bg-canvas px-4 py-8 text-fg">
       <div className="mx-auto flex max-w-5xl items-center justify-between"><Logo /><span className="text-sm text-muted">Step {d.step + 1} of {STEPS.length}</span></div>
 
       <ol className="mx-auto mt-6 grid max-w-5xl grid-cols-5 gap-2" aria-label="Progress">
@@ -103,17 +103,17 @@ export function OnboardingForm({ treat: t0, username: u0 }: { treat: string; use
         <form onSubmit={next} className="rounded-2xl border border-line bg-surface/80 p-6 shadow-lift">
           <div key={d.step} className="motion-safe:animate-dialog-in">
             {d.step === 0 && <>
-              <h1 ref={heading} tabIndex={-1} className="font-display text-3xl font-semibold tracking-tight outline-none focus-visible:ring-0">What should people send you?</h1>
+              <h1 ref={heading} tabIndex={-1} className="font-display text-[clamp(1.9rem,3.4vw,2.6rem)] font-extrabold leading-[1.02] tracking-[-0.04em] outline-none focus-visible:ring-0">What should people send you?</h1>
               <p className="mt-1 text-muted">Pick the treat your supporters will buy. You can change it any time.</p>
               <div className="mt-5"><TreatPicker value={d.treat} onChange={(treat) => set({ treat })} /></div>
             </>}
             {d.step === 1 && <>
-              <h1 ref={heading} tabIndex={-1} className="font-display text-3xl font-semibold tracking-tight outline-none focus-visible:ring-0">Claim your link</h1>
+              <h1 ref={heading} tabIndex={-1} className="font-display text-[clamp(1.9rem,3.4vw,2.6rem)] font-extrabold leading-[1.02] tracking-[-0.04em] outline-none focus-visible:ring-0">Claim your link</h1>
               <p className="mt-1 text-muted">This is the address you&apos;ll share. 3–24 letters, numbers or underscores.</p>
               <div className="mt-5"><UsernameField value={d.username} onChange={(username) => set({ username })} onStatus={setNameOk} /></div>
             </>}
             {d.step === 2 && <>
-              <h1 ref={heading} tabIndex={-1} className="font-display text-3xl font-semibold tracking-tight outline-none focus-visible:ring-0">Tell supporters who you are</h1>
+              <h1 ref={heading} tabIndex={-1} className="font-display text-[clamp(1.9rem,3.4vw,2.6rem)] font-extrabold leading-[1.02] tracking-[-0.04em] outline-none focus-visible:ring-0">Tell supporters who you are</h1>
               <p className="mt-1 text-muted">Optional, but pages with a photo and a line about you get more support.</p>
               <div className="mt-5 flex items-center gap-4">
                 <label className="relative flex h-20 w-20 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed border-line bg-surface-2 hover:border-accent">
@@ -130,7 +130,7 @@ export function OnboardingForm({ treat: t0, username: u0 }: { treat: string; use
               <p className="data mt-1 text-right text-xs text-muted">{d.bio.length}/280</p>
             </>}
             {d.step === 3 && <>
-              <h1 ref={heading} tabIndex={-1} className="font-display text-3xl font-semibold tracking-tight outline-none focus-visible:ring-0">Price one {view.treatName.toLowerCase()}</h1>
+              <h1 ref={heading} tabIndex={-1} className="font-display text-[clamp(1.9rem,3.4vw,2.6rem)] font-extrabold leading-[1.02] tracking-[-0.04em] outline-none focus-visible:ring-0">Price one {view.treatName.toLowerCase()}</h1>
               <p className="mt-1 text-muted">Supporters pay this in naira, settled to you in USDT. Most creators start between ₦300 and ₦1,000.</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {[300, 500, 1000, 2000].map((p) => (
@@ -143,7 +143,7 @@ export function OnboardingForm({ treat: t0, username: u0 }: { treat: string; use
               {!canNext && <p className="mt-1 text-sm text-danger">Choose between ₦100 and ₦1,000,000.</p>}
             </>}
             {d.step === 4 && <>
-              <h1 ref={heading} tabIndex={-1} className="font-display text-3xl font-semibold tracking-tight outline-none focus-visible:ring-0">Ready to go live</h1>
+              <h1 ref={heading} tabIndex={-1} className="font-display text-[clamp(1.9rem,3.4vw,2.6rem)] font-extrabold leading-[1.02] tracking-[-0.04em] outline-none focus-visible:ring-0">Ready to go live</h1>
               <p className="mt-1 text-muted">Check the details. You can change any of this later from your dashboard.</p>
               <dl className="mt-5 divide-y divide-line rounded-xl border border-line">
                 {[["Treat", view.treatName, 0], ["Link", `show-me-love/@${d.username}`, 1], ["Name", d.name || d.username, 2], ["Price", `₦${d.price.toLocaleString("en-NG")} each`, 3]].map(([k, v, s]) => (

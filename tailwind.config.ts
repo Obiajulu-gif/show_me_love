@@ -1,27 +1,34 @@
 import type { Config } from "tailwindcss";
 
-// "Ledger glass": deep ink canvas, teal for money that moved, coral for affection.
+// Two surfaces, one product: warm paper for the shopfront, warm espresso for the ledger.
+// Tokens are CSS variables so a route can switch surfaces without forking components.
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
       colors: {
-        canvas: "#0F1433",
-        surface: "#171E45",
-        "surface-2": "#202859",
-        fg: "#EEF0FF",
-        muted: "#A1A8D4",
-        line: "#2E3778",
-        accent: "#33E0BE",
-        "on-accent": "#062520",
-        love: "#FF8197",
-        "on-love": "#2A0811",
-        warn: "#FFC15E",
-        danger: "#FF6B78",
+        canvas: "rgb(var(--canvas) / <alpha-value>)",
+        surface: "rgb(var(--surface) / <alpha-value>)",
+        "surface-2": "rgb(var(--surface-2) / <alpha-value>)",
+        fg: "rgb(var(--fg) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        line: "rgb(var(--line) / <alpha-value>)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        "on-accent": "rgb(var(--on-accent) / <alpha-value>)",
+        love: "rgb(var(--love) / <alpha-value>)",
+        "on-love": "rgb(var(--on-love) / <alpha-value>)",
+        warn: "rgb(var(--warn) / <alpha-value>)",
+        danger: "rgb(var(--danger) / <alpha-value>)",
+        coral: "rgb(var(--coral) / <alpha-value>)",
+        "on-coral": "rgb(var(--on-coral) / <alpha-value>)",
+        mint: "rgb(var(--mint) / <alpha-value>)",
+        "on-mint": "rgb(var(--on-mint) / <alpha-value>)",
+        green: "rgb(var(--green) / <alpha-value>)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["var(--font-body)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "ui-serif", "Georgia", "serif"],
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       // Motion: short, transform/opacity only, each one explains a state change.
@@ -47,7 +54,9 @@ export default {
       boxShadow: {
         press: "0 0 0 1px rgba(255,255,255,.14) inset, 0 8px 24px -6px rgba(51,224,190,.45)",
         "press-sm": "0 0 0 1px rgba(255,255,255,.14) inset, 0 3px 10px -4px rgba(51,224,190,.45)",
-        lift: "0 1px 0 rgba(255,255,255,.05) inset, 0 18px 40px -24px rgba(3,6,24,.9)",
+        lift: "0 1px 0 rgba(255,255,255,.04) inset, 0 18px 40px -24px rgba(0,0,0,.85)",
+        paper: "0 24px 60px -42px rgba(40,25,10,.5)",
+        "paper-lift": "0 40px 90px -58px rgba(40,25,10,.55)",
       },
     },
   },
