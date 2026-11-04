@@ -79,8 +79,8 @@ export function QrPanel({ link, username, treatName }: { link: string; username:
     g.fillStyle = "#fff"; g.fillRect(100, 160, 400, 400);
     g.drawImage(q, 120, 180, 360, 360);
     g.fillStyle = "#3B2416"; g.font = "600 30px system-ui, sans-serif"; g.fillText(`@${username}`, W / 2, 625);
-    g.fillStyle = "#F6C55A"; g.beginPath(); g.roundRect(170, 660, 260, 56, 28); g.fill();
-    g.fillStyle = "#2B1A0E"; g.font = "700 22px system-ui, sans-serif"; g.fillText("Scan to send love", W / 2, 696);
+    g.fillStyle = "#F0675A"; g.beginPath(); g.roundRect(170, 660, 260, 56, 28); g.fill();
+    g.fillStyle = "#2B0D09"; g.font = "700 22px system-ui, sans-serif"; g.fillText("Scan to send love", W / 2, 696);
     save(c, `${username}-card.png`);
   }
 

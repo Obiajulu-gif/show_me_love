@@ -94,7 +94,7 @@ export function BuyCard({ creatorName, treatName, treatImage, unitPriceNgn, pres
         </div>
 
         <label className="mt-3 flex items-start gap-2 text-[11.5px] leading-snug text-muted">
-          <input type="checkbox" checked={f.isPublic} onChange={(e) => setF({ ...f, isPublic: e.target.checked })} className="mt-0.5 accent-[#F0675A]" /> Show my note on the page
+          <input type="checkbox" checked={f.isPublic} onChange={(e) => setF({ ...f, isPublic: e.target.checked })} className="mt-0.5 accent-accent" /> Show my note on the page
         </label>
 
         <button type="submit" className="mt-4 w-full rounded-xl bg-accent px-4 py-3 text-center font-extrabold text-on-accent shadow-[0_10px_24px_-14px_rgba(240,103,90,.9)] transition-[filter,transform] duration-150 hover:brightness-105 active:translate-y-px active:scale-[0.97] disabled:cursor-default">

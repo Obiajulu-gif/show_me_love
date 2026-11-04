@@ -38,9 +38,9 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 
 function Overlay({ title, onClose, side, sticky, children }: { title: string; onClose: () => void; side?: boolean; sticky?: boolean; children: ReactNode }) {
   return (
-    <div className={`fixed inset-0 z-50 flex bg-canvas/75 backdrop-blur-sm motion-safe:animate-scrim-in ${side ? "justify-end" : "items-center justify-center p-4"}`} onClick={sticky ? undefined : onClose}>
+    <div className={`fixed inset-0 z-50 flex bg-fg/25 backdrop-blur-sm motion-safe:animate-scrim-in ${side ? "justify-end" : "items-center justify-center p-4"}`} onClick={sticky ? undefined : onClose}>
       <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}
-        className={`bg-canvas p-6 shadow-xl ${side ? "h-full w-full max-w-md overflow-y-auto border-l border-line motion-safe:animate-drawer-in" : "w-full max-w-lg rounded-[18px] border border-line motion-safe:animate-dialog-in"}`}>
+        className={`bg-surface p-6 shadow-paper-lift ${side ? "h-full w-full max-w-md overflow-y-auto border-l border-line motion-safe:animate-drawer-in" : "w-full max-w-lg rounded-[18px] border border-line motion-safe:animate-dialog-in"}`}>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-2xl font-semibold tracking-tight">{title}</h2>
           <button type="button" aria-label="Close" onClick={onClose}><X size={20} /></button>

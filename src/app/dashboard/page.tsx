@@ -68,7 +68,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
           <section aria-labelledby="balance-title" className="rounded-[20px] border border-line bg-surface p-5 shadow-lift sm:p-6">
             <p id="balance-title" className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-muted">Available balance</p>
             <p className="mt-2 flex flex-wrap items-baseline gap-2">
-              <span className="font-display text-[clamp(2.4rem,5vw,3.6rem)] font-extrabold leading-none tracking-[-0.04em] text-accent tabular-nums">{Number(o.balanceUsdt).toFixed(2)}</span>
+              <span className="font-display text-[clamp(2.4rem,5vw,3.6rem)] font-extrabold leading-none tracking-[-0.04em] text-green tabular-nums">{Number(o.balanceUsdt).toFixed(2)}</span>
               <span className="text-sm font-bold text-muted">USDT</span>
             </p>
             {balance.note && <p className="data mt-2 text-sm text-muted">{balance.note}{o.ngnPerUsd ? ` · 1 USDT = ₦${o.ngnPerUsd.toLocaleString("en-NG")}` : ""}</p>}
@@ -107,7 +107,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
                         : <p className="text-[11px] text-muted">sent {r.quantity} {r.quantity === 1 ? "treat" : "treats"}</p>}
                     </div>
                     <div className="shrink-0 text-right">
-                      <b className="data block text-[12.5px] font-semibold text-accent">+{Number(r.amountUsdt).toFixed(2)}</b>
+                      <b className="data block text-[12.5px] font-semibold text-green">+{Number(r.amountUsdt).toFixed(2)}</b>
                       <small className="block text-[10px] text-muted">{r.quantity} {r.quantity === 1 ? "treat" : "treats"} · {when(r.createdAt)}</small>
                     </div>
                   </li>

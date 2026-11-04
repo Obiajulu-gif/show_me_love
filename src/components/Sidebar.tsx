@@ -90,14 +90,14 @@ export function Sidebar({ username, displayName, photoUrl }: { username: string;
       </header>
       {open && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-canvas/75 backdrop-blur-sm motion-safe:animate-scrim-in" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 flex w-[260px] flex-col border-r border-line bg-canvas p-4 motion-safe:animate-[drawer-in_.26s_cubic-bezier(.16,1,.3,1)_reverse]" aria-label="Menu">
+          <div className="absolute inset-0 bg-fg/25 backdrop-blur-sm motion-safe:animate-scrim-in" onClick={() => setOpen(false)} />
+          <aside className="absolute inset-y-0 left-0 flex w-[260px] flex-col border-r border-line bg-surface p-4 motion-safe:animate-[drawer-in_.26s_cubic-bezier(.16,1,.3,1)_reverse]" aria-label="Menu">
             <div className="flex items-center justify-between"><Logo href="/dashboard" /><button type="button" aria-label="Close menu" onClick={() => setOpen(false)} className="rounded-lg p-2 text-muted hover:bg-surface hover:text-fg"><X size={20} /></button></div>
             {body(false)}
           </aside>
         </div>
       )}
-      <aside className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-canvas p-4 transition-[width] duration-200 ease-out md:flex ${collapsed ? "w-[76px]" : "w-60"}`} aria-label="Sidebar">
+      <aside className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-surface-2/40 p-4 transition-[width] duration-200 ease-out md:flex ${collapsed ? "w-[76px]" : "w-60"}`} aria-label="Sidebar">
         <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between"}`}>
           {!collapsed && <Logo href="/dashboard" />}
           <button type="button" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={() => setCollapsed(!collapsed)} className="rounded-lg p-2 text-muted hover:bg-surface hover:text-fg">

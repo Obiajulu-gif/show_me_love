@@ -85,7 +85,7 @@ export function OnboardingForm({ treat: t0, username: u0 }: { treat: string; use
   }, treatMap(catalog));
 
   return (
-    <main className="theme-ledger min-h-screen bg-canvas px-4 py-8 text-fg">
+    <main className="theme-paper min-h-screen bg-canvas px-4 py-8 text-fg">
       <div className="mx-auto flex max-w-5xl items-center justify-between"><Logo /><span className="text-sm text-muted">Step {d.step + 1} of {STEPS.length}</span></div>
 
       <ol className="mx-auto mt-6 grid max-w-5xl grid-cols-5 gap-2" aria-label="Progress">

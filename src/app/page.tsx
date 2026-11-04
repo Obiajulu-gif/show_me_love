@@ -186,14 +186,14 @@ function DashboardMock() {
     { label: "Developers", Icon: Code2 },
   ];
   return (
-    <div className="rounded-[20px] border border-line bg-surface p-2.5 shadow-[0_40px_90px_-50px_#000]">
+    <div className="rounded-[20px] border border-line bg-surface p-2.5 shadow-paper-lift">
       <div className="grid overflow-hidden rounded-xl border border-line bg-canvas sm:grid-cols-[150px_1fr]">
-        <aside className="hidden border-r border-line p-3 text-[10.5px] text-muted sm:block">
+        <aside className="hidden border-r border-line bg-surface-2/50 p-3 text-[10.5px] text-muted sm:block">
           <div className="mb-4 flex items-center gap-1.5 font-display text-[11px] font-extrabold text-fg">
-            <span className="flex h-4 w-4 items-center justify-center rounded bg-[#1D1712] text-[8px] text-accent">♥</span> show-me-love
+            <span className="flex h-4 w-4 items-center justify-center rounded bg-fg text-[8px] text-accent">♥</span> show-me-love
           </div>
           {nav.map(({ label, Icon, on }) => (
-            <div key={label} className={`mb-0.5 flex items-center gap-2 rounded-md px-2 py-1.5 ${on ? "bg-accent/10 font-bold text-accent shadow-[inset_2px_0_0_#33E0BE]" : ""}`}>
+            <div key={label} className={`mb-0.5 flex items-center gap-2 rounded-md px-2 py-1.5 ${on ? "bg-accent/10 font-bold text-accent shadow-[inset_2px_0_0_rgb(var(--accent))]" : ""}`}>
               <Icon size={12} aria-hidden />{label}
             </div>
           ))}
@@ -209,7 +209,7 @@ function DashboardMock() {
           <div className="mt-3 grid grid-cols-[1.15fr_.85fr] gap-2">
             <div className="rounded-xl border border-line bg-surface p-3">
               <small className="text-[8.5px] font-bold uppercase tracking-[0.09em] text-muted">Available balance</small>
-              <b className="mt-1 block font-display text-[25px] leading-none tracking-[-0.03em] text-accent">12.40 <span className="text-[11px] text-muted">USDT</span></b>
+              <b className="mt-1 block font-display text-[25px] leading-none tracking-[-0.03em] text-green">12.40 <span className="text-[11px] text-muted">USDT</span></b>
               <span className="mt-1 block text-[9px] text-muted">about ₦19,840 · 1 USDT = ₦1,600</span>
               <span className="mt-2 inline-block rounded-md bg-accent px-2.5 py-1.5 text-[9px] font-extrabold text-on-accent">Withdraw</span>
             </div>
@@ -238,8 +238,8 @@ function DashboardMock() {
             {[["T", "Tunde", "3 zobo", "“Your sourdough saved my weekend.”", "+1.00"], ["I", "Ife", "1 zobo", "“Keep going!”", "+0.33"]].map(([av, name, treat, quote, amt]) => (
               <div key={name} className="flex items-center gap-2 border-b border-line py-1.5 text-[9px] text-muted last:border-0 last:pb-0 first:pt-0">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-line text-[8px] font-extrabold text-fg">{av}</span>
-                <div className="min-w-0"><b className="text-fg">{name}</b> sent {treat} <span className="font-serif text-[10.5px] italic text-[#C7B7A5]">· {quote}</span></div>
-                <span className="ml-auto shrink-0 font-bold text-accent">{amt}</span>
+                <div className="min-w-0"><b className="text-fg">{name}</b> sent {treat} <span className="font-serif text-[10.5px] italic text-muted">· {quote}</span></div>
+                <span className="ml-auto shrink-0 font-bold text-green">{amt}</span>
               </div>
             ))}
           </div>
@@ -356,8 +356,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="dashboard" className="theme-ledger relative scroll-mt-20 overflow-hidden bg-canvas py-16 text-fg sm:py-20">
-          <div aria-hidden className="pointer-events-none absolute -bottom-1/2 -left-24 h-[600px] w-[600px] rounded-full" style={{ background: "radial-gradient(circle,rgba(51,224,190,.10),transparent 65%)" }} />
+        <section id="dashboard" className="relative scroll-mt-20 overflow-hidden border-t border-line bg-surface-2/40 py-16 text-fg sm:py-20">
+          <div aria-hidden className="pointer-events-none absolute -bottom-1/2 -left-24 h-[600px] w-[600px] rounded-full" style={{ background: "radial-gradient(circle,rgba(240,103,90,.10),transparent 65%)" }} />
           <div className={`${wrap} relative grid items-center gap-12 lg:grid-cols-[.82fr_1.18fr] lg:gap-[60px]`}>
             <div>
               <p className="inline-flex items-center gap-2 text-[11.5px] font-extrabold uppercase tracking-[0.12em] text-accent"><span className="h-[7px] w-[7px] rounded-full bg-accent" aria-hidden />The back office</p>
@@ -369,7 +369,7 @@ export default function Home() {
                   ["Fees before you confirm.", "The amount your bank or wallet receives is on screen before the code is sent."],
                   ["A setup list that actually helps.", "Each step links to the thing it asks for, and the page tells you what is missing."],
                 ].map(([b, t]) => (
-                  <li key={b} className="flex gap-2.5 text-[14px] leading-relaxed text-[#E9DFD0]">
+                  <li key={b} className="flex gap-2.5 text-[14px] leading-relaxed text-muted">
                     <span className="mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent"><Check size={12} aria-hidden /></span>
                     <span><b className="text-fg">{b}</b> {t}</span>
                   </li>

@@ -123,9 +123,9 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         </div>
       </section>
 
-      <aside className="theme-ledger relative hidden overflow-hidden border-l border-line bg-canvas lg:flex lg:flex-col lg:justify-center lg:px-14">
+      <aside className="relative hidden overflow-hidden border-l border-line bg-surface-2/60 lg:flex lg:flex-col lg:justify-center lg:px-14">
         <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-love/15 blur-3xl" aria-hidden />
-        <div className="pointer-events-none absolute -bottom-32 left-0 h-96 w-96 rounded-full bg-accent/10 blur-3xl" aria-hidden />
+        <div className="pointer-events-none absolute -bottom-32 left-0 h-96 w-96 rounded-full bg-mint/15 blur-3xl" aria-hidden />
         {signup ? (
           <div className="relative max-w-md">
             <h2 className="font-display text-3xl font-semibold tracking-tight">Four steps to your first treat</h2>
