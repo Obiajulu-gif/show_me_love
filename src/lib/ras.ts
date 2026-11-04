@@ -95,10 +95,13 @@ export async function rasCall<T>(method: "GET" | "POST" | "DELETE", path: string
     throw new RasError(`Roqqu unreachable: ${err instanceof Error ? err.message : "network error"}`);
   }
   let json: { status?: string; message?: string; data?: T };
+  const text = await res.text();
   try {
-    json = await res.json();
+    json = JSON.parse(text);
   } catch {
-    throw new RasError(`Roqqu HTTP ${res.status}: non-JSON response`);
+    // The page title and Cloudflare ray header say who refused us (edge firewall vs Roqqu).
+    const title = text.match(/<title>([^<]*)/i)?.[1]?.trim() ?? text.slice(0, 80).replace(/\s+/g, " ");
+    throw new RasError(`Roqqu HTTP ${res.status}: non-JSON response (${title}; server=${res.headers.get("server")}; cf-ray=${res.headers.get("cf-ray")})`);
   }
   if (json?.status === "fail" && res.status < 500 && res.status !== 401 && res.status !== 403) throw new RasFailure(json.message || `Roqqu HTTP ${res.status}`);
   if (!res.ok || json?.status !== "success") throw new RasError(json?.message || `Roqqu HTTP ${res.status}`);
