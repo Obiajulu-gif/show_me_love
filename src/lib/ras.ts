@@ -219,16 +219,25 @@ export async function sendStatus(refid: string): Promise<"queued" | "completed" 
   return "queued";
 }
 
-/* --- public market data (no key), cached a minute ----------------------------- */
+/* --- public market data, cached a minute ---------------------------------------- */
 
 const cache = new Map<string, { at: number; data: unknown }>();
+
+/** Send the key when one is usable: Roqqu's edge answers anonymous calls from cloud hosts (Vercel) with a 403 page. */
+function keyUsable(): boolean {
+  try {
+    return rasMode() !== "practice" && !!keyHeaders();
+  } catch {
+    return false;
+  }
+}
 
 async function publicGet<T>(path: string): Promise<T | null> {
   const hit = cache.get(path);
   if (hit && Date.now() - hit.at < 60_000) return hit.data as T | null;
   let data: T | null = null;
   try {
-    data = await rasCall<T>("GET", path, undefined, false);
+    data = await rasCall<T>("GET", path, undefined, keyUsable());
   } catch (err) {
     console.error(`RAS GET ${path} failed:`, err instanceof Error ? err.message : err);
     data = null; // cached as a miss too, so a down API is not hammered
