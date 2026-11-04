@@ -229,7 +229,8 @@ async function publicGet<T>(path: string): Promise<T | null> {
   let data: T | null = null;
   try {
     data = await rasCall<T>("GET", path, undefined, false);
-  } catch {
+  } catch (err) {
+    console.error(`RAS GET ${path} failed:`, err instanceof Error ? err.message : err);
     data = null; // cached as a miss too, so a down API is not hammered
   }
   cache.set(path, { at: Date.now(), data });
