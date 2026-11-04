@@ -36,7 +36,7 @@ export function TreatPicker({ value, onChange }: { value: TreatChoice; onChange:
               <span className="flex items-center gap-0.5">{t.name}{t.children.length > 0 && <ChevronDown size={14} />}</span>
             </button>
             {open === t.id && (
-              <div className="absolute left-0 top-full z-10 mt-1 grid w-44 origin-top-left grid-cols-1 gap-1 rounded-xl border border-line bg-canvas p-2 shadow-lg motion-safe:animate-dialog-in">
+              <div className="absolute left-0 top-full z-10 mt-1 grid w-44 origin-top-left grid-cols-1 gap-1 rounded-xl border border-line bg-surface p-2 shadow-paper-lift motion-safe:animate-dialog-in">
                 {t.children.map((c) => (
                   <button key={c.id} type="button" onClick={() => pick(c.id)} className={`flex items-center gap-2 rounded-lg px-2 py-1 text-left text-sm hover:bg-surface ${value.treatId === c.id ? "bg-accent/40" : ""}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}

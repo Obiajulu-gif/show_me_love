@@ -40,7 +40,7 @@ export function LiveLedger() {
             <span className="truncate">
               <Heart size={14} className="mr-1 inline fill-love text-love align-[-2px]" aria-hidden />{r.qty} {r.treat} to <span className="font-semibold">@{r.to}</span>
             </span>
-            <span className="data text-right font-medium text-accent">+{r.usdt} USDT</span>
+            <span className="data text-right font-medium text-green">+{r.usdt} USDT</span>
             <span className="data truncate text-xs text-muted">{r.tx}</span>
             <span className="text-right text-xs text-muted">
               <span className="data">{naira(r.ngn)}</span> on {r.net}

@@ -1,3 +1,6 @@
+import { Stamp } from "lucide-react";
+import Link from "next/link";
+
 import { BuyCard } from "./BuyCard";
 
 /** Everything the page needs to draw itself. Built from a saved creator or from unsaved editor state. */
@@ -39,7 +42,7 @@ function when(at: Date) {
 }
 
 /** Presentational only: no data fetching, so the editor can render it from unsaved form state. */
-export function CreatorPage({ creator: c, mode, payments }: { creator: PageView; mode: "preview" | "live"; payments: WallEntry[] }) {
+export function CreatorPage({ creator: c, mode, payments, stampHref }: { creator: PageView; mode: "preview" | "live"; payments: WallEntry[]; stampHref?: string | null }) {
   const cover = c.header === "cover" && c.coverUrl;
   const name = c.displayName || c.username;
   const socials = c.socials.filter((u) => /^https:\/\//i.test(u));
@@ -70,6 +73,11 @@ export function CreatorPage({ creator: c, mode, payments }: { creator: PageView;
         )}
         <div className="mt-5">
           <BuyCard creatorName={name} treatName={c.treatName} treatImage={c.treatImage} unitPriceNgn={c.unitPriceNgn} presets={c.presets} mode={mode} username={c.username} />
+          {stampHref && (
+            <Link href={stampHref} className="mt-3 inline-flex items-center gap-2 rounded-full border border-line bg-canvas px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-accent/50 hover:text-fg">
+              <Stamp className="h-4 w-4" aria-hidden /> Make a support stamp
+            </Link>
+          )}
         </div>
 
         <section className="mt-8 border-t border-line pt-6" aria-labelledby="supporters-notes">

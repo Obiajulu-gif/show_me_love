@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { CopyButton, MessageEditor, QrPanel } from "@/components/ShareTools";
@@ -8,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { listCatalog } from "@/lib/catalog";
 import { listConnectedApps } from "@/lib/connect";
 import { getCreatorByUser } from "@/lib/creators";
+import { appOrigin } from "@/lib/http";
 import { toPageView, treatMap } from "@/lib/pageView";
 import { creatorLink, embedHtml } from "@/lib/share";
 import { currentUserId } from "@/lib/session";
@@ -29,12 +29,7 @@ export default async function Share({ searchParams }: { searchParams: Promise<{ 
   const { tab: t } = await searchParams;
   const tab = TABS.find((x) => x.id === t)?.id ?? "social";
 
-  let origin = (process.env.PUBLIC_APP_URL ?? "").replace(/\/$/, "");
-  if (!origin) {
-    const h = await headers();
-    const host = h.get("x-forwarded-host") ?? h.get("host");
-    origin = host ? `${h.get("x-forwarded-proto") ?? "http"}://${host}` : "";
-  }
+  const origin = await appOrigin();
   const connected = tab === "apps" ? await listConnectedApps(uid) : [];
   const link = creatorLink(c.username, origin);
   const view = toPageView({

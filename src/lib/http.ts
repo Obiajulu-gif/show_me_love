@@ -11,6 +11,15 @@ export async function clientIp(): Promise<string> {
   return pickIp(await headers());
 }
 
+/** Public origin for links: the configured app URL, else the request's own host. */
+export async function appOrigin(): Promise<string> {
+  const configured = (process.env.PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  if (configured) return configured;
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  return host ? `${h.get("x-forwarded-proto") ?? "http"}://${host}` : "";
+}
+
 /** Origin-only CSRF check (use for multipart): a present Origin must match PUBLIC_APP_URL's origin (or the request's own when unset). */
 export function rejectCrossOrigin(req: Request): NextResponse | null {
   const origin = req.headers.get("origin");

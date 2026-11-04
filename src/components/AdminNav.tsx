@@ -31,7 +31,7 @@ export function AdminNav({ counts }: { counts: { withdrawals: number; reports: n
   };
   return (
     <>
-      <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-line bg-canvas p-4 md:flex" aria-label="Admin">
+      <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-line bg-surface-2/40 p-4 md:flex" aria-label="Admin">
         <Logo href="/admin" />
         <p className="mt-1 pl-[42px] text-xs text-muted">Admin console</p>
         <nav className="mt-6 flex flex-col gap-1">{NAV.map((n) => link(n, false))}</nav>

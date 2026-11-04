@@ -55,7 +55,7 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
           <div className="flex items-center justify-between text-sm text-muted">Available
             <button aria-label="Refresh balance" onClick={() => router.refresh()}><RefreshCw size={16} /></button>
           </div>
-          <div className="data mt-1 text-3xl font-medium text-accent">{Number(available).toFixed(2)} <span className="text-base font-medium">USDT</span></div>
+          <div className="data mt-1 text-3xl font-medium text-green">{Number(available).toFixed(2)} <span className="text-base font-medium">USDT</span></div>
           <Button className="mt-4" onClick={() => setModal("withdraw")}>Make a withdrawal</Button>
         </Card>
         <Card>
@@ -69,8 +69,8 @@ export function WithdrawPanel({ available, usdt, bank }: { available: string; us
       </div>
 
       {modal && (
-        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-canvas/75 backdrop-blur-sm p-4 motion-safe:animate-scrim-in" onClick={close}>
-          <div className="w-full max-w-md space-y-4 rounded-[18px] border border-line bg-canvas p-6 motion-safe:animate-dialog-in" onClick={(e) => e.stopPropagation()}>
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-fg/25 backdrop-blur-sm p-4 motion-safe:animate-scrim-in" onClick={close}>
+          <div className="w-full max-w-md space-y-4 rounded-[18px] border border-line bg-surface p-6 shadow-paper-lift motion-safe:animate-dialog-in" onClick={(e) => e.stopPropagation()}>
             {modal === "dest" ? (
               <>
                 <h2 className="text-xl font-semibold">Payout destination</h2>

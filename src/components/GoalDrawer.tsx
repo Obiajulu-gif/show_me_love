@@ -34,7 +34,7 @@ async function upload(file: File, kind: "avatar" | "cover"): Promise<string> {
 function Toggle({ label, help, on, set }: { label: string; help: string; on: boolean; set: (v: boolean) => void }) {
   return (
     <label className="flex items-start gap-3">
-      <input type="checkbox" role="switch" checked={on} onChange={(e) => set(e.target.checked)} className="mt-1 h-4 w-4 accent-[#33E0BE]" />
+      <input type="checkbox" role="switch" checked={on} onChange={(e) => set(e.target.checked)} className="mt-1 h-4 w-4 accent-accent" />
       <span><span className="block text-sm font-semibold">{label}</span><span className="block text-xs text-muted">{help}</span></span>
     </label>
   );
@@ -73,8 +73,8 @@ export function GoalDrawer({ initial, defaultOrganizer, onClose, onSaved }: { in
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-canvas/75 backdrop-blur-sm motion-safe:animate-scrim-in" role="dialog" aria-modal="true" aria-label={initial.id ? "Edit goal" : "New goal"}>
-      <form onSubmit={save} className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-line bg-canvas p-6 shadow-xl motion-safe:animate-drawer-in">
+    <div className="fixed inset-0 z-50 flex justify-end bg-fg/25 backdrop-blur-sm motion-safe:animate-scrim-in" role="dialog" aria-modal="true" aria-label={initial.id ? "Edit goal" : "New goal"}>
+      <form onSubmit={save} className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-line bg-surface p-6 shadow-paper-lift motion-safe:animate-drawer-in">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-2xl font-semibold tracking-tight">{initial.id ? "Edit goal" : "New goal"}</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="rounded-full p-1 hover:bg-surface"><X size={18} /></button>

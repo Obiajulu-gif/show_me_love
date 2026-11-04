@@ -28,7 +28,7 @@ export function ReportDialog({ username }: { username: string }) {
   return (
     <>
       <button type="button" className="underline" onClick={() => { setDone(false); setMsg(""); ref.current?.showModal(); }}>Report page</button>
-      <dialog ref={ref} className="w-[min(92vw,26rem)] rounded-[18px] border border-line bg-canvas p-5 text-left text-fg backdrop:bg-canvas/75 backdrop:backdrop-blur-sm open:motion-safe:animate-dialog-in">
+      <dialog ref={ref} className="w-[min(92vw,26rem)] rounded-[18px] border border-line bg-surface p-5 text-left text-fg shadow-paper-lift backdrop:bg-fg/25 backdrop:backdrop-blur-sm open:motion-safe:animate-dialog-in">
         {done ? (
           <div className="space-y-3"><p>Thanks. We will take a look.</p><button type="button" className="underline" onClick={() => ref.current?.close()}>Close</button></div>
         ) : (

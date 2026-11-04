@@ -97,7 +97,7 @@ export function WalletPay({ pay, thanksUrl, roqquUrl, payRef }: { pay: Pay; than
     <div className="space-y-4 motion-safe:animate-dialog-in">
       <div className="rounded-xl border border-line bg-surface-2 px-4 py-3">
         <p className="text-sm text-muted">You send</p>
-        <p className="data mt-0.5 text-2xl font-medium text-accent">{pay.amountUsdt} USDT</p>
+        <p className="data mt-0.5 text-2xl font-medium text-green">{pay.amountUsdt} USDT</p>
         <p className="mt-1 text-xs text-muted">BEP20 on {pay.chainName}. Includes 1% so a rate move can&apos;t leave it short; any extra goes to the creator.</p>
       </div>
 

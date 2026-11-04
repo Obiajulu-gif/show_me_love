@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
-// Two surfaces, one product: warm paper for the shopfront, warm espresso for the ledger.
-// Tokens are CSS variables so a route can switch surfaces without forking components.
+// One warm paper surface across the whole product.
+// Tokens are CSS variables so components stay semantic and themeable.
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
@@ -52,9 +52,9 @@ export default {
         "fade-in": "fade-in .15s ease-out",
       },
       boxShadow: {
-        press: "0 0 0 1px rgba(255,255,255,.14) inset, 0 8px 24px -6px rgba(51,224,190,.45)",
-        "press-sm": "0 0 0 1px rgba(255,255,255,.14) inset, 0 3px 10px -4px rgba(51,224,190,.45)",
-        lift: "0 1px 0 rgba(255,255,255,.04) inset, 0 18px 40px -24px rgba(0,0,0,.85)",
+        press: "0 1px 0 rgba(255,255,255,.28) inset, 0 8px 22px -8px rgba(240,103,90,.55)",
+        "press-sm": "0 1px 0 rgba(255,255,255,.24) inset, 0 3px 10px -4px rgba(240,103,90,.45)",
+        lift: "0 1px 0 rgba(255,255,255,.72) inset, 0 18px 40px -30px rgba(70,45,20,.38)",
         paper: "0 24px 60px -42px rgba(40,25,10,.5)",
         "paper-lift": "0 40px 90px -58px rgba(40,25,10,.55)",
       },

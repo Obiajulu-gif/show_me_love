@@ -2,29 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Ledger — warm espresso, mint for money, coral for notes. */
-  --canvas: 23 19 16;
-  --surface: 33 26 20;
-  --surface-2: 42 34 27;
-  --fg: 245 238 228;
-  --muted: 181 166 149;
-  --line: 59 47 36;
-  --accent: 51 224 190;
-  --on-accent: 6 37 32;
-  --love: 255 142 126;
-  --on-love: 42 8 17;
-  --warn: 255 193 94;
-  --danger: 255 107 120;
-  --coral: 240 103 90;
-  --on-coral: 43 13 9;
-  --mint: 51 224 190;
-  --on-mint: 6 37 32;
-  --green: 110 221 190;
-  --sidebar-w: 240px;
-}
-
-/* Paper — the marketing site and the creator's shopfront. */
+/* Paper — one warm surface for the whole product. */
+:root,
 .theme-paper {
   --canvas: 250 245 235;
   --surface: 255 255 255;
@@ -43,40 +22,15 @@
   --mint: 23 179 148;
   --on-mint: 5 37 31;
   --green: 14 124 102;
+  --sidebar-w: 240px;
   color-scheme: light;
-  background-color: rgb(var(--canvas));
-  color: rgb(var(--fg));
-}
-
-/* A dark island inside a Paper route (the landing's back-office band). */
-.theme-ledger {
-  --canvas: 23 19 16;
-  --surface: 33 26 20;
-  --surface-2: 42 34 27;
-  --fg: 245 238 228;
-  --muted: 181 166 149;
-  --line: 59 47 36;
-  --accent: 51 224 190;
-  --on-accent: 6 37 32;
-  --love: 255 142 126;
-  --on-love: 42 8 17;
-  --warn: 255 193 94;
-  --danger: 255 107 120;
-  --coral: 255 142 126;
-  --on-coral: 42 8 17;
-  --mint: 51 224 190;
-  --on-mint: 6 37 32;
-  --green: 110 221 190;
-  color-scheme: dark;
-  background-color: rgb(var(--canvas));
-  color: rgb(var(--fg));
 }
 
 body {
   @apply bg-canvas text-fg font-sans antialiased;
   background-image:
-    radial-gradient(60rem 40rem at 85% -10%, rgba(51, 224, 190, 0.07), transparent 60%),
-    radial-gradient(50rem 30rem at -10% 110%, rgba(255, 142, 126, 0.06), transparent 60%);
+    radial-gradient(60rem 40rem at 85% -10%, rgba(240, 103, 90, 0.06), transparent 60%),
+    radial-gradient(50rem 30rem at -10% 110%, rgba(14, 124, 102, 0.05), transparent 60%);
   background-attachment: fixed;
 }
 
@@ -88,15 +42,10 @@ body {
   @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-canvas;
 }
 
-/* Native form controls follow the surface. */
+/* Native form controls follow the warm paper surface. */
 input,
 select,
 textarea {
-  color-scheme: dark;
-}
-.theme-paper input,
-.theme-paper select,
-.theme-paper textarea {
   color-scheme: light;
 }
 
@@ -122,7 +71,7 @@ code {
   @starting-style {
     opacity: 0;
     transform: translateY(-6px);
-    background-color: rgba(51, 224, 190, 0.12);
+    background-color: rgb(var(--mint) / 0.14);
   }
 }
 

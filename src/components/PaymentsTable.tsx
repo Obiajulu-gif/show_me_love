@@ -15,7 +15,7 @@ export function PaymentsTable({ rows }: { rows: PaymentRow[] }) {
               <tr key={r.ref} className="border-b border-line last:border-0 align-top">
                 <td className="p-3 font-semibold">{r.from}{r.viaGroup && <span className="ml-2 rounded-full bg-surface px-2 py-0.5 text-xs font-normal">group</span>}</td>
                 <td className="p-3 text-muted">{r.quantity > 1 ? `${r.quantity} treats. ` : ""}{r.message}</td>
-                <td className="data p-3 whitespace-nowrap text-accent">${r.amountUsdt}<div className="text-xs text-muted">₦{r.amountNgn.toLocaleString("en-NG")}</div></td>
+                <td className="data p-3 whitespace-nowrap text-green">${r.amountUsdt}<div className="text-xs text-muted">₦{r.amountNgn.toLocaleString("en-NG")}</div></td>
                 <td className="p-3 capitalize">{r.status}</td>
                 <td className="p-3 whitespace-nowrap text-muted">{when(r.createdAt)}</td>
               </tr>
@@ -36,7 +36,7 @@ export function PaymentsTable({ rows }: { rows: PaymentRow[] }) {
                 <p className="mt-1 text-xs capitalize text-muted">{when(r.createdAt)} · {r.status}</p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="data text-sm text-accent">${r.amountUsdt}</p>
+                <p className="data text-sm text-green">${r.amountUsdt}</p>
                 <p className="text-xs text-muted">₦{r.amountNgn.toLocaleString("en-NG")}</p>
               </div>
             </div>
