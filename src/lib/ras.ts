@@ -83,6 +83,8 @@ export function jsonBody(body: Record<string, unknown>): string {
 export async function rasCall<T>(method: "GET" | "POST" | "DELETE", path: string, body?: Record<string, unknown>, auth = true): Promise<T> {
   const headers: Record<string, string> = { accept: "application/json" };
   if (auth) Object.assign(headers, keyHeaders());
+  // Set when ROQQU_BASE_URL points at the fixed-IP relay in proxy/.
+  if (process.env.RAS_PROXY_TOKEN) headers["x-proxy-token"] = process.env.RAS_PROXY_TOKEN;
   let payload: string | undefined;
   if (method !== "GET") {
     headers["content-type"] = "application/json";
