@@ -7,7 +7,7 @@ let t: Awaited<ReturnType<typeof startTestDb>>;
 beforeAll(async () => { t = await startTestDb(); });
 afterAll(async () => { await t.stop(); });
 
-const tables = "users creators username_history treat_catalog payments group_payments group_splits goals ledger_entries withdrawals one_time_codes apps api_keys auth_codes connections reports rate_limits webhook_events".split(" ");
+const tables = "users creators username_history treat_catalog payments group_payments group_splits goals ledger_entries withdrawals one_time_codes apps api_keys auth_codes connections reports stamp_campaigns stamps rate_limits webhook_events".split(" ");
 
 test("schema applies twice and has core tables", async () => {
   await t.sql.unsafe(readFileSync(path.resolve(__dirname, "../db/schema.sql"), "utf8"));

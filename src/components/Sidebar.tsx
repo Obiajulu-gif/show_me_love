@@ -1,5 +1,5 @@
 "use client";
-import { ArrowUpRight, Code2, Gift, Home, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Pencil, Share2, Target, Users, Wallet, X } from "lucide-react";
+import { ArrowUpRight, Code2, Gift, Home, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Pencil, Share2, Stamp, Target, Users, Wallet, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,6 +13,7 @@ const WORKSPACE = [
   { href: "/dashboard/group", label: "Support a group", Icon: Users },
   { href: "/dashboard/goals", label: "Goals", Icon: Target },
   { href: "/dashboard/share", label: "Share", Icon: Share2 },
+  { href: "/dashboard/stamps", label: "Stamps", Icon: Stamp },
 ];
 const MONEY = [
   { href: "/dashboard/withdrawals", label: "Withdrawals", Icon: Wallet },

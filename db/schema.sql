@@ -202,6 +202,27 @@ create table if not exists reports (
   resolved_at timestamptz
 );
 
+create table if not exists stamp_campaigns (
+  id uuid primary key default gen_random_uuid(),
+  creator_id uuid not null unique references creators(user_id) on delete cascade,
+  headline text not null default 'I support',
+  style text not null default 'honey' check (style in ('honey','cocoa','sage')),
+  active boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists stamps (
+  id uuid primary key default gen_random_uuid(),
+  campaign_id uuid not null references stamp_campaigns(id) on delete cascade,
+  creator_id uuid not null references creators(user_id) on delete cascade,
+  visitor_name text,
+  visitor_handle text,
+  created_at timestamptz not null default now()
+);
+create index if not exists stamps_campaign_idx on stamps(campaign_id, created_at desc);
+create index if not exists stamps_creator_idx on stamps(creator_id, created_at desc);
+
 create table if not exists rate_limits (
   key text not null,
   window_start timestamptz not null,

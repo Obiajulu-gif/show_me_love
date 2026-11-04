@@ -11,6 +11,7 @@ import { listCatalog } from "@/lib/catalog";
 import { getCreatorByUsername } from "@/lib/creators";
 import { toPageView, treatMap } from "@/lib/pageView";
 import { publicTreatDates, publicWall } from "@/lib/stats";
+import { getActiveCampaignByCreator } from "@/lib/stamps";
 import { resolveUsername } from "@/lib/usernames";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +59,7 @@ export default async function PublicPage({ params }: { params: Promise<{ usernam
     tagline: c.pageStyle.tagline, accent: c.pageStyle.accent, header: c.pageStyle.header,
     coverUrl: c.pageStyle.cover as string | undefined, socials: Object.values(c.socials),
   }, treatMap(await listCatalog()));
+  const stamp = await getActiveCampaignByCreator(c.userId);
 
   return (
     <div className="theme-paper min-h-screen bg-canvas text-fg">
@@ -68,7 +70,7 @@ export default async function PublicPage({ params }: { params: Promise<{ usernam
         </div>
       </header>
       <main className="mx-auto max-w-[620px] px-4 py-7 sm:py-10">
-        <CreatorPage creator={view} mode="live" payments={await publicWall(c.userId)} />
+        <CreatorPage creator={view} mode="live" payments={await publicWall(c.userId)} stampHref={stamp ? `/@${c.username}/stamp` : null} />
         <SupportHeatmap dates={await publicTreatDates(c.userId, new Date(Date.now() - 84 * 864e5))} />
       </main>
       <footer className="pb-10 text-center text-sm text-muted">
