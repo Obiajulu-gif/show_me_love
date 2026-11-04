@@ -14,3 +14,4 @@ pnpm-workspace.yaml
 
 # Local-only: design audit mockups and reference artifacts
 docs/ui-audit/
+brag-output*/

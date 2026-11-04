@@ -7,7 +7,7 @@
  *   test     - RAS_TEST_KEY, sent as x-staging-api-key (no real money).
  *   live     - RAS_LIVE_KEY, sent as x-api-key; refused unless
  *              ALLOW_PRODUCTION_EXECUTION=true.
- * POST bodies are form fields; objects travel as JSON strings.
+ * POST bodies are JSON; nested objects travel as JSON strings, arrays stay arrays.
  */
 import { randomBytes } from "node:crypto";
 
@@ -70,13 +70,14 @@ export function webhookKey(): string | null {
   return null;
 }
 
-export function form(body: Record<string, unknown>): URLSearchParams {
-  const out = new URLSearchParams();
+/** RAS wants a JSON body where arrays stay arrays (`wallets`) but objects travel as JSON strings (`customer_details`, `metadata`). */
+export function jsonBody(body: Record<string, unknown>): string {
+  const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(body)) {
     if (v === undefined || v === null || v === "") continue;
-    out.set(k, typeof v === "object" ? JSON.stringify(v) : String(v));
+    out[k] = Array.isArray(v) ? v : typeof v === "object" ? JSON.stringify(v) : String(v);
   }
-  return out;
+  return JSON.stringify(out);
 }
 
 export async function rasCall<T>(method: "GET" | "POST" | "DELETE", path: string, body?: Record<string, unknown>, auth = true): Promise<T> {
@@ -84,8 +85,8 @@ export async function rasCall<T>(method: "GET" | "POST" | "DELETE", path: string
   if (auth) Object.assign(headers, keyHeaders());
   let payload: string | undefined;
   if (method !== "GET") {
-    headers["content-type"] = "application/x-www-form-urlencoded";
-    payload = form(body ?? {}).toString();
+    headers["content-type"] = "application/json";
+    payload = jsonBody(body ?? {});
   }
   let res: Response;
   try {
@@ -122,11 +123,14 @@ export interface Customer {
   phone?: string;
 }
 
-/** POST /transaction/network-fee: estimated fee for one send, in the token sent. */
+/**
+ * POST /transaction/network-fee: estimated fee for one send. RAS answers
+ * `{fee: "0.00000325 BNB", value: "0.00000325"}`, so read `value` (or the number in `fee`).
+ */
 export async function networkFee(network: Network): Promise<number> {
   if (rasMode() === "practice") return { bep20: 0.3, trc20: 1 }[network];
-  const data = await rasCall<{ fee: number | string }>("POST", "/transaction/network-fee", { network });
-  const fee = Number(data?.fee);
+  const data = await rasCall<{ fee?: number | string; value?: number | string }>("POST", "/transaction/network-fee", { network });
+  const fee = Number(data?.value ?? String(data?.fee ?? "").split(" ")[0]);
   if (!Number.isFinite(fee) || fee <= 0) throw new RasError("Roqqu returned no network fee");
   return fee;
 }
