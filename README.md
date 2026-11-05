@@ -2,6 +2,8 @@
 
 Small treats, real support.
 
+Live site: [show-me-love.vercel.app](https://show-me-love.vercel.app/)
+
 show-me-love lets a creator claim a link like `/@ada`, pick a small treat their supporters can buy them (a zobo, a coffee, a custom one), and get paid in USDT. Supporters pay by Roqqu payment link, the app credits the creator when Roqqu confirms, and the creator withdraws to a USDT wallet or a Nigerian bank account. Admins review early or bank withdrawals.
 
 ## Stack
