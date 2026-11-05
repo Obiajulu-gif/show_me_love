@@ -19,13 +19,15 @@ fly launch --copy-config --no-deploy        # keeps fly.toml, creates the app
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"   # save this token
 fly secrets set PROXY_TOKEN=<the token>
 fly deploy
-fly machine list                            # note the machine id
-fly machine egress-ip allocate <machine-id> # gives the static outbound IPv4
+fly ips allocate-egress -r lhr              # app-wide static outbound IPv4 (needs a card on file)
 ```
+
+The current egress IPv4 is `209.71.82.108` (region lhr). A new egress IP can
+take 5 to 10 minutes to reach running machines.
 
 Then:
 
-1. Send Roqqu the IPv4 from the last command, and ask them to allowlist it for
+1. Send Roqqu the egress IPv4, and ask them to allowlist it for
    API traffic to `service.roqqu.com`.
 2. In Vercel, under show-me-love → Settings → Environment Variables (Production), set:
    - `ROQQU_BASE_URL` = `https://show-me-love-ras-relay.fly.dev/v1`
